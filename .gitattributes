@@ -1,0 +1,7 @@
+*.sh text eol=lf
+
+*.bash text eol=lf
+*.py text eol=lf
+
+*.bin binary
+*.exe binary

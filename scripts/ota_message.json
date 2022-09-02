@@ -1,0 +1,10 @@
+{
+  "Message":"Update Availability",
+  "Manufacturer":"Express Widgits Corporation",
+  "ManufacturerId":"EWCO",
+  "Product":"Easy Widgit",
+  "SerialNumber":"ABC213450001",
+  "Version":"1.0.0",
+  "Board":"CY8CPROTO_062_4343W",
+  "UniqueTopicName":"replace"
+}
