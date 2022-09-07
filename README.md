@@ -430,11 +430,10 @@ Also, a reminder to look at configuration files for other libraries.
 - [OTA Release version](./RELEASE.md)
 - [OTA Flash Layout Information](./OTA_FLASH_LAYOUT_README.md)
 - [OTA Makefile Information](./OTA_MAKEFILE_INFO_README.md)
-- [OTA API reference guide](https://cypresssemiconductorco.github.io/ota-update/api_reference_manual/html/index.html)
-- Cypress ModusToolbox OTA Examples
-  - [Cypress OTA MQTT Example](https://github.com/cypresssemiconductorco/mtb-example-ota-update-mqtt )
-  - [Cypress OTA HTTP Example](https://github.com/cypresssemiconductorco/mtb-example-ota-update-http )
-  - [Cypress OTA Bluetooth® Example ](https://github.com/cypresssemiconductorco/mtb-example-ota-update-ble-battery-server)
+- [OTA API reference guide](https://infineon.github.io/ota-update/api_reference_manual/html/index.html)
+- ModusToolbox OTA Examples
+    - [OTA MQTT Example](https://github.com/infineon/mtb-example-ota-mqtt)
+    - [OTA HTTP Example](https://github.com/infineon/mtb-example-ota-http)
 - [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.cypress.com/products/modustoolbox-software-environment)
 - [MCUBootApp Information](./OTA_MCUBOOTAPP_README.md)
 - [MCUboot](https://github.com/JuulLabs-OSS/mcuboot/blob/cypress/docs/design.md) documentation
