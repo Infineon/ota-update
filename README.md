@@ -8,6 +8,8 @@ Supported devices:
   - CYW43012 Wi-Fi & Bluetooth® combo chip
 - CYW920829M2EVB-01 evaluation board.
 
+Ota-update v1.0.0 works with MTB2.4 and replaces anycloud-ota (all versions). Anycloud-ota vx.x.x will be depricated soon.
+
 The device can use Wi-Fi or Bluetooth® Interfaces.
 
 For WiFi, the OTA library utilizes MQTT or HTTP and TLS to securely connect to an MQTT Broker/HTTP server to download and update the user application.
