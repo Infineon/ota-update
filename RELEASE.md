@@ -9,6 +9,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 ### v1.0.0
 
 - New ota-update library
+
+- This ota-update v1.0.0 replaces AnyCloud-ota (all versions). Anycloud-ota vx.x.x will be depricated soon.
+- ota-update v1.0.0 works with MTB 2.4
+ 
 - Legacy support for these devices:
     - CY8CKIT-062S2-43012
     - CY8CKIT-064B0S2-4343W
