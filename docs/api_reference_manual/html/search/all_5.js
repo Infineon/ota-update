@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['error',['error',['../structcy__ota__cb__struct__t.html#acc8a4e04f407ca0bbf0dc35e7e42f0c1',1,'cy_ota_cb_struct_t']]],
-  ['expand_5fand_5fadd_5fquotes',['EXPAND_AND_ADD_QUOTES',['../group__group__ota__typedefs.html#gaf1d5499e79b04694c57bf2970c174e00',1,'cy_ota_api.h']]]
+  ['files',['files',['../structcy__untar__context__t.html#aad55ac42754b5b1de2684eed7c2ee734',1,'cy_untar_context_t']]],
+  ['found_5fin_5ftar',['found_in_tar',['../structcy__ota__file__info__t.html#a04f24e4fc35fafe52b94112e3b01c58f',1,'cy_ota_file_info_t']]]
 ];

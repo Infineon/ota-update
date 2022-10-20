@@ -1,8 +1,10 @@
-/***************************************************************************//**
-* \file cy8c6xxa_cm4_dual.ld
-* \version 2.60
+/*******************************************************************************
+* \file cy8c6xx7_cm4_dual_cm0p_bless.ld
+* \version 2.91
 *
 * Linker file for the GNU C compiler.
+*
+* This linker script is modified from cy8c6xx7_cm4_dual.ld for CM0P_BLESS image.
 *
 * The main purpose of the linker script is to describe how the sections in the
 * input files should be mapped into the output file, and to control the memory
@@ -19,7 +21,7 @@
 *
 ********************************************************************************
 * \copyright
-* Copyright 2016-2019 Cypress Semiconductor Corporation
+* Copyright 2016-2021 Cypress Semiconductor Corporation
 * SPDX-License-Identifier: Apache-2.0
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +42,7 @@ SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
 ENTRY(Reset_Handler)
 
-/* Size of the stack section at the end of CM4 SRAM */
+/* Size of the stack section at the end of SRAM */
 STACK_SIZE = 0x1000;
 
 /*
@@ -49,6 +51,85 @@ STACK_SIZE = 0x1000;
    --defsym,FLASH_AREA_IMG_1_PRIMARY_START=XXXX
    --defsym,FLASH_AREA_IMG_1_PRIMARY_SIZE=XXXX
 */
+
+
+
+/*
+    Flash Memory Layout for using with OTA support
+    MCUBootApp is the boot application that does the actual SWAP of Primary and Secondary Slots.
+
+    NOTE: MCUBootApp treats the Slots as Monolithic Chunks, not caring for the majority of the
+          content with the only exceptions being the 0x400 header and a 0x400 trailer contained
+          within the slot. The header to validate the slot and the trailer for update information.
+    The User Application uses the ota-update library to download and store new app to Secondary Slot.
+
+    We use a JSON file to define the flash layout. The layout here is defined in:
+        <ota-update>/configs/flashmap/psoc62_1m_cm0_int_swap_single.json
+    It is copied when building MCUBootApp, and must be reflected here manually.
+
+             Internal Flash Layout
+0x10000000 ----------------------------------------
+           |  MCUBootApp                          |
+0x10020000 ---------------------------------------- ------------------------------------
+           | Required MCUBootHeader               | (added in signing step of User App) \
+0x10020400 |      ------------------              |    ----------------                  \
+           |  Application cm0p code               |    BLE code                           \
+0x10040000        ------------------              |    ----------------                    --> Primary slot
+           |                                      |                                       /
+           |  Application cm4 code                |    User Application                  /
+           |                                      |                                     /
+0x10080000 ---------------------------------------- ------------------------------------
+           | Required MCUBootHeader               | (added in signing step of User App) \
+0x10080400 |      ------------------              |    ----------------                  \
+           |  Application cm0p code               |    BLE code                           \
+0x10040000        ------------------              |    ----------------                    --> Secondary slot
+           |                                      |                                       /
+           |  Application cm4 code                |    User Application                  /
+           |                                      |                                     /
+0x100e0000 ---------------------------------------- ------------------------------------
+           |  Scratch Area                        | Used by MCUBootApp while SWAPping Primary and Secondary Slots
+           |                                      | Larger Scratch Area will speed up the SWAP and increase the flash life
+0x100e4000 --------------------------------------------
+           |  Status Area  (For MCUBoot)          | Used by MCUBootApp to keep track of the SWAP process and provide information
+           |                                      | needed to resume the SWAP if there is a reset during the SWAP process.
+0x100e8000 ----------------------------------------
+           |  Unused 0x00018000 (96k)             |
+0x10100000 ----------------------------------------
+
+    SRAM usage for OTA applciation support
+    CY8CKIT-062-BLE, CY8CPROTO-063-BLE and CYBLE-416045-EVAL have 278k RAM (0x45800) available for use.
+    High 0x800 bytes are used by the System (from 0x46000 bytes)
+    MCUBootApp requires 0x800 bytes at start of RAM for it's "public" RAM usage.
+
+0x08000000 ----------------------------------------
+           |  MCUBootApp                          |
+0x08000800 ----------------------------------------
+           |  cm0p code RAM                       |
+           |  0x00003000 bytes (12k)              |
+0x08003800 ----------------------------------------
+           |                                      |
+           |  cm4 User Application RAM            |
+           |  0x00042000 bytes (264k)             |
+           |                                      |
+0x08045800 ----------------------------------------
+           |  System RAM  0x800                   |
+0x08046000 ----------------------------------------
+
+*/
+
+/* FLASH for MCUBootApp */
+MCUBOOT_APP_SIZE    = 0x00020000;
+MCUBOOT_HEADER_SIZE = 0x00000400;
+/* RAM for MCUBootApp */
+MCUBOOT_RAM_SIZE    = 0x00000800;
+
+/* FLASH for cm0+ */
+CM0P_FLASH_SIZE     = 0x00020000;
+/* RAM for cm0+ */
+CM0P_RAM_SIZE       = 0x00003000;
+
+/* System reserved RAM at to of RAM area */
+SYSTEM_RESERVED_RAM = 0x00000800;
 
 /* Force symbol to be entered in the output file as an undefined symbol. Doing
 * this may, for example, trigger linking of additional modules from standard
@@ -70,13 +151,9 @@ MEMORY
      * Your changes must be aligned with the corresponding memory regions for CM0+ core in 'xx_cm0plus.ld',
      * where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.ld'.
      */
-    /* platform has 0x48000 bytes RAM, MCUBootApp uses 0x800 "public" RAM
-     * MCUBOOT declarations:
-     *         public_ram        (rw)    : ORIGIN = 0x08000000, LENGTH = 0x800
-     *         ram               (rwx)   : ORIGIN = 0x08000800, LENGTH = 0x1F800
-     */
-    ram               (rwx)   : ORIGIN = 0x08000800, LENGTH = 0x00040000
-    flash             (rx)    : ORIGIN = 0x10000000 + FLASH_AREA_IMG_1_PRIMARY_START + MCUBOOT_HEADER_SIZE, LENGTH = FLASH_AREA_IMG_1_PRIMARY_SIZE - MCUBOOT_HEADER_SIZE
+
+    ram               (rwx)   : ORIGIN = 0x08000000 + MCUBOOT_RAM_SIZE + CM0P_RAM_SIZE, LENGTH = 0x00046000 - MCUBOOT_RAM_SIZE - CM0P_RAM_SIZE - SYSTEM_RESERVED_RAM
+    flash             (rx)    : ORIGIN = 0x10000000, LENGTH = 0x00100000
 
     /* This is a 32K flash region used for EEPROM emulation. This region can also be used as the general purpose flash.
      * You can assign sections to this memory region for only one of the cores.
@@ -94,6 +171,13 @@ MEMORY
     xip               (rx)    : ORIGIN = 0x18000000, LENGTH = 0x8000000    /* 128 MB */
     efuse             (r)     : ORIGIN = 0x90700000, LENGTH = 0x100000     /*   1 MB */
 }
+
+/* Size and start address of the Cortex-M0+ application image */
+FLASH_CM0P_START = ORIGIN(flash) + MCUBOOT_APP_SIZE + MCUBOOT_HEADER_SIZE;
+FLASH_CM0P_SIZE  = 0x20000;
+/* Size and start address of the Cortex-M4 application image */
+FLASH_CM4_START  = FLASH_CM0P_START + FLASH_CM0P_SIZE;
+FLASH_CM4_SIZE   = LENGTH(flash) - (FLASH_CM0P_START + FLASH_CM0P_SIZE);
 
 /* Library configurations */
 GROUP(libgcc.a libc.a libm.a libnosys.a)
@@ -134,19 +218,34 @@ GROUP(libgcc.a libc.a libm.a libnosys.a)
 
 SECTIONS
 {
-    /* Cortex-M4 application flash area */
-    .text ORIGIN(flash) :
+     /* Cortex-M0+ application image */
+    .cy_m0p_image FLASH_CM0P_START :
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
+        __cy_m0p_code_start = . ;
+
+        *psoc6_cm0p_bless_ota
+
+        KEEP(*(.cy_m0p_image))
+        __cy_m0p_code_end = . ;
+    } > flash
+
+    /* Check if .cy_m0p_image size exceeds FLASH_CM0P_SIZE */
+    ASSERT(__cy_m0p_code_end <= ORIGIN(flash) + FLASH_CM0P_START + FLASH_CM0P_SIZE, "CM0+ flash image overflows with CM4, increase FLASH_CM0P_SIZE")
+
+    /* Cortex-M4 application flash area */
+    .text FLASH_CM4_START :
+    {
+        . = ALIGN(4);
         __cy_app_load_addr = . ;
         __Vectors = . ;
         KEEP(*(.vectors))
-        . = ALIGN(8);
+        . = ALIGN(4);
         __Vectors_End = .;
         __Vectors_Size = __Vectors_End - __Vectors;
         __end__ = .;
 
-        . = ALIGN(8);
+        . = ALIGN(4);
         *(.text*)
 
         KEEP(*(.init))
@@ -192,7 +291,7 @@ SECTIONS
      * define __STARTUP_COPY_MULTIPLE in startup_psoc6_02_cm4.S */
     .copy.table :
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
         __copy_table_start__ = .;
 
         /* Copy interrupt vectors from flash to RAM */
@@ -214,7 +313,7 @@ SECTIONS
      * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_psoc6_02_cm4.S */
     .zero.table :
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
         __zero_table_start__ = .;
         LONG (__bss_start__)
         LONG (__bss_end__ - __bss_start__)
@@ -239,20 +338,21 @@ SECTIONS
         *(vtable)
         *(.data*)
 
-        . = ALIGN(8);
+        . = ALIGN(4);
         /* preinit data */
         PROVIDE_HIDDEN (__preinit_array_start = .);
         KEEP(*(.preinit_array))
         PROVIDE_HIDDEN (__preinit_array_end = .);
 
-        . = ALIGN(8);
+        . = ALIGN(4);
         /* init data */
         PROVIDE_HIDDEN (__init_array_start = .);
         KEEP(*(SORT(.init_array.*)))
         KEEP(*(.init_array))
         PROVIDE_HIDDEN (__init_array_end = .);
 
-        . = ALIGN(8);
+
+        . = ALIGN(4);
         /* finit data */
         PROVIDE_HIDDEN (__fini_array_start = .);
         KEEP(*(SORT(.fini_array.*)))
@@ -260,10 +360,10 @@ SECTIONS
         PROVIDE_HIDDEN (__fini_array_end = .);
 
         KEEP(*(.jcr*))
-        . = ALIGN(8);
+        . = ALIGN(4);
 
         KEEP(*(.cy_ramfunc*))
-        . = ALIGN(8);
+        . = ALIGN(4);
 
         __data_end__ = .;
 
@@ -293,11 +393,11 @@ SECTIONS
     */
     .bss (NOLOAD):
     {
-        . = ALIGN(8);
+        . = ALIGN(4);
         __bss_start__ = .;
         *(.bss*)
         *(COMMON)
-        . = ALIGN(8);
+        . = ALIGN(4);
         __bss_end__ = .;
     } > ram
 

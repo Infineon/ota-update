@@ -3,8 +3,8 @@
 ; to pass a scatter file through a C preprocessor.
 
 ;*******************************************************************************
-;* \file cy8c6xxa_cm4_dual.sct
-;* \version 2.60
+;* \file cy8c6xx5_cm4_dual_ota_ext.sct
+;* \version 2.91
 ;*
 ;* Linker file for the ARMCC.
 ;*
@@ -26,7 +26,7 @@
 ;*
 ;*******************************************************************************
 ;* \copyright
-;* Copyright 2016-2019 Cypress Semiconductor Corporation
+;* Copyright 2016-2021 Cypress Semiconductor Corporation
 ;* SPDX-License-Identifier: Apache-2.0
 ;*
 ;* Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,16 +55,14 @@
 ; You can change the memory allocation by editing RAM and Flash defines.
 ; Note that 2 KB of RAM (at the end of the SRAM) are reserved for system use.
 ; Using this memory region for other purposes will lead to unexpected behavior.
-; Your changes must be aligned with the corresponding defines for CM0+ core in 'xx_cm0plus.scat',
-; where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.scat'.
 ; RAM
-#define RAM_START               0x08020800
+#define RAM_START               0x08020000
 #define RAM_SIZE                0x000DF000
 ; Flash
-#define FLASH_START             (0x10000000 + FLASH_AREA_IMG_1_PRIMARY_START + MCUBOOT_HEADER_SIZE)
-#define FLASH_SIZE              (FLASH_AREA_IMG_1_PRIMARY_SIZE) ; Our code must fit into a single slot - header
+#define FLASH_START             (0x18000000 + FLASH_AREA_IMG_1_PRIMARY_START + MCUBOOT_HEADER_SIZE)
+#define FLASH_SIZE              FLASH_AREA_IMG_1_PRIMARY_SIZE
 
-; Size of the stack section at the end of CM4 SRAM
+; The size of the stack section at the end of CM4 SRAM
 #define STACK_SIZE              0x00001000
 
 ; The following defines describe a 32K flash region used for EEPROM emulation.
@@ -104,10 +102,11 @@
 #define EFUSE_START             0x90700000
 #define EFUSE_SIZE              0x100000
 
+
 ; Cortex-M4 application flash area
-LOAD_REGION_1 FLASH_START FLASH_SIZE
+LR_IROM1 FLASH_START FLASH_SIZE
 {
-     ER_FLASH_VECTORS +0
+    ER_FLASH_VECTORS +0
     {
         * (RESET, +FIRST)
     }
@@ -123,12 +122,23 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
         * (RESET_RAM, +FIRST)
     }
 
-    ; How can we get the data initialization values placed at the end of the other data
-    ; and have the scatter code copy it to the RAM locations?
     RW_RAM_DATA +0
     {
         * (.cy_ramfunc)
         * (+RW, +ZI)
+
+        cy_device.o (+RO, +RW, +ZI)
+        ota_serial_flash.o (+RO, +RW, +ZI)
+        flash_qspi.o (+RO, +RW, +ZI)
+        lib_a-memset.o (+RO, +RW, +ZI)
+        *memset.o (+RO, +RW, +ZI)
+        aeabi_memset4.o (+RO, +RW, +ZI)
+        cy_smif.o (+RO, +RW, +ZI)
+        cy_smif_memslot.o (+RO, +RW, +ZI)
+        cy_smif_sfdp.o (+RO, +RW, +ZI)
+        cy_syslib.o (+RO, +RW, +ZI)
+        cy_syslib_ext.o (+RO, +RW, +ZI)
+        cycfg_qspi_memslot.o (+RO, +RW, +ZI)
     }
 
     ; Place variables in the section that should not be initialized during the
@@ -162,16 +172,51 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
 ;    {
 ;        * (.cy_app_signature)
 ;    }
-
 }
 
 
-; Emulated EEPROM Flash area - Do not load into HEX file output
+; Emulated EEPROM Flash area
 ;LR_EM_EEPROM EM_EEPROM_START EM_EEPROM_SIZE
 ;{
 ;    .cy_em_eeprom +0
 ;    {
 ;        * (.cy_em_eeprom)
+;    }
+;}
+
+; Supervisory flash: User data
+;LR_SFLASH_USER_DATA SFLASH_USER_DATA_START SFLASH_USER_DATA_SIZE
+;{
+;    .cy_sflash_user_data +0
+;    {
+;        * (.cy_sflash_user_data)
+;    }
+;}
+
+; Supervisory flash: Normal Access Restrictions (NAR)
+;LR_SFLASH_NAR SFLASH_NAR_START SFLASH_NAR_SIZE
+;{
+;    .cy_sflash_nar +0
+;    {
+;        * (.cy_sflash_nar)
+;    }
+;}
+
+; Supervisory flash: Public Key
+;LR_SFLASH_PUBLIC_KEY SFLASH_PUBLIC_KEY_START SFLASH_PUBLIC_KEY_SIZE
+;{
+;    .cy_sflash_public_key +0
+;    {
+;        * (.cy_sflash_public_key)
+;    }
+;}
+
+; Supervisory flash: Table of Content # 2
+;LR_SFLASH_TOC_2 SFLASH_TOC_2_START SFLASH_TOC_2_SIZE
+;{
+;    .cy_toc_part2 +0
+;    {
+;        * (.cy_toc_part2)
 ;    }
 ;}
 
@@ -188,7 +233,7 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
 ; Places the code in the Execute in Place (XIP) section. See the smif driver documentation for details.
 ;LR_EROM XIP_START XIP_SIZE
 ;{
-;    .cy_xip +0
+;    cy_xip +0
 ;    {
 ;        * (.cy_xip)
 ;    }
@@ -214,7 +259,7 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
 /* The following symbols used by the cymcuelftool. */
 /* Flash */
 #define __cy_memory_0_start 0x10000000
-#define __cy_memory_0_length  0x00200000
+#define __cy_memory_0_length  0x00080000
 #define __cy_memory_0_row_size 0x200
 
 /* Emulated EEPROM Flash area */

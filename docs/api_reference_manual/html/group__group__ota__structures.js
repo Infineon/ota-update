@@ -11,7 +11,7 @@ var group__group__ota__structures =
     [ "cy_ota_cb_struct_t", "structcy__ota__cb__struct__t.html", [
       [ "reason", "structcy__ota__cb__struct__t.html#ae28ffd179023e8902cbd3e88785540ad", null ],
       [ "cb_arg", "structcy__ota__cb__struct__t.html#afa47e10a9fe4712558dded6625a3c484", null ],
-      [ "state", "structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784", null ],
+      [ "ota_agt_state", "structcy__ota__cb__struct__t.html#afdc59f29135abdca499c3da7183df1b7", null ],
       [ "error", "structcy__ota__cb__struct__t.html#acc8a4e04f407ca0bbf0dc35e7e42f0c1", null ],
       [ "storage", "structcy__ota__cb__struct__t.html#aafd5022e59a7d19d6a103f9217710644", null ],
       [ "total_size", "structcy__ota__cb__struct__t.html#ad29859423d69a8e0815a833a70284bdb", null ],

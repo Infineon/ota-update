@@ -269,13 +269,6 @@ cy_rslt_t ota_smif_initialize(void)
 
     cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() \n", __func__);
 
-#if !defined(CYW20829A0LKML)
-    /* Disable SMIF Cache - it is not working in CY8CPROTO-062S3-4343W context */
-    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call Cy_SMIF_CacheDisable()\n", __func__);
-    Cy_SMIF_CacheDisable(SMIF0, CY_SMIF_CACHE_BOTH);
-    while(Cy_SMIF_BusyCheck(SMIF0));
-#endif
-
     /* pre-access to SMIF */
     PRE_SMIF_ACCESS_TURN_OFF_XIP;
 
@@ -368,19 +361,17 @@ cy_rslt_t ota_smif_initialize(void)
 }
 
 
-uint32_t ota_smif_get_memory_size(void)
+/* NOTE: This function assumes that FLAG_HAL_INIT_DONE is TRUE!
+ * Init check was removed to fix Coverity CID 446709
+ */
+static uint32_t ota_smif_get_memory_size(void)
 {
     uint32_t size = 0;
 
-    /* pre-access to SMIF is not needed, as we are just reading data from RAM */
-    if (IS_FLAG_SET(FLAG_HAL_INIT_DONE))
-    {
-        if (SMIF0 != NULL)
-        {
-            size = smifBlockConfig.memConfig[MEM_SLOT]->deviceCfg->memSize;
-        }
-    }
-    /* post-access to SMIF  is not needed, as we are just reading data from RAM */
+	if (SMIF0 != NULL)
+	{
+		size = smifBlockConfig.memConfig[MEM_SLOT]->deviceCfg->memSize;
+	}
 
     return size;
 }
@@ -466,7 +457,7 @@ cy_rslt_t ota_smif_read(uint32_t offset, uint8_t *buffer, size_t length)
 
 cy_rslt_t ota_smif_write(uint32_t offset, const uint8_t *buffer, size_t length)
 {
-    cy_en_smif_status_t cy_smif_result = CY_RSLT_SERIAL_FLASH_ERR_NOT_INITED;
+    cy_en_smif_status_t cy_en_smif_result = CY_SMIF_SUCCESS;
 
     if (offset >= CY_SMIF_BASE_MEM_OFFSET)
     {
@@ -480,15 +471,19 @@ cy_rslt_t ota_smif_write(uint32_t offset, const uint8_t *buffer, size_t length)
         /* pre-access to SMIF */
         PRE_SMIF_ACCESS_TURN_OFF_XIP;
 
-        cy_smif_result = Cy_SMIF_MemWrite(SMIF0, smifBlockConfig.memConfig[MEM_SLOT],
+        cy_en_smif_result = Cy_SMIF_MemWrite(SMIF0, smifBlockConfig.memConfig[MEM_SLOT],
                 offset, buffer, length, &ota_QSPI_context);
 
         /* post-access to SMIF */
         POST_SMIF_ACCESS_TURN_ON_XIP;
     }
+    else
+    {
+	return CY_RSLT_SERIAL_FLASH_ERR_NOT_INITED;
+    }
 
 #ifdef READBACK_SMIF_WRITE_TEST
-    if (cy_smif_result == CY_SMIF_SUCCESS)
+    if (cy_en_smif_result == CY_SMIF_SUCCESS)
     {
         if (ota_smif_read(offset, read_back_test, ((16 < length) ? 16 : length)) == CY_RSLT_SUCCESS)
         {
@@ -505,19 +500,20 @@ cy_rslt_t ota_smif_write(uint32_t offset, const uint8_t *buffer, size_t length)
     }
 #endif
 
-    if (cy_smif_result != CY_SMIF_SUCCESS)
+    if (cy_en_smif_result != CY_SMIF_SUCCESS)
     {
-        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() FAILED cy_smif_result: 0x%lx\n", __func__, cy_smif_result);
+        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() FAILED cy_en_smif_result: 0x%lx\n", __func__, cy_en_smif_result);
     }
 
-    return (cy_smif_result == CY_SMIF_SUCCESS) ? CY_RSLT_SUCCESS : CY_RSLT_TYPE_ERROR;
+    return (cy_en_smif_result == CY_SMIF_SUCCESS) ? CY_RSLT_SUCCESS : CY_RSLT_TYPE_ERROR;
 }
 
 cy_rslt_t ota_smif_erase(uint32_t offset, uint32_t length)
 {
-    cy_en_smif_status_t cy_smif_result = CY_PDL_STATUS_ERROR;
-    uint32_t interruptState;
-    (void)interruptState;
+    cy_en_smif_status_t cy_en_smif_result = CY_SMIF_BAD_PARAM;
+#ifdef CY_XIP_SMIF_MODE_CHANGE
+    uint32_t interruptState = 0U;
+#endif
 
     if (offset >= CY_SMIF_BASE_MEM_OFFSET)
     {
@@ -532,7 +528,7 @@ cy_rslt_t ota_smif_erase(uint32_t offset, uint32_t length)
         // If the erase is for the entire chip, use chip erase command
         if ((offset == 0u) && (length == ota_smif_get_memory_size()))
         {
-            cy_smif_result = Cy_SMIF_MemEraseChip(SMIF0,
+		cy_en_smif_result = Cy_SMIF_MemEraseChip(SMIF0,
                                                 smifBlockConfig.memConfig[MEM_SLOT],
                                                 &ota_QSPI_context);
         }
@@ -550,7 +546,7 @@ cy_rslt_t ota_smif_erase(uint32_t offset, uint32_t length)
             length += diff;
             /* Make sure the length is correct */
             length = (length + (erase_size - 1)) & ~(erase_size - 1);
-            cy_smif_result = Cy_SMIF_MemEraseSector(SMIF0,
+            cy_en_smif_result = Cy_SMIF_MemEraseSector(SMIF0,
                                                   smifBlockConfig.memConfig[MEM_SLOT],
                                                   offset, length, &ota_QSPI_context);
         }
@@ -558,12 +554,17 @@ cy_rslt_t ota_smif_erase(uint32_t offset, uint32_t length)
         /* post-access to SMIF */
         POST_SMIF_ACCESS_TURN_ON_XIP;
     }
-    if (cy_smif_result != CY_SMIF_SUCCESS)
+    else
     {
-        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() FAILED cy_smif_result: 0x%lx\n", __func__, cy_smif_result);
+	return CY_RSLT_SERIAL_FLASH_ERR_NOT_INITED;
     }
 
-    return (cy_smif_result == CY_SMIF_SUCCESS) ? CY_RSLT_SUCCESS : CY_RSLT_TYPE_ERROR;
+    if (cy_en_smif_result != CY_SMIF_SUCCESS)
+    {
+        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() FAILED cy_en_smif_result: 0x%lx\n", __func__, cy_en_smif_result);
+    }
+
+    return (cy_en_smif_result == CY_SMIF_SUCCESS) ? CY_RSLT_SUCCESS : CY_RSLT_TYPE_ERROR;
 }
 
 uint32_t ota_smif_get_sector_start_address(uint32_t addr)

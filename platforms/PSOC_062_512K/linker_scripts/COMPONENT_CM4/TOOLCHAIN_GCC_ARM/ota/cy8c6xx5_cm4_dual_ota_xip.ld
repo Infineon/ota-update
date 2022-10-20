@@ -20,7 +20,7 @@ EXTERN(Reset_Handler)
 MEMORY
 {
     ram (rwx)      : ORIGIN = 0x08002000, LENGTH = 0x3D800
-    flash (rx)     : ORIGIN = 0x18000000 + FLASH_AREA_IMG_1_PRIMARY_START, LENGTH = FLASH_AREA_IMG_1_PRIMARY_SIZE
+    flash (rx)     : ORIGIN = 0x18000000 + FLASH_AREA_IMG_1_PRIMARY_START, LENGTH = 0x8000000
     em_eeprom (rx) : ORIGIN = 0x14000000, LENGTH = 0x8000
     xip (rx)       : ORIGIN = 0x18000000, LENGTH = 0x8000000
 }
@@ -43,6 +43,7 @@ SECTIONS
 
         /* Exclude external flash access code from running in external flash - added as RAM functions in appTextRam */
         EXCLUDE_FILE(
+                        *cy_syslib_ext.o
                         *ota_serial_flash.o
                         *flash_qspi.o
                         *lib_a-memset.o
@@ -52,8 +53,6 @@ SECTIONS
                         *cy_smif_sfdp.o
                         *cyhal_qspi.o
                         *cy_syslib.o
-                        *cy_syslib_gcc.o
-                        *cy_syslib_iar.o
                         *cycfg_qspi_memslot.o
                         *bootutil_misc.o
                      ) *(.text) *(.vfp11)
@@ -156,6 +155,7 @@ SECTIONS
         KEEP(*(.jcr*))
         . = ALIGN(4);
 
+        *cy_syslib_ext.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *ota_serial_flash.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *flash_qspi.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *lib_a-memset.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
@@ -165,8 +165,6 @@ SECTIONS
         *cy_smif_sfdp.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *cyhal_qspi.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *cy_syslib.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
-        *cy_syslib_gcc.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
-        *cy_syslib_iar.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *cycfg_qspi_memslot.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
         *bootutil_misc.o(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
 
@@ -223,12 +221,14 @@ SECTIONS
         KEEP(*(.cy_em_eeprom))
     } > em_eeprom
 
+/*
     .cy_xip :
     {
         __cy_xip_start = .;
         KEEP(*(.cy_xip))
         __cy_xip_end = .;
     } > xip
+*/
 
 }
 

@@ -69,15 +69,15 @@
  *
  * NOTE: Typically, this erases Secondary Slot
  *
- * @param[in]   ota_ptr - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   ctx_ptr - pointer to OTA agent context @ref cy_ota_context_t
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_OPEN_STORAGE
  */
-cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ota_ptr)
+cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ctx_ptr)
 {
     const struct flash_area *fap;
-    cy_ota_context_t *ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t *ctx = (cy_ota_context_t *)ctx_ptr;
     CY_OTA_CONTEXT_ASSERT(ctx);
     cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s()\n", __func__);
 
@@ -109,7 +109,7 @@ cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ota_ptr)
 /**
  * @brief Read from storage area
  *
- * @param[in]       ota_ptr     - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]       ctx_ptr     - pointer to OTA agent context @ref cy_ota_context_t
  * @param[in][out]  chunk_info  - pointer to chunk information, buffer pointer used for the read
  *
  * @return  CY_RSLT_SUCCESS
@@ -145,7 +145,7 @@ cy_rslt_t cy_ota_storage_read(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_i
 /**
  * @brief Write to storage area
  *
- * @param[in]   ctx         - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   ctx_ptr     - pointer to OTA agent context @ref cy_ota_context_t
  * @param[in]   chunk_info  - pointer to chunk information
  *
  * @return  CY_RSLT_SUCCESS
@@ -180,7 +180,7 @@ cy_rslt_t cy_ota_storage_write(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_
 /**
  * @brief Close Storage area for download
  *
- * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   ctx_ptr - pointer to OTA agent context @ref cy_ota_context_t
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_CLOSE_STORAGE
@@ -207,7 +207,7 @@ cy_rslt_t cy_ota_storage_close(cy_ota_context_ptr ctx_ptr)
 /**
  * @brief Verify download signature
  *
- * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   ctx_ptr - pointer to OTA agent context @ref cy_ota_context_t
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL

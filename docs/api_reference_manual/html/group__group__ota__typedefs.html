@@ -598,7 +598,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Maximum interval check time. </p>
-<p>This applies to: Initial wait after call to <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> before contacting server. Wait value after failing or completing an OTA download. </p>
+<p>This applies to: Initial wait after call to <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> before contacting server. Wait value after failing or completing an OTA download. </p>
 
 </div>
 </div>
@@ -1367,7 +1367,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The OTA context pointer. </p>
-<p>Returned from <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> and used for subsequent calls. </p>
+<p>Returned from <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> and used for subsequent calls. </p>
 
 </div>
 </div>
@@ -1585,7 +1585,7 @@ Enumerations</h2></td></tr>
 <p>When the callback reason is CY_OTA_REASON_STATE_CHANGE, the OTA Agent is about to call the function to act on the new state. The application callback function can return a value that affects the OTA Agent.</p>
 <p>There are a few state changes that will pick up changes made by the application and use those changes. </p><pre class="fragment"> cb_data-&gt;reason             - Reason for the callback.
  cb_data-&gt;cb_arg             - Argument provided to cy_ota_agent_start() params.
- cb_data-&gt;state              - CY_OTA_REASON_STATE_CHANGE:
+ cb_data-&gt;ota_agt_state      - CY_OTA_REASON_STATE_CHANGE:
                                  - Start of cy_ota_agent_state_t, about to call the default function.
                               - CY_OTA_REASON_SUCCESS:
                                  - Error function succeeded.

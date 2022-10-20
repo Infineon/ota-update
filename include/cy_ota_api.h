@@ -144,51 +144,51 @@ extern "C" {
 
 #define CY_RSLT_OTA_ERROR_BASE    CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_MIDDLEWARE_OTA_UPDATE, 0) /**< OTA Update error code base. */
 
-#define CY_RSLT_OTA_ERROR_UNSUPPORTED           (CY_RSLT_OTA_ERROR_BASE +  1) /**< Unsupported feature.                  */
-#define CY_RSLT_OTA_ERROR_GENERAL               (CY_RSLT_OTA_ERROR_BASE +  2) /**< Generic error.                        */
-#define CY_RSLT_OTA_ERROR_BADARG                (CY_RSLT_OTA_ERROR_BASE +  3) /**< Bad argument.                         */
-#define CY_RSLT_OTA_ERROR_OUT_OF_MEMORY         (CY_RSLT_OTA_ERROR_BASE +  4) /**< Out of Memory error.                  */
-#define CY_RSLT_OTA_ERROR_ALREADY_STARTED       (CY_RSLT_OTA_ERROR_BASE +  5) /**< OTA update already started.           */
-#define CY_RSLT_OTA_ERROR_MQTT_INIT             (CY_RSLT_OTA_ERROR_BASE +  6) /**< MQTT init failed.                     */
-#define CY_RSLT_OTA_ERROR_OPEN_STORAGE          (CY_RSLT_OTA_ERROR_BASE +  7) /**< Could not open local storage.         */
-#define CY_RSLT_OTA_ERROR_READ_STORAGE          (CY_RSLT_OTA_ERROR_BASE +  8) /**< Could not Read from local storage.    */
-#define CY_RSLT_OTA_ERROR_WRITE_STORAGE         (CY_RSLT_OTA_ERROR_BASE +  9) /**< Could not Write to local storage.     */
-#define CY_RSLT_OTA_ERROR_CLOSE_STORAGE         (CY_RSLT_OTA_ERROR_BASE + 10) /**< Close local storage error.            */
-#define CY_RSLT_OTA_ERROR_CONNECT               (CY_RSLT_OTA_ERROR_BASE + 11) /**< Connection to the server failed.      */
-#define CY_RSLT_OTA_ERROR_DISCONNECT            (CY_RSLT_OTA_ERROR_BASE + 12) /**< Server disconnect error.              */
-#define CY_RSLT_OTA_ERROR_REDIRECT              (CY_RSLT_OTA_ERROR_BASE + 13) /**< Redirection failure.                  */
-#define CY_RSLT_OTA_ERROR_SERVER_DROPPED        (CY_RSLT_OTA_ERROR_BASE + 14) /**< Broker/server disconnected.           */
-#define CY_RSLT_OTA_ERROR_MQTT_SUBSCRIBE        (CY_RSLT_OTA_ERROR_BASE + 15) /**< Broker/server Subscribe error.        */
-#define CY_RSLT_OTA_ERROR_MQTT_PUBLISH          (CY_RSLT_OTA_ERROR_BASE + 16) /**< Broker/Server Publish error.          */
-#define CY_RSLT_OTA_ERROR_GET_JOB               (CY_RSLT_OTA_ERROR_BASE + 17) /**< Failed to get the OTA Job document.   */
-#define CY_RSLT_OTA_ERROR_GET_DATA              (CY_RSLT_OTA_ERROR_BASE + 18) /**< Failed to get the OTA image.          */
-#define CY_RSLT_OTA_ERROR_NOT_A_HEADER          (CY_RSLT_OTA_ERROR_BASE + 19) /**< No header in the payload.             */
-#define CY_RSLT_OTA_ERROR_NOT_A_JOB_DOC         (CY_RSLT_OTA_ERROR_BASE + 20) /**< Job document is invalid.              */
-#define CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC     (CY_RSLT_OTA_ERROR_BASE + 21) /**< Malformed Job document.               */
-#define CY_RSLT_OTA_ERROR_WRONG_BOARD           (CY_RSLT_OTA_ERROR_BASE + 22) /**< Board in Job document does not match. */
-#define CY_RSLT_OTA_ERROR_INVALID_VERSION       (CY_RSLT_OTA_ERROR_BASE + 23) /**< Invalid version in Job or Packet.     */
-#define CY_RSLT_OTA_ERROR_VERIFY                (CY_RSLT_OTA_ERROR_BASE + 24) /**< Verify image failure.                 */
-#define CY_RSLT_OTA_ERROR_SENDING_RESULT        (CY_RSLT_OTA_ERROR_BASE + 25) /**< Sending result failed.                */
-#define CY_RSLT_OTA_ERROR_APP_RETURNED_STOP     (CY_RSLT_OTA_ERROR_BASE + 26) /**< Callback returned Stop OTA download.  */
-#define CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES  (CY_RSLT_OTA_ERROR_BASE + 27) /**< Number of retries exceeded.           */
-#define CY_RSLT_OTA_ERROR_TRANSPORT_UNSUPPORTED (CY_RSLT_OTA_ERROR_BASE + 28) /**< HTTP, MQTT or Bluetooth® not supported in this build. */
+#define CY_RSLT_OTA_ERROR_UNSUPPORTED           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  1) ) /**< Unsupported feature.                  */
+#define CY_RSLT_OTA_ERROR_GENERAL               ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  2) ) /**< Generic error.                        */
+#define CY_RSLT_OTA_ERROR_BADARG                ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  3) ) /**< Bad argument.                         */
+#define CY_RSLT_OTA_ERROR_OUT_OF_MEMORY         ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  4) ) /**< Out of Memory error.                  */
+#define CY_RSLT_OTA_ERROR_ALREADY_STARTED       ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  5) ) /**< OTA update already started.           */
+#define CY_RSLT_OTA_ERROR_MQTT_INIT             ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  6) ) /**< MQTT init failed.                     */
+#define CY_RSLT_OTA_ERROR_OPEN_STORAGE          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  7) ) /**< Could not open local storage.         */
+#define CY_RSLT_OTA_ERROR_READ_STORAGE          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  8) ) /**< Could not Read from local storage.    */
+#define CY_RSLT_OTA_ERROR_WRITE_STORAGE         ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE +  9) ) /**< Could not Write to local storage.     */
+#define CY_RSLT_OTA_ERROR_CLOSE_STORAGE         ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 10) ) /**< Close local storage error.            */
+#define CY_RSLT_OTA_ERROR_CONNECT               ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 11) ) /**< Connection to the server failed.      */
+#define CY_RSLT_OTA_ERROR_DISCONNECT            ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 12) ) /**< Server disconnect error.              */
+#define CY_RSLT_OTA_ERROR_REDIRECT              ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 13) ) /**< Redirection failure.                  */
+#define CY_RSLT_OTA_ERROR_SERVER_DROPPED        ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 14) ) /**< Broker/server disconnected.           */
+#define CY_RSLT_OTA_ERROR_MQTT_SUBSCRIBE        ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 15) ) /**< Broker/server Subscribe error.        */
+#define CY_RSLT_OTA_ERROR_MQTT_PUBLISH          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 16) ) /**< Broker/Server Publish error.          */
+#define CY_RSLT_OTA_ERROR_GET_JOB               ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 17) ) /**< Failed to get the OTA Job document.   */
+#define CY_RSLT_OTA_ERROR_GET_DATA              ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 18) ) /**< Failed to get the OTA image.          */
+#define CY_RSLT_OTA_ERROR_NOT_A_HEADER          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 19) ) /**< No header in the payload.             */
+#define CY_RSLT_OTA_ERROR_NOT_A_JOB_DOC         ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 20) ) /**< Job document is invalid.              */
+#define CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC     ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 21) ) /**< Malformed Job document.               */
+#define CY_RSLT_OTA_ERROR_WRONG_BOARD           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 22) ) /**< Board in Job document does not match. */
+#define CY_RSLT_OTA_ERROR_INVALID_VERSION       ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 23) ) /**< Invalid version in Job or Packet.     */
+#define CY_RSLT_OTA_ERROR_VERIFY                ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 24) ) /**< Verify image failure.                 */
+#define CY_RSLT_OTA_ERROR_SENDING_RESULT        ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 25) ) /**< Sending result failed.                */
+#define CY_RSLT_OTA_ERROR_APP_RETURNED_STOP     ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 26) ) /**< Callback returned Stop OTA download.  */
+#define CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES  ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 27) ) /**< Number of retries exceeded.           */
+#define CY_RSLT_OTA_ERROR_TRANSPORT_UNSUPPORTED ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 28) ) /**< HTTP, MQTT or Bluetooth® not supported in this build. */
 
 #if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
-#define CY_RSLT_OTA_ERROR_BLE_GENERAL           (CY_RSLT_OTA_ERROR_BASE + 32) /**< General Bluetooth® error.                     */
-#define CY_RSLT_OTA_ERROR_BLE_VERIFY            (CY_RSLT_OTA_ERROR_BASE + 33) /**< Bluetooth® Verification of download error.    */
-#define CY_RSLT_OTA_ERROR_BLE_GATT              (CY_RSLT_OTA_ERROR_BASE + 34) /**< Bluetooth® GATT event error.                  */
+#define CY_RSLT_OTA_ERROR_BLE_GENERAL           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 32) ) /**< General Bluetooth® error.                     */
+#define CY_RSLT_OTA_ERROR_BLE_VERIFY            ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 33) ) /**< Bluetooth® Verification of download error.    */
+#define CY_RSLT_OTA_ERROR_BLE_GATT              ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 34) ) /**< Bluetooth® GATT event error.                  */
 #endif
 
-#define CY_RSLT_OTA_ERROR_SMIF_TIMEOUT          (CY_RSLT_OTA_ERROR_BASE + 64) /**< SMIF timeout.             */
+#define CY_RSLT_OTA_ERROR_SMIF_TIMEOUT          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 64) ) /**< SMIF timeout.             */
 
 #define CY_RSLT_OTA_INFO_BASE    CY_RSLT_CREATE(CY_RSLT_TYPE_INFO, CY_RSLT_MODULE_MIDDLEWARE_OTA_UPDATE, 0)   /**< Base for informational results. */
-#define CY_RSLT_OTA_EXITING                     (CY_RSLT_OTA_INFO_BASE + 1) /**< OTA Agent exiting.                         */
-#define CY_RSLT_OTA_ALREADY_CONNECTED           (CY_RSLT_OTA_INFO_BASE + 2) /**< OTA already connected.                     */
-#define CY_RSLT_OTA_CHANGING_SERVER             (CY_RSLT_OTA_INFO_BASE + 3) /**< Data broker/server different from job.     */
+#define CY_RSLT_OTA_EXITING                     ( (cy_rslt_t)(CY_RSLT_OTA_INFO_BASE + 1) ) /**< OTA Agent exiting.                         */
+#define CY_RSLT_OTA_ALREADY_CONNECTED           ( (cy_rslt_t)(CY_RSLT_OTA_INFO_BASE + 2) ) /**< OTA already connected.                     */
+#define CY_RSLT_OTA_CHANGING_SERVER             ( (cy_rslt_t)(CY_RSLT_OTA_INFO_BASE + 3) ) /**< Data broker/server different from job.     */
 
-#define CY_RSLT_OTA_USE_JOB_FLOW                (CY_RSLT_SUCCESS          ) /**< Use Job flow for update.                 */
-#define CY_RSLT_OTA_USE_DIRECT_FLOW             (CY_RSLT_OTA_INFO_BASE + 4) /**< Use Direct flow for update.              */
-#define CY_RSLT_OTA_NO_UPDATE_AVAILABLE         (CY_RSLT_OTA_INFO_BASE + 5) /**< No OTA update on the server.             */
+#define CY_RSLT_OTA_USE_JOB_FLOW                ( (cy_rslt_t)(CY_RSLT_SUCCESS          ) ) /**< Use Job flow for update.                 */
+#define CY_RSLT_OTA_USE_DIRECT_FLOW             ( (cy_rslt_t)(CY_RSLT_OTA_INFO_BASE + 4) ) /**< Use Direct flow for update.              */
+#define CY_RSLT_OTA_NO_UPDATE_AVAILABLE         ( (cy_rslt_t)(CY_RSLT_OTA_INFO_BASE + 5) ) /**< No OTA update on the server.             */
 
 /** \} group_ota_macros */
 
@@ -686,7 +686,7 @@ typedef void *cy_ota_context_ptr;
  *
  *      cb_data->reason             - Reason for the callback.
  *      cb_data->cb_arg             - Argument provided to cy_ota_agent_start() params.
- *      cb_data->state              - CY_OTA_REASON_STATE_CHANGE:
+ *      cb_data->ota_agt_state      - CY_OTA_REASON_STATE_CHANGE:
  *                                      - Start of cy_ota_agent_state_t, about to call the default function.
  *                                   - CY_OTA_REASON_SUCCESS:
  *                                      - Error function succeeded.
@@ -829,7 +829,7 @@ typedef struct
     cy_ota_cb_reason_t          reason;         /**< Reason for the callback.                               */
     void                        *cb_arg;        /**< Argument passed when registering the callback.         */
 
-    cy_ota_agent_state_t        state;          /**< Current OTA Agent state.                               */
+    cy_ota_agent_state_t        ota_agt_state;  /**< Current OTA Agent state.                               */
     cy_rslt_t                   error;          /**< Current OTA Agent error status.                        */
 
     cy_ota_storage_write_info_t *storage;       /**< Pointer to a chunk of data to write.                   */
@@ -874,7 +874,7 @@ typedef struct
  *
  * The application can use the callback to override default OTA functions.
  *
- * @param[in] [out]   cb_data   Current information that Application callback can use/modify.
+ * @param[in,out]   cb_data   Current information that Application callback can use/modify.
  *
  * @return
  */
@@ -946,7 +946,7 @@ typedef struct
  *
  * @param[in]   network_params   Pointer to cy_ota_network_params_t.
  * @param[in]   agent_params     Pointer to cy_ota_agent_params_t.
- * @param[out]  ota_ptr          Handle to store the OTA Agent context structure pointer,
+ * @param[out]  ctx_ptr          Handle to store the OTA Agent context structure pointer,
  *                               Which is used for other OTA calls.
  *
  * @return  CY_RSLT_SUCCESS
@@ -954,19 +954,19 @@ typedef struct
  *          CY_RSLT_OTA_ERROR_ALREADY_STARTED
  *          CY_RSLT_OTA_ERROR
  */
-cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ota_ptr);
+cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ctx_ptr);
 
 /**
  * @brief Stop OTA Background Agent.
  *
  *  Stop the thread to monitor OTA updates and release resources.
  *
- * @param[in]   ota_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
+ * @param[in]   ctx_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_BADARG
  */
-cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ota_ptr);
+cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr);
 
 /**
  * @brief Check for OTA update availability and download update now.
@@ -976,36 +976,36 @@ cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ota_ptr);
  * set the timer to the current values after an OTA download cycle.
  *
  *
- * @param[in]   ota_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
+ * @param[in]   ctx_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_BADARG
  *          CY_RSLT_OTA_ERROR_ALREADY_STARTED
  */
-cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ota_ptr);
+cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr);
 
 /**
  * @brief Open the storage area for download.
  *
  * NOTE: Typically, this erases the secondary slot.
  *
- * @param[in]   ota_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
+ * @param[in]   ctx_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_OPEN_STORAGE
  */
-cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ota_ptr);
+cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ctx_ptr);
 
 /**
  * @brief Read from storage area
  *
- * @param[in]       ota_ptr     Pointer to OTA agent context @ref cy_ota_context_t
- * @param[in][out]  chunk_info  Pointer to chunk information, buffer pointer used for the read
+ * @param[in]       ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]       chunk_info  Pointer to chunk information, buffer pointer used for the read
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_READ_STORAGE
  */
-cy_rslt_t cy_ota_storage_read(cy_ota_context_ptr ota_ptr, cy_ota_storage_write_info_t *chunk_info);
+cy_rslt_t cy_ota_storage_read(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t *chunk_info);
 
 /**
  * @brief Write data into the storage area.
@@ -1014,13 +1014,13 @@ cy_rslt_t cy_ota_storage_read(cy_ota_context_ptr ota_ptr, cy_ota_storage_write_i
  *       For writing data from a TAR archive, use cy_ota_write_incoming_data_block(),
  *       which checks for TAR archives and separates the data properly.
  *
- * @param[in]   ota_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
+ * @param[in]   ctx_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
  * @param[in]   chunk_info      Pointer to the chunk information.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_WRITE_STORAGE
  */
-cy_rslt_t cy_ota_storage_write(cy_ota_context_ptr ota_ptr, cy_ota_storage_write_info_t *chunk_info);
+cy_rslt_t cy_ota_storage_write(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t *chunk_info);
 
 /**
  * @brief Determine if tar or non-tar and call correct write function
@@ -1028,13 +1028,13 @@ cy_rslt_t cy_ota_storage_write(cy_ota_context_ptr ota_ptr, cy_ota_storage_write_
  * NOTE: This function handles both TAR archive and non-TAR archive files.
  *       This function is used by Pull Mode for MQTT and HTTP
  *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   chunk_info              Pointer to chunk information
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ota_ptr, cy_ota_storage_write_info_t *chunk_info);
+cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t * const chunk_info);
 
 #if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
 
@@ -1100,22 +1100,22 @@ cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ota_ptr);
 /**
  * @brief Close the storage area for download.
  *
- * @param[in]   ota_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
+ * @param[in]   ctx_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_CLOSE_STORAGE
  */
-cy_rslt_t cy_ota_storage_close(cy_ota_context_ptr ota_ptr);
+cy_rslt_t cy_ota_storage_close(cy_ota_context_ptr ctx_ptr);
 
 /**
  * @brief Verify the download signature on the whole OTA image.
  *
- * @param[in]   ota_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
+ * @param[in]   ctx_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_VERIFY
  */
-cy_rslt_t cy_ota_storage_verify(cy_ota_context_ptr ota_ptr);
+cy_rslt_t cy_ota_storage_verify(cy_ota_context_ptr ctx_ptr);
 
 /**
  * @brief The application has validated the new OTA image.
@@ -1274,12 +1274,12 @@ void cy_ota_set_log_level(CY_LOG_LEVEL_T level);
  * OTA Agent is in CY_OTA_STATE_AGENT_WAITING because it will interrupt an OTA cycle.
  *
  * @param[in]  ota_ptr          Pointer to the OTA Agent context returned from @ref cy_ota_agent_start();
- * @param[out] state            Current OTA State.
+ * @param[out] ota_state        Current OTA State.
  *
  * @result  CY_RSLT_SUCCESS     sets @ref cy_ota_agent_state_t
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_get_state(cy_ota_context_ptr ota_ptr, cy_ota_agent_state_t *state);
+cy_rslt_t cy_ota_get_state(cy_ota_context_ptr ota_ptr, cy_ota_agent_state_t *ota_state);
 
 /**
  * @brief Get the last OTA error.
@@ -1306,11 +1306,11 @@ const char *cy_ota_get_error_string(cy_rslt_t error);
  *
  * This can be called at any time.
  *
- * @param[in]   state      @ref cy_ota_agent_state_t
+ * @param[in]   state_value      @ref cy_ota_agent_state_t
  *
  * @result  Pointer to the string (NULL for unknown state).
  */
-const char *cy_ota_get_state_string(cy_ota_agent_state_t state);
+const char *cy_ota_get_state_string(cy_ota_agent_state_t state_value);
 
 /**
  * @brief Get a string representation for the callback reason.

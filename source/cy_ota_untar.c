@@ -24,15 +24,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <FreeRTOS.h>
-
-#if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-/* lwIP header files */
-#include <lwip/tcpip.h>
-#include <lwip/api.h>
-#include "ip4_addr.h"
-#endif
-
 #include "cy_ota_api.h"
 #include "cy_ota_internal.h"
 
@@ -97,14 +88,7 @@
 /**
  * @brief Context structure for parsing the tar file
  */
-cy_untar_context_t  ota_untar_context;
-
-/**
- * @brief FLASH write block
- * This is used if a block is < Block size to satisfy requirements
- * of flash_area_write()
- */
-static uint8_t block_buffer[CY_FLASH_SIZEOF_ROW];
+static cy_untar_context_t  ota_untar_context;
 
 /***********************************************************************
  *
@@ -131,10 +115,17 @@ static uint8_t block_buffer[CY_FLASH_SIZEOF_ROW];
  */
 static cy_untar_result_t write_data_to_flash( const struct flash_area *fap,
         uint32_t offset,
-        uint8_t * const source,
+        uint8_t *source,
         uint32_t size)
 {
-    uint32_t bytes_to_write;
+	/**
+	 * This is used if a block is < Block size to satisfy requirements
+	 * of flash_area_write(). "static" so it is not on the stack.
+	 */
+	static uint8_t block_buffer[CY_FLASH_SIZEOF_ROW];
+
+
+	uint32_t bytes_to_write;
     uint32_t curr_offset;
     uint8_t *curr_src;
 
@@ -144,7 +135,7 @@ static cy_untar_result_t write_data_to_flash( const struct flash_area *fap,
 
     cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() write_data_to_flash() fap_off:0x%08x   off: 0x%08x  curr_off: 0x%08x\n", __func__, fap->fa_off, offset, curr_offset);
 
-    while (bytes_to_write > 0)
+    while (bytes_to_write > 0x0U)
     {
         uint32_t chunk_size = bytes_to_write;
         if (chunk_size > CY_FLASH_SIZEOF_ROW)
@@ -153,7 +144,7 @@ static cy_untar_result_t write_data_to_flash( const struct flash_area *fap,
         }
 
         /* Is the chunk_size smaller than a flash row? */
-        if ( (chunk_size % CY_FLASH_SIZEOF_ROW) != 0)
+        if ( (chunk_size % CY_FLASH_SIZEOF_ROW) != 0x0U)
         {
             uint32_t row_offset;
             uint32_t row_base;
@@ -215,7 +206,7 @@ static cy_untar_result_t ota_untar_write_callback(cy_untar_context_ptr ctxt,
                                    uint32_t chunk_size,
                                    void *cb_arg)
 {
-    int image = 0;
+    uint16_t image = 0;
     const struct flash_area *fap;
 
     if ( (ctxt == NULL) || (buffer == NULL) )
@@ -226,7 +217,7 @@ static cy_untar_result_t ota_untar_write_callback(cy_untar_context_ptr ctxt,
     if ( strncmp(ctxt->files[file_index].type, CY_FILE_TYPE_SPE, strlen(CY_FILE_TYPE_SPE)) == 0)
     {
         image = 1;  /* The TFM code, cm0 */
-        if (file_offset + chunk_size > ctxt->files[file_index].size)
+        if ( (file_offset + chunk_size) > ctxt->files[file_index].size)
         {
 		chunk_size = ctxt->files[file_index].size - file_offset;
         }
@@ -234,7 +225,7 @@ static cy_untar_result_t ota_untar_write_callback(cy_untar_context_ptr ctxt,
     else if ( strncmp(ctxt->files[file_index].type, CY_FILE_TYPE_NSPE, strlen(CY_FILE_TYPE_NSPE)) == 0)
     {
         image = 0;  /* The application code, cm4 */
-        if (file_offset + chunk_size > ctxt->files[file_index].size)
+        if ( (file_offset + chunk_size) > ctxt->files[file_index].size)
         {
 		chunk_size = ctxt->files[file_index].size - file_offset;
         }
@@ -329,13 +320,13 @@ cy_untar_result_t cy_ota_untar_set_pending(void)
 /**
  * @brief Determine if tar or non-tar and call correct write function
  *
- * @param[in]   ota_ptr         Pointer to OTA agent context
+ * @param[in]   ctx_ptr         Pointer to OTA agent context
  * @param[in]   chunk_info      Pointer to chunk information
  *
  * @return  CY_UNTAR_SUCCESS
  *          CY_UNTAR_ERROR
  */
-cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t *chunk_info)
+cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t * const chunk_info)
 {
     cy_ota_context_t *ctx = (cy_ota_context_t *)ctx_ptr;
 
@@ -379,7 +370,7 @@ cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ctx_ptr, cy_ota_st
                 return CY_RSLT_OTA_ERROR_WRITE_STORAGE;
             }
             /* Yield for a bit */
-            vTaskDelay(1);
+            cy_rtos_delay_milliseconds(1);
         }
 
         /* with the tarball we get a version - check if it is > current so we can bail early */

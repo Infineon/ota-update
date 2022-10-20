@@ -1,9 +1,11 @@
 var searchData=
 [
-  ['name',['name',['../structustar__header__t.html#ac17cf92e0b804a003eee900e2321bc6a',1,'ustar_header_t::name()'],['../structcy__ota__file__info__t.html#a2e8934999aa4c06e18163853846b51c7',1,'cy_ota_file_info_t::name()']]],
-  ['notification_5fresponse_5fno_5fupdates',['NOTIFICATION_RESPONSE_NO_UPDATES',['../group__group__ota__typedefs.html#ga679088099bc7020dd2e19df18c507fc0',1,'cy_ota_api.h']]],
-  ['notification_5fresponse_5fresult_5freceived',['NOTIFICATION_RESPONSE_RESULT_RECEIVED',['../group__group__ota__typedefs.html#gac89bcf834e94d6fc72c60928ace94e4b',1,'cy_ota_api.h']]],
-  ['notification_5fresponse_5fupdates',['NOTIFICATION_RESPONSE_UPDATES',['../group__group__ota__typedefs.html#gab2b5ce5242ba117187728ac8d136b8e2',1,'cy_ota_api.h']]],
-  ['num_5ffiles',['num_files',['../structcy__untar__context__t.html#a8ee4b7ed02b7f8b211dcb10969cbb6d4',1,'cy_untar_context_t']]],
-  ['num_5ffiles_5fin_5fjson',['num_files_in_json',['../structcy__untar__context__t.html#a901d9f8ffbf5202704f140197e823a04',1,'cy_untar_context_t']]]
+  ['ota_20agent_20callback',['OTA Agent Callback',['../group__group__ota__callback.html',1,'']]],
+  ['ota_20functions',['OTA Functions',['../group__group__ota__functions.html',1,'']]],
+  ['ota_20macros',['OTA Macros',['../group__group__ota__macros.html',1,'']]],
+  ['ota_20structures',['OTA Structures',['../group__group__ota__structures.html',1,'']]],
+  ['ota_20typedefs',['OTA Typedefs',['../group__group__ota__typedefs.html',1,'']]],
+  ['over_20the_20air_20v2_2e0_2e0_20overview',['Over The Air v2.0.0 Overview',['../index.html',1,'']]],
+  ['offset',['offset',['../structcy__ota__storage__write__info__t.html#a0405b3806c0de934f5f5f55ac693c184',1,'cy_ota_storage_write_info_t']]],
+  ['ota_5fagt_5fstate',['ota_agt_state',['../structcy__ota__cb__struct__t.html#afdc59f29135abdca499c3da7183df1b7',1,'cy_ota_cb_struct_t']]]
 ];

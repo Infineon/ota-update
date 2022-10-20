@@ -449,7 +449,7 @@ cy_en_smif_status_t qspi_init_sfdp(uint32_t smif_id)
         break;
 #endif
     default:
-        stat = -1;
+        stat = CY_SMIF_BAD_PARAM;
         break;
     }
 

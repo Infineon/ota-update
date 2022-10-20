@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['add_5fquotes',['ADD_QUOTES',['../group__group__ota__typedefs.html#gaa98a26ac37e321f0747f95198223e0db',1,'cy_ota_api.h']]],
-  ['already_5fparsed_5fcomponents_5fjson',['already_parsed_components_json',['../structcy__untar__context__t.html#a045f0e366fdc9f1ad408b847e3daf189',1,'cy_untar_context_t']]]
+  ['buffer',['buffer',['../structcy__ota__storage__write__info__t.html#af66dba2bcbb117c85bcf20fa0357c525',1,'cy_ota_storage_write_info_t']]],
+  ['bytes_5fprocessed',['bytes_processed',['../structcy__untar__context__t.html#a2d24086b0b996d9c13b9b866689fc9cb',1,'cy_untar_context_t']]],
+  ['bytes_5fwritten',['bytes_written',['../structcy__ota__cb__struct__t.html#ab43108a89dadf59dcad71d4b4c75411d',1,'cy_ota_cb_struct_t']]]
 ];

@@ -234,7 +234,7 @@ int psoc6_flash_write_hal(uint8_t data[],
                 {
                     writeBufferPointer[dstIndex] = data[srcIndex];
                     /* Detect that row programming is required */
-                    if((rowsNotEqual == 0u) && (CY_GET_REG8(CY_FLASH_BASE + byteOffset) != data[srcIndex]))
+                    if((rowsNotEqual == 0u) && ( (CY_GET_REG8(CY_FLASH_BASE + byteOffset) != data[srcIndex]) ) )
                     {
                         rowsNotEqual = 1u;
                     }

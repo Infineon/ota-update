@@ -15,7 +15,7 @@ The location of the flash slots is based on the flash available in the system. T
 
 In order to get these areas to match, we use a common JSON formatted file to define the flash areas. When building MCUBootApp, use the same JSON file as is used for building the User Application. The python script \<ota-update\>/scripts/flashmap.py is executed as part of the build. It will check for some common mistakes in JSON files.
 
-All flash erase operations will erase full sectors at a time. PSoC™ 6 MCUs have internal flash that use 512 byte sector sizes. External flash devices will have different sector sizes, from 4k to 256k. If you are going to modify a flash layout, be aware of the sector sizes.
+All flash erase operations (ex: erasing a slot for a new download) will erase full sectors at a time. PSoC™ 6 MCUs have internal flash that use 512 byte sector sizes. External flash devices will have different sector sizes, from 4k to 256k. If you are going to modify a flash layout, be aware of the sector sizes.
 
 ## 2. Internal Flash Only Layout
 
@@ -24,7 +24,7 @@ When the device only has internal flash, all the flash areas must reside in the 
 Example CY8CPROTO-062-4343W:
 
 **Internal Flash Layout for 2M internal flash**
-</br>(\<ota-update\>/configs/flashmap/psoc_62_2m_int_swap_single.json)
+</br>(\<ota-update\>/configs/flashmap/psoc62_2m_int_swap_single.json)
 </br>Note: Internal flash sector size is 512 bytes.
 | Address Range | Size | Description |
 | --------------|------| -----------|
@@ -45,7 +45,7 @@ When the device has both internal and external flash, the Secondary Slot and the
 Example  CY8CPROTO-062S3-4343W:
 
 **Internal Flash  + External Flash Layout for 512k Internal Flash**
-</br>(\<ota-update\>/configs/flashmap/psoc_62_512k_ext_swap_single.json)
+</br>(\<ota-update\>/configs/flashmap/psoc62_512k_ext_swap_single.json)
 
 **Internal Flash**
 </br>Note: Internal flash sector size is 512 bytes.
@@ -73,7 +73,7 @@ When the device has both internal and external flash, and the Primary Slot can r
 Example  CY8CPROTO-062S3-4343W:
 
 **Internal Flash  + External Flash Layout for 512k Internal Flash using XIP**
-</br>(\<ota-update\>/configs/flashmap/psoc_62_512k_xip_swap_single.json)
+</br>(\<ota-update\>/configs/flashmap/psoc62_512k_xip_swap_single.json)
 
 **Internal Flash**
 </br>Note: Internal flash sector size is 512 bytes.

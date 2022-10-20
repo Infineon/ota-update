@@ -24,8 +24,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <FreeRTOS.h>
-
 #include "cy_ota_api.h"
 
 #ifdef COMPONENT_OTA_BLUETOOTH
@@ -76,19 +74,20 @@ extern Point ecdsa256_public_key;
 static uint32_t crc32_Update( uint32_t prev_crc32, const uint8_t* buffer, uint16_t buffer_length )
 {
     uint32_t crc32 = ~prev_crc32;
-    int i;
+    uint16_t i;
 
     for ( i = 0; i < buffer_length; i++ )
     {
-        int j;
+	uint16_t j;
 
-        crc32 ^= *buffer++;
+        crc32 ^= *buffer;
+        buffer++;
 
         for ( j = 0; j < 8; j++ )
         {
-            if ( crc32 & 0x1 )
+            if ( crc32 & (uint32_t)0x1U )
             {
-                crc32 = ( crc32 >> 1 ) ^ 0xEDB88320;
+                crc32 = ( crc32 >> 1 ) ^ 0xEDB88320U;
             }
             else
             {
@@ -111,7 +110,7 @@ static uint32_t crc32_Update( uint32_t prev_crc32, const uint8_t* buffer, uint16
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_ble_validate_network_params(cy_ota_network_params_t *network_params)
+cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *network_params)
 {
 	cy_rslt_t result = CY_RSLT_SUCCESS;
 
@@ -140,16 +139,20 @@ static wiced_bt_gatt_status_t app_bt_upgrade_send_notification(uint16_t conn_id,
                                                                uint16_t val_len,
                                                                uint8_t *p_val)
 {
-    wiced_bt_gatt_status_t status = WICED_BT_GATT_ERROR;
-    if (bt_config_descriptor & GATT_CLIENT_CONFIG_NOTIFICATION)     /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
+    wiced_bt_gatt_status_t status = (wiced_bt_gatt_status_t)WICED_BT_GATT_ERROR;
+    if (bt_config_descriptor & (uint16_t)GATT_CLIENT_CONFIG_NOTIFICATION)     /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
     {
-        status = wiced_bt_gatt_server_send_notification(conn_id, attr_handle, val_len, p_val, NULL);    //bt_notify_buff is not allocated, no need to keep track of it w/context
+        status = wiced_bt_gatt_server_send_notification(conn_id, attr_handle, val_len, p_val, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
         cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Notification sent conn_id: 0x%x (%d) handle: 0x%x (%d) val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, attr_handle, val_len, *p_val);
     }
-    else if (bt_config_descriptor & GATT_CLIENT_CONFIG_INDICATION)  /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
+    else if (bt_config_descriptor & (uint16_t)GATT_CLIENT_CONFIG_INDICATION)  /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
     {
-        status = wiced_bt_gatt_server_send_indication(conn_id, attr_handle, val_len, p_val, NULL);    //bt_notify_buff is not allocated, no need to keep track of it w/context
+        status = wiced_bt_gatt_server_send_indication(conn_id, attr_handle, val_len, p_val, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
         cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Indication sent conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, val_len, *p_val);
+    }
+    else
+    {
+        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Unknown BT descriptor 0x%x for conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, bt_config_descriptor, conn_id, conn_id, attr_handle, val_len, *p_val);
     }
     if (status != WICED_BT_SUCCESS)
     {
@@ -226,7 +229,7 @@ static void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8
         save_sig_offset = (size_in - add_to_signature_len);
 
         cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() saved area offset: 0x%x save_sig_offset: 0x%x add_to_signature_len : 0x%x\n", __func__, ota_ctx->ble.sig_offset, save_sig_offset, add_to_signature_len );
-//        cy_ota_print_data((const char *)&buffer[save_sig_offset], add_to_signature_len);
+/* keep for debugging        cy_ota_print_data((const char *)&buffer[save_sig_offset], add_to_signature_len); */
 
         for ( i = 0; i < add_to_signature_len; i++)
         {
@@ -235,7 +238,7 @@ static void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8
         ota_ctx->ble.sig_offset += add_to_signature_len;
         size -= add_to_signature_len;
         cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() SIG DATA: ota_ctx->ble.sig_offset:  0x%x\n", __func__, ota_ctx->ble.sig_offset );
-//        cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN);
+/* keep for debugging        cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
     }
 
     if (size > 0)
@@ -261,7 +264,7 @@ static cy_rslt_t cy_ota_ble_secure_signature_verify(cy_ota_context_ptr ctx_ptr)
     mbedtls_sha256_finish_ret(&ota_ctx->ble.bt_sha2_ctx, hash);
 
     cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "VERIFY DATA\n");
-//    cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN);
+/*    cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
 
     if (ota_ecdsa_verify(hash, ota_ctx->ble.signature, &ecdsa256_public_key) != 0)
     {
@@ -275,24 +278,24 @@ static cy_rslt_t cy_ota_ble_secure_signature_verify(cy_ota_context_ptr ctx_ptr)
 /**
  * @brief Prepare for OTA Bluetooth® Download
  *
- * @param[in]   ota_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   bt_conn_id  Connection id
  * @param[in]   bt_config_descriptor    configuration (notification vs. indication )
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_GATT
  */
-cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ota_ptr, uint16_t bt_conn_id, uint16_t bt_config_descriptor)
+cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr, uint16_t bt_conn_id, uint16_t bt_config_descriptor)
 {
     wiced_bt_gatt_status_t  status;
     cy_rslt_t               result;
-    cy_ota_context_t        *ota_ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t        *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s()\n", __func__);
 
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    cy_ota_ble_secure_signature_init(ota_ptr);
+    cy_ota_ble_secure_signature_init(ctx_ptr);
 #endif
     ota_ctx->ble.file_bytes_written = 0;
 
@@ -304,10 +307,6 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ota_ptr, uint16_t bt_co
         return CY_RSLT_OTA_ERROR_BLE_GATT;
     }
     ota_ctx->ble.bt_notify_buff = CY_OTA_UPGRADE_STATUS_OK;
-    if (result != CY_RSLT_SUCCESS)
-    {
-        ota_ctx->ble.bt_notify_buff = CY_OTA_UPGRADE_STATUS_BAD;
-    }
     status = app_bt_upgrade_send_notification(bt_conn_id, bt_config_descriptor, HDLC_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_VALUE, 1, &ota_ctx->ble.bt_notify_buff);
     if (status != WICED_BT_GATT_SUCCESS)
     {
@@ -321,7 +320,7 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ota_ptr, uint16_t bt_co
 /**
  * @brief Bluetooth® Download starting
  *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   p_req                   Pointer to gatt event data structure
  * @param[in]   bt_conn_id              Connection id
  * @param[in]   bt_config_descriptor    configuration (notification vs. indication )
@@ -330,13 +329,13 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ota_ptr, uint16_t bt_co
  *              CY_RSLT_OTA_ERROR_BADARG
  *              CY_RSLT_OTA_ERROR_WRITE_STORAGE
  */
-cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id, uint16_t bt_config_descriptor)
+cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id, uint16_t bt_config_descriptor)
 {
-    wiced_bt_gatt_write_req_t   *p_write_req;
+    const wiced_bt_gatt_write_req_t *p_write_req;
     wiced_bt_gatt_status_t          status;
-    uint32_t                    total_size;
+    uint32_t                        total_size;
 
-    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     CY_ASSERT(p_req != NULL);
 
@@ -373,20 +372,20 @@ cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_da
 /**
  * @brief Bluetooth® OTA data write
  *
- * @param[in]   ota_ptr     - pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr     - pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   p_req       - ptr to gatt event data structure
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BADARG
  *              CY_RSLT_OTA_ERROR_WRITE_STORAGE
  */
-cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req)
+cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_event_data_t *p_req)
 {
-    wiced_bt_gatt_write_req_t       *p_write_req;
+    const wiced_bt_gatt_write_req_t *p_write_req;
     cy_ota_storage_write_info_t     chunk_info;
     cy_rslt_t                       result;
     uint32_t                        full_write_size;
-    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     CY_ASSERT(p_req != NULL);
@@ -395,7 +394,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_ev
     p_write_req = &p_req->attribute_request.data.write_req;
 
     /* prepare to call ota library write routine */
-    memset(&chunk_info, 0x00, sizeof(chunk_info));
+    (void)memset(&chunk_info, 0x00, sizeof(chunk_info));
     chunk_info.buffer = p_write_req->p_val;
     chunk_info.offset = p_write_req->offset;
     chunk_info.size   = p_write_req->val_len;
@@ -405,7 +404,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_ev
      * We also handle the offset handed in, in case we are pointing into a buffer
      * rather than the start of the buffer
      */
-    chunk_info.buffer += chunk_info.offset;   /* Handle offset into the buffer given us */
+    chunk_info.buffer = &chunk_info.buffer[chunk_info.offset];   /* Handle offset into the buffer given us */
     chunk_info.offset = ota_ctx->last_offset;      /* Need to set the offset into Secondary Slot properly for the write */
 
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_STORAGE_WRITE);
@@ -419,7 +418,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_ev
 
 	if (chunk_info.size > 0)
 	{
-		result = cy_ota_write_incoming_data_block(ota_ptr, &chunk_info);
+		result = cy_ota_write_incoming_data_block(ctx_ptr, &chunk_info);
 		if (result != CY_RSLT_SUCCESS)
 		{
 			cy_rtos_setbits_event(&ota_ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_FAIL, 0);
@@ -441,14 +440,14 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_ev
     ota_ctx->last_offset           += chunk_info.size;      /* Keep track of offset into the Slot   */
     if (ota_ctx->total_image_size > 0)
     {
-        ota_ctx->ble.percent = (100 * ota_ctx->total_bytes_written) / ota_ctx->total_image_size;
+        ota_ctx->ble.percent = ((uint32_t)100 * ota_ctx->total_bytes_written) / ota_ctx->total_image_size;
     }
 
     /* update crc or secure signature as we pull in the data */
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    cy_ota_ble_secure_signature_update(ota_ptr, p_write_req->p_val, p_write_req->offset, p_write_req->val_len);
+    cy_ota_ble_secure_signature_update(ctx_ptr, p_write_req->p_val, p_write_req->offset, p_write_req->val_len);
 #else
-    ota_ctx->ble.crc32 = crc32_Update(ota_ctx->ble.crc32, p_write_req->p_val + p_write_req->offset, p_write_req->val_len);
+    ota_ctx->ble.crc32 = crc32_Update(ota_ctx->ble.crc32, (const uint8_t*)((uint32_t)p_write_req->p_val + p_write_req->offset), p_write_req->val_len);
 #endif
     ota_ctx->ble.file_bytes_written += chunk_info.size;
 
@@ -461,18 +460,18 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_ev
 /**
  * @brief Bluetooth® OTA Verify download
  *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   p_req                   Pointer to gatt event data structure
  * @param[in]   bt_conn_id              Connection id
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_VERIFY
  */
-cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id)
+cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id)
 {
     wiced_bt_gatt_status_t          status;
     cy_rslt_t                       result = CY_RSLT_SUCCESS;
-    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
 
@@ -489,7 +488,7 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_e
     ota_ctx->ble.bt_notify_buff = CY_OTA_UPGRADE_STATUS_OK;
 
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    result = cy_ota_ble_secure_signature_verify(ota_ptr);
+    result = cy_ota_ble_secure_signature_verify(ctx_ptr);
     if (result == CY_RSLT_SUCCESS)
     {
         cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "     Bluetooth(r) Secure Signature Verification Succeeded!\n");
@@ -541,7 +540,7 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_e
 
     /* Send indication that we are done & verified or not */
     status = wiced_bt_gatt_server_send_indication(bt_conn_id, HDLC_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_VALUE,
-                                                    1, &ota_ctx->ble.bt_notify_buff, NULL);    //bt_notify_buff is not allocated, no need to keep track of it w/context
+                                                    1, &ota_ctx->ble.bt_notify_buff, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
     if (status != WICED_BT_GATT_SUCCESS)
     {
         cy_log_msg(CYLF_OTA, CY_LOG_INFO, "          app_bt_upgrade_send_indication() failed: 0x%lx\n", status);
@@ -558,14 +557,14 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_e
 /**
  * @brief Abort Bluetooth® OTA download
  *
- * @param[in]   ota_ptr     - pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   ctx_ptr     - pointer to OTA agent context @ref cy_ota_context_ptr
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_XXXX
  */
-cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ota_ptr)
+cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr)
 {
-    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ota_ptr;
+    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s(): Set state\n", __func__);

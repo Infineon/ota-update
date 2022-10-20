@@ -6,13 +6,24 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v2.0.0
+
+- Support for ModusToolbox 3.0 build infrastructure
+  - ota-update v2.0.0 works with ModusToolbox 3.0 and is not backwards compatible with ModusToolbox 2.4.
+  - ota-update v1.0.0 works with ModusToolbox 2.4 and replaces anycloud-ota (all versions).
+- New support
+    - CY8CPROTO-062S3-4343W WiFi and BT updates using XIP for all Toolchains.
+- New Support for these devices:
+    - CY8CKIT-062-BLE
+    - CY8CPROTO-063-BLE
+    - CYBLE-416045-EVAL
+
 ### v1.0.0
 
 - New ota-update library
-
-- This ota-update v1.0.0 replaces AnyCloud-ota (all versions). Anycloud-ota vx.x.x will be depricated soon.
+- This ota-update v1.0.0 replaces AnyCloud-ota (all versions).
+- The anycloud-ota vx.x.x library will be depricated soon.
 - ota-update v1.0.0 works with MTB 2.4
- 
 - Legacy support for these devices:
     - CY8CKIT-062S2-43012
     - CY8CKIT-064B0S2-4343W

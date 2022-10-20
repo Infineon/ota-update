@@ -5,9 +5,9 @@
   "Product":"Easy Widgit",
   "SerialNumber":"ABC213450001",
   "Board":"CY8CPROTO_062_4343W",
-  "Version":"1.6.0",
+  "Version": "2.0.0",
   "Connection":"MQTT",
-  "Broker":"",
-  "Port":"8883",
+  "Broker": "",
+  "Port": "",
   "UniqueTopicName":"replace"
 }

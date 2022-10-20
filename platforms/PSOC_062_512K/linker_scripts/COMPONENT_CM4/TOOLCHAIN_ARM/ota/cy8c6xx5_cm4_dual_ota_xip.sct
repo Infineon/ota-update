@@ -137,7 +137,7 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
         cy_smif_memslot.o (+RO, +RW, +ZI)
         cy_smif_sfdp.o (+RO, +RW, +ZI)
         cy_syslib.o (+RO, +RW, +ZI)
-        cy_syslib_mdk.o (+RO, +RW, +ZI)
+        cy_syslib_ext.o (+RO, +RW, +ZI)
         cycfg_qspi_memslot.o (+RO, +RW, +ZI)
     }
 

@@ -51,6 +51,16 @@
 ; --pd=-DFLASH_AREA_IMG_1_PRIMARY_SIZE=XXXX
 ; --pd=-DMCUBOOT_HEADER_SIZE=XXXX
 
+#define MCUBOOT_FLASH_SIZE      0x20000
+#define MCUBOOT_RAM_SIZE        0x00800
+
+; By default, the COMPONENT_CM0P_SLEEP prebuilt image is used for the CM0p core.
+; More about CM0+ prebuilt images, see here:
+; https://github.com/cypresssemiconductorco/psoc6cm0p
+; The size of the Cortex-M0+ application flash image
+#define FLASH_CM0P_SIZE         0x00020000
+#define CM0P_RAM_SIZE           0x00003000
+
 ; The following defines control RAM and flash memory allocation for the CM4 core.
 ; You can change the memory allocation by editing RAM and Flash defines.
 ; Note that 2 KB of RAM (at the end of the SRAM) are reserved for system use.
@@ -58,11 +68,13 @@
 ; Your changes must be aligned with the corresponding defines for CM0+ core in 'xx_cm0plus.scat',
 ; where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.scat'.
 ; RAM
-#define RAM_START               0x08020800
-#define RAM_SIZE                0x000DF000
+#define RAM_START               (0x08000000 + MCUBOOT_RAM_SIZE + CM0P_RAM_SIZE)
+#define RAM_SIZE                0x00042000
 ; Flash
-#define FLASH_START             (0x10000000 + FLASH_AREA_IMG_1_PRIMARY_START + MCUBOOT_HEADER_SIZE)
-#define FLASH_SIZE              (FLASH_AREA_IMG_1_PRIMARY_SIZE) ; Our code must fit into a single slot - header
+#define FLASH_START             0x10000000
+#define FLASH_CM0P_START        (FLASH_START + MCUBOOT_FLASH_SIZE + MCUBOOT_HEADER_SIZE)
+#define FLASH_CM4_START         (FLASH_CM0P_START + FLASH_CM0P_SIZE)
+#define FLASH_SIZE              (FLASH_AREA_IMG_1_PRIMARY_SIZE)
 
 ; Size of the stack section at the end of CM4 SRAM
 #define STACK_SIZE              0x00001000
@@ -104,15 +116,25 @@
 #define EFUSE_START             0x90700000
 #define EFUSE_SIZE              0x100000
 
+
+; Cortex-M0+ application flash image area
+LR_IROM FLASH_CM0P_START FLASH_CM0P_SIZE
+{
+    .cy_m0p_image +0 FLASH_CM0P_SIZE
+    {
+        * (.cy_m0p_image)
+    }
+}
+
 ; Cortex-M4 application flash area
-LOAD_REGION_1 FLASH_START FLASH_SIZE
+LR_IROM1 FLASH_CM4_START (FLASH_SIZE - FLASH_CM0P_SIZE)
 {
      ER_FLASH_VECTORS +0
     {
         * (RESET, +FIRST)
     }
 
-    ER_FLASH_CODE +0
+    ER_FLASH_CODE +0 FIXED
     {
         * (InRoot$$Sections)
         * (+RO)
@@ -123,8 +145,6 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
         * (RESET_RAM, +FIRST)
     }
 
-    ; How can we get the data initialization values placed at the end of the other data
-    ; and have the scatter code copy it to the RAM locations?
     RW_RAM_DATA +0
     {
         * (.cy_ramfunc)
@@ -148,73 +168,92 @@ LOAD_REGION_1 FLASH_START FLASH_SIZE
     {
     }
 
-    ; Emulated EEPROM Flash area
-    ; The alignment and size of this region must match the
-    ; requirements for the emeeprom component
-    ER_EM_EEPROM EM_EEPROM_START EMPTY NOCOMPRESS EM_EEPROM_SIZE
-    {
-    }
-
     ; Used for the digital signature of the secure application and the
     ; Bootloader SDK application. The size of the section depends on the required
     ; data size.
-;    .cy_app_signature (FLASH_START + FLASH_SIZE - 256) 256
-;    {
-;        * (.cy_app_signature)
-;    }
-
+    .cy_app_signature (FLASH_START + FLASH_SIZE - 256) 256
+    {
+        * (.cy_app_signature)
+    }
 }
 
 
-; Emulated EEPROM Flash area - Do not load into HEX file output
-;LR_EM_EEPROM EM_EEPROM_START EM_EEPROM_SIZE
-;{
-;    .cy_em_eeprom +0
-;    {
-;        * (.cy_em_eeprom)
-;    }
-;}
+; Emulated EEPROM Flash area
+LR_EM_EEPROM EM_EEPROM_START EM_EEPROM_SIZE
+{
+    .cy_em_eeprom +0
+    {
+        * (.cy_em_eeprom)
+    }
+}
+
+; Supervisory flash: User data
+LR_SFLASH_USER_DATA SFLASH_USER_DATA_START SFLASH_USER_DATA_SIZE
+{
+    .cy_sflash_user_data +0
+    {
+        * (.cy_sflash_user_data)
+    }
+}
+
+; Supervisory flash: Normal Access Restrictions (NAR)
+LR_SFLASH_NAR SFLASH_NAR_START SFLASH_NAR_SIZE
+{
+    .cy_sflash_nar +0
+    {
+        * (.cy_sflash_nar)
+    }
+}
+
+; Supervisory flash: Public Key
+LR_SFLASH_PUBLIC_KEY SFLASH_PUBLIC_KEY_START SFLASH_PUBLIC_KEY_SIZE
+{
+    .cy_sflash_public_key +0
+    {
+        * (.cy_sflash_public_key)
+    }
+}
 
 ; Supervisory flash: Table of Content # 2 Copy
-;LR_SFLASH_RTOC_2 SFLASH_RTOC_2_START SFLASH_RTOC_2_SIZE
-;{
-;    .cy_rtoc_part2 +0
-;    {
-;        * (.cy_rtoc_part2)
-;    }
-;}
+LR_SFLASH_RTOC_2 SFLASH_RTOC_2_START SFLASH_RTOC_2_SIZE
+{
+    .cy_rtoc_part2 +0
+    {
+        * (.cy_rtoc_part2)
+    }
+}
 
 
 ; Places the code in the Execute in Place (XIP) section. See the smif driver documentation for details.
-;LR_EROM XIP_START XIP_SIZE
-;{
-;    .cy_xip +0
-;    {
-;        * (.cy_xip)
-;    }
-;}
+LR_EROM XIP_START XIP_SIZE
+{
+    cy_xip +0
+    {
+        * (.cy_xip)
+    }
+}
 
 
 ; eFuse
-;LR_EFUSE EFUSE_START EFUSE_SIZE
-;{
-;    .cy_efuse +0
-;    {
-;        * (.cy_efuse)
-;    }
-;}
+LR_EFUSE EFUSE_START EFUSE_SIZE
+{
+    .cy_efuse +0
+    {
+        * (.cy_efuse)
+    }
+}
 
 
 ; The section is used for additional metadata (silicon revision, Silicon/JTAG ID, etc.) storage.
-;CYMETA 0x90500000
-;{
-;    .cymeta +0 { * (.cymeta) }
-;}
+CYMETA 0x90500000
+{
+    .cymeta +0 { * (.cymeta) }
+}
 
 /* The following symbols used by the cymcuelftool. */
 /* Flash */
 #define __cy_memory_0_start 0x10000000
-#define __cy_memory_0_length  0x00200000
+#define __cy_memory_0_length  0x00100000
 #define __cy_memory_0_row_size 0x200
 
 /* Emulated EEPROM Flash area */

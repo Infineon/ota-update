@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['header_5foffset',['header_offset',['../structcy__ota__file__info__t.html#ac66d23e077df5a73e8e00ae3c5297a78',1,'cy_ota_file_info_t']]]
+  ['infineon_20over_20the_20air_20_28ota_29_20api',['Infineon Over The Air (OTA) API',['../group__group__cy__ota.html',1,'']]],
+  ['initial_5fconnection',['initial_connection',['../structcy__ota__network__params__t.html#abcc290be8049d49f332165ac7aafb3e0',1,'cy_ota_network_params_t']]]
 ];

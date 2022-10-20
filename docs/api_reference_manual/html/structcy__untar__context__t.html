@@ -101,30 +101,32 @@ $(document).ready(function(){initNavTree('structcy__untar__context__t.html','');
 <div class="title">cy_untar_context_t Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<table class="memberdecls">
+<a name="details" id="details"></a><h2 class="groupheader">Description</h2>
+<div class="textblock"><p>Struct to hold information on the un-tar process. </p>
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:aa83f06b776e1625eee055ced4c090ed0"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#aa83f06b776e1625eee055ced4c090ed0">magic</a></td></tr>
 <tr class="memdesc:aa83f06b776e1625eee055ced4c090ed0"><td class="mdescLeft">&#160;</td><td class="mdescRight">CY_UNTAR_CONTEXT_MAGIC.  <a href="#aa83f06b776e1625eee055ced4c090ed0">More...</a><br /></td></tr>
 <tr class="separator:aa83f06b776e1625eee055ced4c090ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9d4dc88cded7fa0f1030ab76fefa0e5"><td class="memItemLeft" align="right" valign="top">cy_tar_parse_state_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#ac9d4dc88cded7fa0f1030ab76fefa0e5">state</a></td></tr>
-<tr class="memdesc:ac9d4dc88cded7fa0f1030ab76fefa0e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current parsing state.  <a href="#ac9d4dc88cded7fa0f1030ab76fefa0e5">More...</a><br /></td></tr>
-<tr class="separator:ac9d4dc88cded7fa0f1030ab76fefa0e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac065c394e3e966b08d5afe0287961ccd"><td class="memItemLeft" align="right" valign="top">cy_tar_parse_state_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#ac065c394e3e966b08d5afe0287961ccd">tar_state</a></td></tr>
+<tr class="memdesc:ac065c394e3e966b08d5afe0287961ccd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current parsing state.  <a href="#ac065c394e3e966b08d5afe0287961ccd">More...</a><br /></td></tr>
+<tr class="separator:ac065c394e3e966b08d5afe0287961ccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1d4dc5f0b084e596b4b154dd2208d16"><td class="memItemLeft" align="right" valign="top">untar_write_callback_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#af1d4dc5f0b084e596b4b154dd2208d16">cb_func</a></td></tr>
 <tr class="memdesc:af1d4dc5f0b084e596b4b154dd2208d16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback function to deal with the data.  <a href="#af1d4dc5f0b084e596b4b154dd2208d16">More...</a><br /></td></tr>
 <tr class="separator:af1d4dc5f0b084e596b4b154dd2208d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac13257d1e1d3090ddb4d97aa041dc0de"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#ac13257d1e1d3090ddb4d97aa041dc0de">cb_arg</a></td></tr>
 <tr class="memdesc:ac13257d1e1d3090ddb4d97aa041dc0de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opaque argument passed to callback.  <a href="#ac13257d1e1d3090ddb4d97aa041dc0de">More...</a><br /></td></tr>
 <tr class="separator:ac13257d1e1d3090ddb4d97aa041dc0de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a045f0e366fdc9f1ad408b847e3daf189"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#a045f0e366fdc9f1ad408b847e3daf189">already_parsed_components_json</a></td></tr>
-<tr class="memdesc:a045f0e366fdc9f1ad408b847e3daf189"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if components.json is parsed.  <a href="#a045f0e366fdc9f1ad408b847e3daf189">More...</a><br /></td></tr>
-<tr class="separator:a045f0e366fdc9f1ad408b847e3daf189"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd6fd860e8be2bb3d6694c767617506d"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#afd6fd860e8be2bb3d6694c767617506d">already_parsed_components_json</a></td></tr>
+<tr class="memdesc:afd6fd860e8be2bb3d6694c767617506d"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if components.json is parsed.  <a href="#afd6fd860e8be2bb3d6694c767617506d">More...</a><br /></td></tr>
+<tr class="separator:afd6fd860e8be2bb3d6694c767617506d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d24086b0b996d9c13b9b866689fc9cb"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#a2d24086b0b996d9c13b9b866689fc9cb">bytes_processed</a></td></tr>
 <tr class="memdesc:a2d24086b0b996d9c13b9b866689fc9cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes processed from the archive.  <a href="#a2d24086b0b996d9c13b9b866689fc9cb">More...</a><br /></td></tr>
 <tr class="separator:a2d24086b0b996d9c13b9b866689fc9cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05056b5f94625c9c3875751adfa9553e"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#a05056b5f94625c9c3875751adfa9553e">version</a> [CY_VERSION_STRING_MAX]</td></tr>
-<tr class="memdesc:a05056b5f94625c9c3875751adfa9553e"><td class="mdescLeft">&#160;</td><td class="mdescRight">String of major.minor.build.  <a href="#a05056b5f94625c9c3875751adfa9553e">More...</a><br /></td></tr>
-<tr class="separator:a05056b5f94625c9c3875751adfa9553e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afee8cb27ad40cb891e975a6c51ec217f"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#afee8cb27ad40cb891e975a6c51ec217f">app_version</a> [CY_VERSION_STRING_MAX]</td></tr>
+<tr class="memdesc:afee8cb27ad40cb891e975a6c51ec217f"><td class="mdescLeft">&#160;</td><td class="mdescRight">String of major.minor.build.  <a href="#afee8cb27ad40cb891e975a6c51ec217f">More...</a><br /></td></tr>
+<tr class="separator:afee8cb27ad40cb891e975a6c51ec217f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a901d9f8ffbf5202704f140197e823a04"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcy__untar__context__t.html#a901d9f8ffbf5202704f140197e823a04">num_files_in_json</a></td></tr>
 <tr class="memdesc:a901d9f8ffbf5202704f140197e823a04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of files in components.json.  <a href="#a901d9f8ffbf5202704f140197e823a04">More...</a><br /></td></tr>
 <tr class="separator:a901d9f8ffbf5202704f140197e823a04"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,12 +170,12 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ac9d4dc88cded7fa0f1030ab76fefa0e5"></a>
+<a class="anchor" id="ac065c394e3e966b08d5afe0287961ccd"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">cy_tar_parse_state_t cy_untar_context_t::state</td>
+          <td class="memname">cy_tar_parse_state_t cy_untar_context_t::tar_state</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -210,12 +212,12 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a045f0e366fdc9f1ad408b847e3daf189"></a>
+<a class="anchor" id="afd6fd860e8be2bb3d6694c767617506d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int cy_untar_context_t::already_parsed_components_json</td>
+          <td class="memname">uint16_t cy_untar_context_t::already_parsed_components_json</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -238,12 +240,12 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a05056b5f94625c9c3875751adfa9553e"></a>
+<a class="anchor" id="afee8cb27ad40cb891e975a6c51ec217f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char cy_untar_context_t::version[CY_VERSION_STRING_MAX]</td>
+          <td class="memname">char cy_untar_context_t::app_version[CY_VERSION_STRING_MAX]</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -58,8 +58,8 @@ extern "C" {
 
 /* General definitions. */
 #define TNAMELEN    100         /**< Name field length. */
-#define TMAGIC      "ustar "    /**< ustar plus null byte. */
-#define TMAGLEN     6           /**< Length of the above. */
+#define TMAGIC      "ustar"     /**< "ustar". On Mac, it is followed by a NULL char (0x00), on Windows it is followed by a \<space\> (0x20). */
+#define TMAGLEN     6           /**< Length of the above. Must leave space in the structure buffer for NULL or \<space\>! */
 #define TVERSION    "00"        /**< 00 without a null byte. */
 #define TVERSLEN    2           /**< Length of the above. */
 
@@ -150,7 +150,7 @@ typedef struct ustar_header_s {
 typedef struct cy_ota_file_info_s {
     char                name[TNAMELEN];         /**< Copied from the components.json file         */
     char                type[CY_FILE_TYPE_LEN]; /**< From components.json.                         */
-    int                 found_in_tar;           /**< Encountered the header in the tar file.       */
+    uint16_t            found_in_tar;           /**< Encountered the header in the tar file.       */
     uint32_t            header_offset;          /**< Offset of the header in the tar file.                 */
     uint32_t            size;                   /**< From components.json, verified from the header.   */
     uint32_t            processed;              /**< Bytes processed from the tar file.                */
@@ -172,17 +172,21 @@ typedef struct cy_ota_file_info_s {
 typedef struct cy_untar_context_s * cy_untar_context_ptr;
 typedef cy_untar_result_t (*untar_write_callback_t)(cy_untar_context_ptr ctxt, uint16_t file_index, uint8_t *buffer, uint32_t file_offset, uint32_t chunk_size, void *cb_arg);
 
+/**
+ * @brief Struct to hold information on the un-tar process.
+ */
+
 typedef struct cy_untar_context_s {
     uint32_t                magic;                          /**< CY_UNTAR_CONTEXT_MAGIC.               */
-    cy_tar_parse_state_t    state;                          /**< Current parsing state.                 */
+    cy_tar_parse_state_t    tar_state;                      /**< Current parsing state.                 */
     untar_write_callback_t  cb_func;                        /**< Callback function to deal with the data.  */
     void                    *cb_arg;                        /**< Opaque argument passed to callback.        */
 
-    int                     already_parsed_components_json; /**< True if components.json is parsed. */
+    uint16_t                already_parsed_components_json; /**< True if components.json is parsed. */
     uint32_t                bytes_processed;                /**< Bytes processed from the archive.     */
 
     /* for JSON parsing */
-    char                    version[CY_VERSION_STRING_MAX]; /**< String of major.minor.build.          */
+    char                    app_version[CY_VERSION_STRING_MAX]; /**< String of major.minor.build.          */
     uint16_t                num_files_in_json;              /**< Number of files in components.json.   */
     uint16_t                curr_file_in_json;              /**< Parsing file info in components.json. */
 
@@ -199,8 +203,8 @@ typedef struct cy_untar_context_s {
 /**
  * @brief Determine whether this is a tar header.
  *
- * @param buffer            Pointer to the data buffer.
- * @param size              Size of the buffer.
+ * @param[in]  buffer            Pointer to the data buffer.
+ * @param[in]  size              Size of the buffer.
  *
  * @return  CY_UNTAR_NOT_VALID
  *          CY_UNTAR_VALID
@@ -211,9 +215,9 @@ cy_untar_result_t cy_is_tar_header( uint8_t *buffer, uint32_t size );
 /**
  * @brief Initialize the tar context.
  *
- * @param ctxt              Pointer to the context structure.
- * @param cb_func           Callback function.
- * @param cb_arg            opaque argument passed in callback.
+ * @param[in]  ctxt              Pointer to the context structure.
+ * @param[in]  cb_func           Callback function.
+ * @param[in]  cb_arg            opaque argument passed in callback.
  *
  * @return  CY_UNTAR_SUCCESS
  *          CY_UNTAR_ERROR
@@ -223,7 +227,7 @@ cy_untar_result_t cy_untar_init( cy_untar_context_t *ctxt, untar_write_callback_
 /**
  * @brief De-Initialize the tar context.
  *
- * @param ctxt              Pointer to the context structure.
+ * @param[in]  ctxt              Pointer to the context structure.
  *
  * @return  CY_UNTAR_SUCCESS
  *          CY_UNTAR_ERROR
@@ -236,17 +240,16 @@ cy_untar_result_t cy_untar_deinit( cy_untar_context_t *ctxt );
  * NOTE: This is meant to be called for each chunk of data received.
  *       Callback will be invoked when there is data to write.
  *
- * @param ctxt              Pointer to the context structure; gets updated.
- * @param stream_offset     Byte offset in the current stream of the start of tar_buffer.
- * @param tar_buffer        Pointer to the next buffer of the input.
- * @param size              Bytes in tar_buffer.
- * @param consumed          Bytes used in callbacks (or skipped at end of file).
+ * @param[in,out]  ctxt      	     Pointer to context structure, gets updated
+ * @param[in]      in_stream_offset  offset into entire stream
+ * @param[in]      in_buffer         Pointer to the next buffer of input
+ * @param[in]      in_size           bytes in tar_buffer
+ * @param[out]     consumed          Pointer to save bytes used in callbacks (or skipped at end of file)
  *
  * @return  CY_UNTAR_SUCCESS
  *          CY_UNTAR_ERROR
  */
-cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t stream_offset, uint8_t *tar_buffer, uint32_t size, uint32_t *consumed);
-
+cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_offset, uint8_t *in_buffer, uint32_t in_size, uint32_t *consumed);
 
 #ifdef __cplusplus
 } /*extern "C" */

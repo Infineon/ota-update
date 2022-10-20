@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Over The Air (OTA) Update Library: Over The Air v1.0.0 Overview</title>
+<title>Over The Air (OTA) Update Library: Over The Air v2.0.0 Overview</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,12 +96,12 @@ $(document).ready(function(){initNavTree('index.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Over The Air v1.0.0 Overview </div>  </div>
+<div class="title">Over The Air v2.0.0 Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>This library provides support for OTA updating of the application code running on a PSoC™ 6 Connectivity Device or CYW920829M2EVB-01 Device, using Wi-Fi or Bluetooth®.<br />
 <br />
- For simplification, this document will refer to an MQTT Broker or an HTTP Server as "server".<br />
+ For simplification, this document may refer to an MQTT Broker or an HTTP Server as "server".<br />
 <br />
  The library provides a number of combinations on how to get the OTA image:<br />
 <br />
@@ -122,18 +122,18 @@ $(document).ready(function(){initNavTree('index.html','');});
  Step 2: - Get Data:<br />
 </p><ul>
 <li>The OTA Agent will download the OTA image to the upgrade (secondary) slot. <br />
- On the next reboot, MCUboot will copy the new version of the application from the upgrade (secondary) slot to the boot (primary) slot and run the application.</li>
+ On the next reboot, MCUbootApp will copy the new version of the application from the upgrade (secondary) slot to the boot (primary) slot and run the application.</li>
 </ul>
-<p>You can skip Step 1 by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p>You can skip Step 1 by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
 <p>The ModusToolbox OTA code examples import this OTA library automatically.</p>
 <h1><a class="anchor" id="section_features"></a>
 Features and Functionality</h1>
 <p>This library utilizes MQTT or HTTPS and TLS, or Bluetooth® to securely connect to and download an update for the users application.</p>
 <p>Other features:</p>
-<p>Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p>Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
 <p>MQTT and HTTP</p><ul>
 <li>Configuration to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker connection.</li>
-<li>Runs in a separate background thread, only connecting to the server based on the parameters passed to <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</li>
+<li>Runs in a separate background thread, only connecting to the server based on the parameters passed to <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</li>
 <li>Provides a callback mechanism to report stages of connect, download percentage, and errors.</li>
 <li>Once the application starts the OTA Agent, the OTA Agent will contact the server at the defined intervals to see if there is an update available.</li>
 </ul>
@@ -147,61 +147,83 @@ Integration Notes</h1>
 <p>A pre-defined configuration file has been bundled with this library.<br />
  The user is expected to:<br />
 </p><ul>
-<li>Copy the cy_ota_config.h file from the libs/ota-update/configs<br />
+<li>Copy the cy_ota_config.h file from the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/configs<br />
  directory to the top-level code example directory.<br />
 <br />
 </li>
-<li>There are suggested FreeRTOSConfig.h configuration files for CM4 (PSoC™ 6) and CM33 (CYW920829M2EVB-01) Devices.<br />
- Copy from libs/ota-update/</li>
-<li>For PSoC™ 6 device builds, add the following to COMPONENTS in the code example project's Makefile<br />
-<ul>
-<li>PSOC6HAL For example, if CY8CPROTO-062-4343W is being used, the Makefile entry would be:<br />
-<div class="fragment"><div class="line">COMPONENTS+=PSOC6HAL</div>
+<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6) or CM33 (CYW920829M2EVB-01) device used.<br />
+ Copy the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/configs/FreeRTOS directory to the top-level code example directory.<br />
+<br />
+</li>
+<li>For <b>HTTP support</b>, add the following to the project Makefile:<br />
+<div class="fragment"><div class="line">COMPONENTS+=OTA_HTTP</div>
 </div><!-- fragment --> <br />
 </li>
-</ul>
-</li>
-<li>For Bluetooth® builds, add the following to COMPONENTS in the code example project's Makefile<br />
-<ul>
-<li>FREERTOS, LWIP, WICED_BLE, OTA_BLUETOOTH Then add the Radio component, based on the platform.<br />
- For example, if CY8CPROTO-062-4343W is being used, the Makefile entry would be:<br />
-<div class="fragment"><div class="line">COMPONENTS+=FREERTOS PSOC6HAL WICED_BLE OTA_BLUETOOTH</div>
+<li>For <b>MQTT support</b>, add the following to the project Makefile:<br />
+<div class="fragment"><div class="line">COMPONENTS+=OTA_MQTT</div>
 </div><!-- fragment --> <br />
 </li>
-</ul>
-</li>
-<li>For MQTT and HTTP builds, add the following to COMPONENTS in the code example project's Makefile<br />
-<ul>
-<li>FREERTOS, LWIP, MBEDTLS, SECURE_SOCKETS, OTA_MQTT (or OTA_HTTP) Then add the Radio component, based on the platform.<br />
- For example, if CY8CKIT-062S2-43012 is being used, the Makefile entry would be:<br />
-<div class="fragment"><div class="line">COMPONENTS+=FREERTOS PSOC6HAL LWIP MBEDTLS SECURE_SOCKETS</div>
+<li>For <b>Non-Secure Bluetooth®</b> support, add the following to the project Makefile:<br />
+<div class="fragment"><div class="line">COMPONENTS+=OTA_BLUETOOTH OTA_BLUETOOTH_NON_SECURE</div>
 </div><!-- fragment --> <br />
- Note that COMPONENTS OTA_BLUETOOTH, OTA_MQTT and OTA_HTTP can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
+</li>
+<li>For <b>Secure Bluetooth®</b> support, add the following to the project Makefile:<br />
+<div class="fragment"><div class="line">COMPONENTS+=OTA_BLUETOOTH OTA_BLUETOOTH_SECURE</div>
+</div><!-- fragment --> <br />
+ COMPONENTS OTA_BLUETOOTH, OTA_MQTT and OTA_HTTP can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
+<br />
 </li>
 </ul>
+<p>There are other COMPONENTS that may be needed based on support. Please refer to the various *README.md files in the root ota-update library directory.<br />
+</p><ul>
+<li>README.md<br />
+</li>
+<li>OTA_MCUBOOTAPP_README.md<br />
+</li>
+<li>OTA_MAKEFILE_INFO_README.md<br />
 </li>
 </ul>
 <h1><a class="anchor" id="section_concept"></a>
 General Concept</h1>
-<p>The OTA Agent stores the update to the upgrade (secondary) slot and uses MCUboot to validate and copy the update from the upgrade (secondary) slot to the boot (primary) slot.<br />
-</p><ul>
-<li>MCUboot runs the current application in the boot (primary) slot.<br />
+<p>The OTA Agent stores the update to the upgrade (secondary) slot and uses MCUbootApp to validate and copy the update from the upgrade (secondary) slot to the boot (primary) slot.<br />
+<br />
+ <b>The basic device boot sequence is as follows:</b></p>
+<ol type="1">
+<li>ROM boot will start MCUBootApp</li>
+<li>MCUbootApp runs the current application in the boot (primary) slot.<br />
 </li>
 <li>The OTA Agent downloads the update and stores it in the upgrade (secondary) slot.<br />
 </li>
-<li>The upgrade (secondary) slot is marked so that MCUboot will copy it over to the boot (primary) slot.<br />
+<li>The OTA Agent marks the upgrade as ready.<br />
+<br />
+ <b>On the next system boot:</b></li>
+</ol>
+<ol type="1">
+<li>ROM boot will start MCUBootApp</li>
+<li>If no update is downloaded, MCUBootApp starts the current application.</li>
+<li>MCUBootApp determines if there is an update in the Secondary Slot</li>
+<li>If there is an update available:<br />
+ a. MCUBootApp verifies the update.<br />
+ b. MCUBootApp SWAPs (or OVERWRITEs) the current with the update applications.<br />
+ c. MCUBootApp starts the new (updated) application.<br />
+ d. The updated application must call <a class="el" href="group__group__ota__functions.html#ga1a84d3c1849c666e2630417da3edf728" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a> to validate the update.<br />
+ e. For SWAP, if the new application does not call <a class="el" href="group__group__ota__functions.html#ga1a84d3c1849c666e2630417da3edf728" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a>, MCUBootApp will REVERT on the next reset.<br />
+<br />
+<b>NOTE:</b> On secure MCUs such as 064, MCUBootApp is flashed as part of the provisioning step performed by the provisioning tools, and does not need to be built separately.<br />
+ For more info see &lt;ota-update&gt;/&lt;version/&gt;/OTA_MCUBOOTAPP_README.md) section "5. cysecuretools for CY8CKIT-064B0S2-4343W".<br />
+ For more general information, see the various README.md files in the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/ directory:</li>
+</ol>
+<ul>
+<li>README.md<br />
 </li>
-<li>If validate_after_reboot == 0, the upgrade (secondary) slot will be tagged as "perm"<br />
+<li>OTA_MCUBOOTAPP_README.md<br />
 </li>
-<li>If validate_after_reboot == 1, the upgrade (secondary) slot will be tagged as "test"<br />
+<li>OTA_MAKEFILE_INFO_README.md<br />
 </li>
-<li>If reboot_upon_completion == 1, the system will reboot automatically.<br />
+<li>OTA_FLASH_LAYOUT_README.md<br />
 </li>
-<li>On the next system reboot, MCUboot sees that there is an update in the upgrade (secondary) slot and copies the update to the boot (primary) slot.<br />
+<li>configs/flashmap/MCUBoot_Build_Commands.md<br />
 </li>
-<li>MCUboot runs the current application (now the update) in the boot (primary) slot.<br />
-</li>
-<li>If validate_after_reboot == 1, the updated application must validate itself and call cy_ota_validated() to inform MCUboot that it is now "perm" to complete the process. If not marked as "perm", on the next reboot, MCUBoot will REVERT to the original application.</li>
 </ul>
 <h1><a class="anchor" id="section_api_overview"></a>
 API Overview</h1>
@@ -210,7 +232,7 @@ API Overview</h1>
  When using Bluetooth®, <code>cy_ota_start_agent()</code> is called after the Peer sends a PREPARE_DOWNLOAD message.<br />
  When using MQTT or HTTP, the OTA Agent uses callbacks to signal the application when events occur.<br />
  <br />
- <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3" title="Start the OTA Background Agent. ">cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ota_ptr)</a>;</code></p>
+ <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ctx_ptr)</a>;</code></p>
 <p>These defines determine when the checks happen. Between checks, the OTA Agent is not connected to a server, and not checking for updates.<br />
 </p><ul>
 <li>CY_OTA_INITIAL_CHECK_SECS</li>
@@ -221,12 +243,12 @@ API Overview</h1>
 <h2>Stop the OTA Agent </h2>
 <p>When you want to stop the OTA Agent.<br />
  <br />
- <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga14b8129ff45b6af3bd71235676a220be" title="Stop OTA Background Agent. ">cy_ota_agent_stop(cy_ota_context_ptr *ota_ptr)</a>;</code></p>
+ <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#gafc2e0386db205ece6b355fa5dd91437a" title="Stop OTA Background Agent. ">cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr)</a>;</code></p>
 <h2>Trigger a check right now. </h2>
 <p>Use this when you want to trigger a check for an OTA update earlier than<br />
  is currently scheduled. The OTA Agent must have been started already. For MQTT and HTTP only.<br />
  <br />
- <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga749e2780daeb68e40d47ca8c90a6922c" title="Check for OTA update availability and download update now. ">cy_ota_get_update_now(cy_ota_context_ptr ota_ptr)</a>;</code></p>
+ <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga06bc6c2f2eb7cb6f52f80ef16574fd1e" title="Check for OTA update availability and download update now. ">cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr)</a>;</code></p>
 <h1><a class="anchor" id="section_override"></a>
 Override Default Settings</h1>
 <p>For MQTT and HTTP usage, copy the cy_ota_config.h file from the libs/ota-update/configs<br />
@@ -472,7 +494,7 @@ Code Snippets</h1>
 <div class="line">        <span class="keywordflow">return</span> <a class="code" href="group__group__ota__typedefs.html#gga83280df2ca46db528cc12901d949fd63ab33edc4fae91e1c99f93933fc3a06bd5">CY_OTA_CB_RSLT_OTA_STOP</a>;</div>
 <div class="line">    }</div>
 <div class="line"></div>
-<div class="line">    state_string = <a class="code" href="group__group__ota__functions.html#gafcd8ac0ada4557076da8070d11101f95">cy_ota_get_state_string</a>(cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784">state</a>);</div>
+<div class="line">    state_string = <a class="code" href="group__group__ota__functions.html#gafb857a3ac5167224f6f3af877a33ac32">cy_ota_get_state_string</a>(cb_data-&gt;state);</div>
 <div class="line">    error_string = <a class="code" href="group__group__ota__functions.html#gaffc74d5bb4dd74ede1031222b9efcd9b">cy_ota_get_error_string</a>(<a class="code" href="group__group__ota__functions.html#ga7149423078fe0b9d401bddc1d0e808d1">cy_ota_get_last_error</a>());</div>
 <div class="line">    reason_string = <a class="code" href="group__group__ota__functions.html#ga1f3276614aeca5a8d7c176f171024d66">cy_ota_get_callback_reason_string</a>(cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#ae28ffd179023e8902cbd3e88785540ad">reason</a>);</div>
 <div class="line"></div>
@@ -483,14 +505,14 @@ Code Snippets</h1>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggad852fa8cdb0431df709ccf12bb37cd60a98710a7a1d2678890cda211ab2c89689">CY_OTA_REASON_SUCCESS</a>:</div>
-<div class="line">        printf(<span class="stringliteral">&quot;APP CB OTA SUCCESS state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784">state</a>, state_string, error_string);</div>
+<div class="line">        printf(<span class="stringliteral">&quot;APP CB OTA SUCCESS state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;state, state_string, error_string);</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line">    <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggad852fa8cdb0431df709ccf12bb37cd60ad2bf02c326de5c6c95551123155e14bd">CY_OTA_REASON_FAILURE</a>:</div>
-<div class="line">        printf(<span class="stringliteral">&quot;APP CB OTA FAILURE state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784">state</a>, state_string, error_string);</div>
+<div class="line">        printf(<span class="stringliteral">&quot;APP CB OTA FAILURE state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;state, state_string, error_string);</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line">    <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggad852fa8cdb0431df709ccf12bb37cd60a7d2f0693d44fd480e23c7de3c2f68d10">CY_OTA_REASON_STATE_CHANGE</a>:</div>
 <div class="line"></div>
-<div class="line">        <span class="keywordflow">switch</span> (cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784">state</a>)</div>
+<div class="line">        <span class="keywordflow">switch</span> (cb_data-&gt;state)</div>
 <div class="line">        {</div>
 <div class="line">            <span class="comment">/* Informational. */</span></div>
 <div class="line">        <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggab1539ebc23219f1ca64318286e9d375fae28d1cd8c5a985bb343a0828c234fdd0">CY_OTA_STATE_NOT_INITIALIZED</a>:</div>
@@ -498,7 +520,7 @@ Code Snippets</h1>
 <div class="line">        <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggab1539ebc23219f1ca64318286e9d375fa4980922c9b3cf3c4e1269324d4563d78">CY_OTA_STATE_INITIALIZING</a>:</div>
 <div class="line">        <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggab1539ebc23219f1ca64318286e9d375faa1a4033af52d14af2873066da8f89098">CY_OTA_STATE_AGENT_STARTED</a>:</div>
 <div class="line">        <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggab1539ebc23219f1ca64318286e9d375faf2dbf8dcfb8d9329549fa539970d9e54">CY_OTA_STATE_AGENT_WAITING</a>:</div>
-<div class="line">            printf(<span class="stringliteral">&quot;APP CB OTA STATE CHANGE state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;<a class="code" href="structcy__ota__cb__struct__t.html#a48361e091a9b49cc103b9b37d7328784">state</a>, state_string, error_string);</div>
+<div class="line">            printf(<span class="stringliteral">&quot;APP CB OTA STATE CHANGE state:%d %s last_error:%s\n&quot;</span>, cb_data-&gt;state, state_string, error_string);</div>
 <div class="line">            <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">        <span class="keywordflow">case</span> <a class="code" href="group__group__ota__typedefs.html#ggab1539ebc23219f1ca64318286e9d375fad8e99bc84c807fa17f23b119900d4c1a">CY_OTA_STATE_START_UPDATE</a>:</div>
@@ -796,7 +818,7 @@ Code Snippets</h1>
 <div class="line">     agent_params.cb_arg                 = ota;</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Initialize and start the OTA Agent. */</span></div>
-<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
+<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>
@@ -974,7 +996,7 @@ Code Snippets</h1>
 <div class="line">     network_params.<a class="code" href="structcy__ota__network__params__t.html#abcc290be8049d49f332165ac7aafb3e0">initial_connection</a> = <a class="code" href="group__group__ota__typedefs.html#ggabc03646427dec963bef37cb5dbb550faaa6e2c528481c3eb950755dd86dfb272f">CY_OTA_CONNECTION_BLE</a>;</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Initialize and start the OTA Agent. */</span></div>
-<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga84d744546862b858ddc65334be5b63c3">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
+<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>
@@ -982,15 +1004,9 @@ Code Snippets</h1>
  </p>
 <h1><a class="anchor" id="section_example"></a>
 ModusToolbox OTA Code Examples</h1>
-<p>ModusToolbox OTA Update MQTT code example:<br />
- <a href="https://github.com/cypresssemiconductorco/tbd">https://github.com/cypresssemiconductorco/tbd</a><br />
- <br />
- ModusToolbox OTA Update HTTP code example:<br />
- <a href="https://github.com/cypresssemiconductorco/tbd">https://github.com/cypresssemiconductorco/tbd</a><br />
- <br />
- ModusToolbox OTA Update Bluetooth® example:<br />
- <a href="https://github.com/cypresssemiconductorco/tbd">https://github.com/cypresssemiconductorco/tbd</a><br />
-</p>
+<p>ModusToolbox OTA Example using MQTT: <a href="https://github.com/infineon/mtb-example-ota-mqtt">https://github.com/infineon/mtb-example-ota-mqtt</a><br />
+ ModusToolbox OTA Update Bluetooth® example: <a href="https://github.com/infineon/mtb-example-anycloud-ble-battery-server">https://github.com/infineon/mtb-example-anycloud-ble-battery-server</a><br />
+ MCUboot documentation: <a href="https://github.com/JuulLabs-OSS/mcuboot/blob/cypress/docs/design.md">https://github.com/JuulLabs-OSS/mcuboot/blob/cypress/docs/design.md</a> </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

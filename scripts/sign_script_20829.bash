@@ -11,7 +11,7 @@ set -e
 # Arguments
 # We have a lot
 #
-MY_TOOLCHAIN_PATH=$1
+GCC_ARM_TOOLCHAIN_PATH=$1
 shift
 CY_PYTHON_PATH=$1
 shift
@@ -90,7 +90,7 @@ FLASH_AREA_IMG_1_PRIMARY_START_ABS=`printf "0x%x\n" $(($FLASH_BASE_ADDRESS + $FL
 #
 # Leave here for debugging
 echo "--------------------- MCUBOOT SIGN Vars ----------------------------------------------------------------------"
-echo "MY_TOOLCHAIN_PATH          =$MY_TOOLCHAIN_PATH"
+echo "GCC_ARM_TOOLCHAIN_PATH     =$GCC_ARM_TOOLCHAIN_PATH"
 echo "CY_PYTHON_PATH             =$CY_PYTHON_PATH"
 echo "CY_OUTPUT_PATH             =$CY_OUTPUT_PATH"
 echo "CY_OUTPUT_NAME             =$CY_OUTPUT_NAME"
@@ -134,8 +134,8 @@ $CY_HEX_TO_BIN -I binary -O ihex $CY_OUTPUT_PATH/$CY_OUTPUT_NAME.bin $CY_OUTPUT_
 
 echo ""
 echo "[TOC2_Generate] Execute toc2 generator script for $CY_OUTPUT_NAME"
-echo "source $CY_TOC2_GENERATOR $CY_LCS $CY_OUTPUT_PATH $CY_OUTPUT_NAME $APPTYPE $PRJ_DIR $SMIF_CRYPTO_CONFIG $MY_TOOLCHAIN_PATH"
-source $CY_TOC2_GENERATOR $CY_LCS $CY_OUTPUT_PATH $CY_OUTPUT_NAME $APPTYPE $PRJ_DIR $SMIF_CRYPTO_CONFIG $MY_TOOLCHAIN_PATH
+echo "source $CY_TOC2_GENERATOR $CY_LCS $CY_OUTPUT_PATH $CY_OUTPUT_NAME $APPTYPE $PRJ_DIR $SMIF_CRYPTO_CONFIG $GCC_ARM_TOOLCHAIN_PATH"
+source $CY_TOC2_GENERATOR $CY_LCS $CY_OUTPUT_PATH $CY_OUTPUT_NAME $APPTYPE $PRJ_DIR $SMIF_CRYPTO_CONFIG $GCC_ARM_TOOLCHAIN_PATH
 
 echo ""
 echo "Checking for TOC2 output file"

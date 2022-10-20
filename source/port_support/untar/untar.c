@@ -38,9 +38,6 @@
 #include "cy_json_parser.h"
 #include "cy_log.h"
 
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-
 #include "ota_serial_flash.h"
 
 /*************************************************************
@@ -97,7 +94,7 @@ static uint32_t cy_octal_string_to_u32(const char *octal_string)
         return value;
     }
 
-    while( isdigit((int)*octal_string) )
+    while( isdigit((unsigned char)*octal_string) )
     {
         value <<= 3;
         value |= (uint32_t)(*octal_string - '0');
@@ -121,7 +118,7 @@ static cy_rslt_t ota_untar_json_callback( cy_JSON_object_t *obj, void*cb_arg )
     }
     if (strncmp(CY_KEY_VERSION, obj->object_string, obj->object_string_length) == 0)
     {
-        memcpy(ctxt->version, obj->value, obj->value_length);
+        memcpy(ctxt->app_version, obj->value, obj->value_length);
     }
     if (strncmp(CY_KEY_FILES, obj->object_string, obj->object_string_length) == 0)
     {
@@ -138,6 +135,10 @@ static cy_rslt_t ota_untar_json_callback( cy_JSON_object_t *obj, void*cb_arg )
                 (ctxt->files[ctxt->curr_file_in_json].size != 0) )
         {
             ctxt->curr_file_in_json++;
+        }
+        else
+        {
+		/* Nothing to do here - Needed for Coverity CID 313220 */
         }
         memcpy(ctxt->files[ctxt->curr_file_in_json].name, obj->value, obj->value_length);
     }
@@ -242,7 +243,7 @@ static cy_untar_result_t cy_untar_parse_process_header(cy_untar_context_t *ctxt,
                 if (component_size != ctxt->files[i].size)
                 {
                     /* data in tar and components.json do not match */
-                    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() components.json faulty file size %ld != %ld %s!\n" , __func__, component_size, ctxt->files[i].size);
+                    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() components.json faulty file size %ld != %ld!\n" , __func__, component_size, ctxt->files[i].size);
                     return CY_UNTAR_ERROR;
                 }
                 /* we found a file */
@@ -266,7 +267,7 @@ static cy_untar_result_t cy_untar_parse_process_header(cy_untar_context_t *ctxt,
 
     /* increment # file headers found, change state to DATA */
     ctxt->num_files++;
-    ctxt->state = CY_TAR_PARSE_DATA;
+    ctxt->tar_state = CY_TAR_PARSE_DATA;
     return CY_UNTAR_SUCCESS;
 }
 
@@ -298,11 +299,11 @@ static cy_untar_result_t cy_untar_parse_process_data(cy_untar_context_t *ctxt, u
         {
             *consumed = ctxt->files[CY_UNTAR_COMPONENTS_JSON_INDEX].size;
             ctxt->already_parsed_components_json = 1;
-            ctxt->state = CY_TAR_PARSE_FIND_HEADER;
+            ctxt->tar_state = CY_TAR_PARSE_FIND_HEADER;
 #if DEBUG
             {
                 cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d:%s() parsed components.json done \n", __LINE__, __func__);
-                cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "       version : %s\n", ctxt->version);
+                cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "       version : %s\n", ctxt->app_version);
                 cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     num files : %d\n", ctxt->num_files_in_json);
                 int i;
                 for (i = 0; i < ctxt->num_files_in_json; i++)
@@ -330,9 +331,12 @@ static cy_untar_result_t cy_untar_parse_process_data(cy_untar_context_t *ctxt, u
             /* this is normal when coalescing data */
             return CY_UNTAR_NOT_ENOUGH_DATA;
         }
-        /* components.json parse failure */
-        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d:%s PARSE FAILURE\n", __LINE__, __func__);
-        return CY_UNTAR_COMPONENTS_JSON_PARSE_FAIL;
+        else
+        {
+            /* components.json parse failure */
+            cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d:%s PARSE FAILURE\n", __LINE__, __func__);
+            return CY_UNTAR_COMPONENTS_JSON_PARSE_FAIL;
+        }
     }
     else
     {
@@ -350,13 +354,13 @@ static cy_untar_result_t cy_untar_parse_process_data(cy_untar_context_t *ctxt, u
         {
             if (ctxt->cb_func != NULL)
             {
-                cy_untar_result_t result;
+                cy_untar_result_t cb_result;
                 file_offset = stream_offset - ctxt->files[ctxt->current_file].header_offset - TAR_BLOCK_SIZE;
                 /* pass along data to be written */
-                result = ctxt->cb_func(ctxt, ctxt->current_file, buffer, file_offset, data_for_file, ctxt->cb_arg);
-                if (result != CY_UNTAR_SUCCESS)
+                cb_result = ctxt->cb_func(ctxt, ctxt->current_file, buffer, file_offset, data_for_file, ctxt->cb_arg);
+                if (cb_result != CY_UNTAR_SUCCESS)
                 {
-                    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d:%s    CALBACK returned FAILURE\n", __LINE__, __func__, result);
+                    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d:%s    CALBACK returned FAILURE 0x%x\n", __LINE__, __func__, cb_result);
                     return result;
                 }
             }
@@ -369,7 +373,7 @@ static cy_untar_result_t cy_untar_parse_process_data(cy_untar_context_t *ctxt, u
         if (ctxt->files[ctxt->current_file].processed >= ctxt->files[ctxt->current_file].size)
         {
             /* change state to look for next header */
-            ctxt->state = CY_TAR_PARSE_FIND_HEADER;
+            ctxt->tar_state = CY_TAR_PARSE_FIND_HEADER;
         }
     }
     return CY_UNTAR_SUCCESS;
@@ -395,7 +399,11 @@ cy_untar_result_t cy_is_tar_header( uint8_t *buffer, uint32_t size )
     {
         return CY_UNTAR_NOT_ENOUGH_DATA;
     }
-    if (strncmp((char*)hdr->magic, TMAGIC, TMAGLEN) != 0)
+    /* MAGIC is "ustar".
+     *   On Mac tar archiver, ustar" is followed by a NULL char (0x00).
+     * 	 On Win/Linux tar archiver, "ustar" is followed by a <space> (0x20).
+     */
+    if (memcmp((void const *)hdr->magic, (void const *)TMAGIC, (TMAGLEN - 1)) != 0)
     {
         cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "is_tar_header() invalid ustar magic:%s\n", hdr->magic);
         return CY_UNTAR_INVALID;
@@ -420,7 +428,7 @@ cy_untar_result_t cy_untar_init( cy_untar_context_t *ctxt, untar_write_callback_
         return CY_UNTAR_ERROR;
     }
     memset (ctxt, 0x00, sizeof(cy_untar_context_t));
-    ctxt->state = CY_TAR_PARSE_FIND_HEADER;
+    ctxt->tar_state = CY_TAR_PARSE_FIND_HEADER;
     ctxt->cb_func = cb_func;
     ctxt->cb_arg  = cb_arg;
     ctxt->magic = CY_UNTAR_CONTEXT_MAGIC;
@@ -453,11 +461,11 @@ cy_untar_result_t cy_untar_deinit( cy_untar_context_t *ctxt )
  * NOTE: This is meant to be called for each chunk of data received
  *       callback will be invoked when there is data to write
  *
- * @param ctxt[in,out]      ptr to context structure, gets updated
- * @param stream_offset[in] offset into entire stream
- * @param tar_buffer[in]    ptr to the next buffer of input
- * @param size[in]          bytes in tar_buffer
- * @param consumed[out]     ptr to save bytes used in callbacks (or skipped at end of file)
+ * @param ctxt[in,out]      	ptr to context structure, gets updated
+ * @param in_stream_offset[in]  offset into entire stream
+ * @param in_tar_buffer[in]     ptr to the next buffer of input
+ * @param in_size[in]           bytes in tar_buffer
+ * @param consumed[out]         ptr to save bytes used in callbacks (or skipped at end of file)
  *
  * @return  CY_UNTAR_SUCCESS
  *          CY_UNTAR_ERROR
@@ -532,7 +540,6 @@ cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_o
                 return CY_UNTAR_SUCCESS;
             }
             /* we can fall through to the next tests as we have set the pertinent variables */
-
         }
 
         /* assume we will use the direct buffer rather than the coalesce buffer
@@ -544,8 +551,8 @@ cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_o
         size_to_use = curr_size;
         stream_offset_to_use = curr_stream_offset;
 
-        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d:%s() ctxt->state: %d  consumed: %ld\n", __LINE__, __func__, ctxt->state, *consumed);
-        if (ctxt->state == CY_TAR_PARSE_FIND_HEADER)
+        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d:%s() ctxt->tar_state: %d  consumed: %ld\n", __LINE__, __func__, ctxt->tar_state, *consumed);
+        if (ctxt->tar_state == CY_TAR_PARSE_FIND_HEADER)
         {
             /*
              * NOTES:
@@ -579,7 +586,7 @@ cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_o
             if ( (stream_offset_to_use % TAR_BLOCK_SIZE) != 0)
             {
                 bytes_consumed = TAR_BLOCK_SIZE - (stream_offset_to_use % TAR_BLOCK_SIZE);
-                if ( (used_coalesce == 1)  && (bytes_consumed > ctxt->coalesce_bytes))
+                if ( (used_coalesce == 1) && (bytes_consumed > ctxt->coalesce_bytes) )
                 {
                     /* just skip the bytes in coalesce buffer */
                     bytes_consumed = ctxt->coalesce_bytes;
@@ -597,7 +604,7 @@ cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_o
                 bytes_consumed = TAR_BLOCK_SIZE;    /* always 1 TAR_BLOCK_SIZE for ustar header */
             }
         }
-        else if(ctxt->state == CY_TAR_PARSE_DATA)
+        else if(ctxt->tar_state == CY_TAR_PARSE_DATA)
         {
             /*
              * NOTES:
@@ -637,7 +644,7 @@ cy_untar_result_t cy_untar_parse( cy_untar_context_t *ctxt, uint32_t in_stream_o
         /* handle use of coalesce buffer here */
         if (used_coalesce == 1)
         {
-            if ( (bytes_consumed != 0 ) && (bytes_consumed < ctxt->coalesce_bytes) )
+            if ( (bytes_consumed != 0) && (bytes_consumed < ctxt->coalesce_bytes) )
             {
                 /* remove skipped data */
                 uint32_t copy_size = ctxt->coalesce_bytes - bytes_consumed;

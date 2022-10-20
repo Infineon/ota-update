@@ -11,9 +11,13 @@ Choose the configuration to use from the information below and copy the flash ma
 - CY8CEVAL-062S2-LAI-4373M2
 - CY8CEVAL-062S2-CYW943439M2IPA1
 
+UART differences
+
+The UART Tx and Rx pins are common across most TARGET boards. However, there are exceptions. If you see not "printf()" output to the terminal, check the UART settings. The UART defines can be changed for your device. Edit <mcboot>/boot/cypress/MCUBootApp/config/custom_debug_uart_cfg.h and set the defines as appropriate for your device, and include "USE_CUSTOM_DEBUG_UART=1" to the make command.
+
 There are flash maps for the upgrade slot in internal flash and in external flash. There are also versions for SWAP and OVERWRITE upgrade methods.
 
-### Building MCUBoot
+<b>Building MCUBoot</b>
 
 To build MCUBoot for internal only flash SWAP configuration:
 
@@ -54,7 +58,7 @@ make clean app APP_NAME=MCUBootApp PLATFORM=PSOC_062_2M FLASH_MAP=./psoc62_2m_xi
 ## 2. PSoC™ 62 512K Internal Flash Platforms
 - CY8CPROTO-062S3-4343W
 
-### Building MCUBoot
+<b>Building MCUBoot</b>
 
 To build MCUBoot for internal + external flash OVERWRITE configuration:
 
@@ -104,6 +108,7 @@ make clean app APP_NAME=MCUBootApp PLATFORM=CYW20829 USE_CUSTOM_DEBUG_UART=1 USE
 
 | Document Version | Description of Change                                      |
 | ---------------- | ---------------------------------------------------------- |
+| 1.0.1            | Add UART information                                       |
 | 1.0.0            | New middleware library                                     |
 
 

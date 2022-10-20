@@ -1,12 +1,9 @@
 var searchData=
 [
-  ['ota_20agent_20callback',['OTA Agent Callback',['../group__group__ota__callback.html',1,'']]],
-  ['ota_20user_20configurations',['OTA User Configurations',['../group__group__ota__config.html',1,'']]],
-  ['ota_20functions',['OTA Functions',['../group__group__ota__functions.html',1,'']]],
-  ['ota_20macros',['OTA Macros',['../group__group__ota__macros.html',1,'']]],
-  ['ota_20structures',['OTA Structures',['../group__group__ota__structures.html',1,'']]],
-  ['ota_20typedefs',['OTA Typedefs',['../group__group__ota__typedefs.html',1,'']]],
-  ['over_20the_20air_20v1_2e0_2e0_20overview',['Over The Air v1.0.0 Overview',['../index.html',1,'']]],
-  ['offset',['offset',['../structcy__ota__storage__write__info__t.html#a0405b3806c0de934f5f5f55ac693c184',1,'cy_ota_storage_write_info_t']]],
-  ['ota_5fec',['ota_EC',['../structota___e_c.html',1,'']]]
+  ['packet_5fnumber',['packet_number',['../structcy__ota__storage__write__info__t.html#abe05546ecff7e5985d268248c0ebb3e5',1,'cy_ota_storage_write_info_t']]],
+  ['percentage',['percentage',['../structcy__ota__cb__struct__t.html#a1d802b856542ce6b7e59e2559026307d',1,'cy_ota_cb_struct_t']]],
+  ['prefix',['prefix',['../structustar__header__t.html#a98499864c2abd68676cebcbd59e3b7c1',1,'ustar_header_t']]],
+  ['processed',['processed',['../structcy__ota__file__info__t.html#ab7fd9fd36bfc153bcf2c201950467889',1,'cy_ota_file_info_t']]],
+  ['publisher_5fdirect_5ftopic',['PUBLISHER_DIRECT_TOPIC',['../group__group__ota__typedefs.html#ga1a071cfd0e7d56ca360196cdc8af9356',1,'cy_ota_defaults.h']]],
+  ['publisher_5flisten_5ftopic',['PUBLISHER_LISTEN_TOPIC',['../group__group__ota__typedefs.html#gaaa47c22f94edbcb24052a7551f6a2f36',1,'cy_ota_defaults.h']]]
 ];

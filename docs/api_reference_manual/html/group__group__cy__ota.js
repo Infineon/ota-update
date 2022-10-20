@@ -1,6 +1,5 @@
 var group__group__cy__ota =
 [
-    [ "OTA User Configurations", "group__group__ota__config.html", "group__group__ota__config" ],
     [ "OTA Macros", "group__group__ota__macros.html", "group__group__ota__macros" ],
     [ "OTA Typedefs", "group__group__ota__typedefs.html", "group__group__ota__typedefs" ],
     [ "OTA Agent Callback", "group__group__ota__callback.html", "group__group__ota__callback" ],

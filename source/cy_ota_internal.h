@@ -220,6 +220,7 @@ typedef struct cy_ota_mqtt_context_s {
 
     cy_timer_t          mqtt_timer;                     /**< For detecting early end of download        */
     ota_events_t        mqtt_timer_event;               /**< Event to trigger when timer goes off       */
+    bool                mqtt_timer_inited;              /**< true if MQTT timer initialized             */
 
     uint8_t             received_packets[CY_OTA_MAX_PACKETS];   /**< keep track of packets for missing / duplicates */
 
@@ -260,7 +261,7 @@ typedef struct cy_ota_mqtt_context_s {
 /**
  * @brief Bluetooth® context data
  */
-typedef struct cy_ota_ble_context_s {
+typedef struct {
     uint32_t                    received_crc32;             /**< Bluetooth® CRC sent from the Host                             */
     uint32_t                    crc32;                      /**< Bluetooth® CRC calculated during download                     */
     uint32_t                    file_bytes_written;         /**< Bluetooth® File bytes written                                 */
@@ -277,33 +278,9 @@ typedef struct cy_ota_ble_context_s {
 
 /******************************************************************************
  *
- * OTA Defines
+ * Defines
  *
 *******************************************************************************/
-
-typedef enum {
-    CY_OTA_STATE_TRIG_NONE          = 0,
-    CY_OTA_STATE_TRIG_ALWAYS,               /* always do this */
-
-    CY_OTA_STATE_TRIG_APP_STOPS_OTA,        /* App callback returned CY_OTA_CB_RSLT_OTA_STOP */
-    CY_OTA_STATE_TRIG_APP_FAILED,           /* App callback returned CY_OTA_CB_RSLT_OTA_FAILED */
-
-    CY_OTA_STATE_TRIG_START_JOB_FLOW,
-    CY_OTA_STATE_TRIG_START_DIRECT_FLOW,
-
-    CY_OTA_STATE_TRIG_SUCCESS,
-    CY_OTA_STATE_TRIG_FAILURE,
-
-    CY_OTA_STATE_TRIG_CONNECT,
-    CY_OTA_STATE_TRIG_GET_JOB,
-    CY_OTA_STATE_TRIG_GET_DATA,
-    CY_OTA_STATE_TRIG_SEND_RESULT,
-    CY_OTA_STATE_TRIG_DISCONNECT,
-    CY_OTA_STATE_TRIG_PARSE_JOB,
-    CY_OTA_STATE_TRIG_VERIFY,
-    CY_OTA_STATE_TRIG_END_SESSION,
-
-} cy_ota_agent_state_trigger_t;
 
 
 /***********************************************************************
@@ -325,7 +302,7 @@ typedef struct cy_ota_job_parsed_info_s {
         char                    manuf_id[CY_OTA_JOB_MANUF_ID_LEN];          /**< Manufacturer ID                    */
         char                    product[CY_OTA_JOB_PRODUCT_ID_LEN];            /**< Product Name                       */
         char                    serial[CY_OTA_JOB_SERIAL_NUMBER_LEN];       /**< Serial Number                      */
-        char                    version[CY_OTA_JOB_VERSION_LEN];            /**< Version "<major>.<minor>.<build>"  */
+        char                    app_ver[CY_OTA_JOB_VERSION_LEN];            /**< Version "<major>.<minor>.<build>"  */
         uint16_t                ver_major;                                  /**< Major Version of the OTA Image     */
         uint16_t                ver_minor;                                  /**< Minor Version of the OTA Image     */
         uint16_t                ver_build;                                  /**< Build Version of the OTA Image     */
@@ -400,20 +377,20 @@ typedef struct cy_ota_context_s {
     cy_ota_http_context_t       http;                       /**< HTTP specific context data                                     */
 #endif
 #ifdef COMPONENT_OTA_BLUETOOTH
-    cy_ota_ble_context_t        ble;                        /**< Bluetooth® specific context data                                */
+    cy_ota_ble_context_t        ble;                        /**< Bluetooth® specific context data                               */
 #endif
-
-    uint8_t                     data_buffer[CY_OTA_SIZE_OF_RECV_BUFFER];    /**< Used to get Job and Data                        */
-    char                        job_doc[CY_OTA_JSON_DOC_BUFF_SIZE];         /**< Message to parse                                */
-    cy_ota_job_parsed_info_t    parsed_job;                                 /**< Parsed Job JSON info                                           */
+#if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
+    uint8_t                     data_buffer[CY_OTA_SIZE_OF_RECV_BUFFER];    /**< Used to get Job and Data                       */
+    char                        job_doc[CY_OTA_JSON_DOC_BUFF_SIZE];         /**< Message to parse                               */
+    cy_ota_job_parsed_info_t    parsed_job;                                 /**< Parsed Job JSON info                           */
 
     uint8_t                     chunk_buffer[CY_OTA_CHUNK_SIZE + 512];    /**< Store Chunked data here */
-
+#endif
     cy_ota_cb_struct_t          callback_data;              /**< For passing data to callback function                          */
 
     cy_ota_storage_write_info_t *storage;                   /**< pointer to a chunk of data to write                            */
     uint8_t                     storage_open;               /**< 1 = storage is open                                            */
-    int                     ota_is_tar_archive;             /** !=0, this is a tar file                                         */
+    uint8_t                     ota_is_tar_archive;         /**< !=0, this is a tar file                                        */
 } cy_ota_context_t;
 
 /***********************************************************************
@@ -422,7 +399,6 @@ typedef struct cy_ota_context_s {
  *
  **********************************************************************/
 extern CY_LOG_LEVEL_T ota_logging_level;
-extern cy_untar_context_t  ota_untar_context;
 
 /***********************************************************************
  *
@@ -468,9 +444,9 @@ cy_ota_callback_results_t cy_ota_internal_call_cb(cy_ota_context_t *ctx,
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_http_validate_network_params(cy_ota_network_params_t *network_params);
-cy_rslt_t cy_ota_mqtt_validate_network_params(cy_ota_network_params_t *network_params);
-cy_rslt_t cy_ota_ble_validate_network_params(cy_ota_network_params_t *network_params);
+cy_rslt_t cy_ota_http_validate_network_params(const cy_ota_network_params_t *network_params);
+cy_rslt_t cy_ota_mqtt_validate_network_params(const cy_ota_network_params_t *network_params);
+cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *network_params);
 
 
 

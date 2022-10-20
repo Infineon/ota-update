@@ -45,10 +45,11 @@
 *
 ******************************************************************************/
 
-#ifdef OTA_USE_EXTERNAL_FLASH
 
-#ifndef FLASH_QSPI_H
-#define FLASH_QSPI_H
+#ifndef _FLASH_QSPI_H
+#define _FLASH_QSPI_H
+
+#ifdef OTA_USE_EXTERNAL_FLASH
 
 #include <stdint.h>
 #include "cy_pdl.h"
@@ -69,7 +70,7 @@ void qspi_deinit(uint32_t smif_id);
 void qspi_set_mode(cy_en_smif_mode_t mode);
 cy_en_smif_mode_t qspi_get_mode(void);
 
-
-#endif /* FLASH_QSPI_H */
-
 #endif /* OTA_USE_EXTERNAL_FLASH */
+
+#endif /* _FLASH_QSPI_H */
+

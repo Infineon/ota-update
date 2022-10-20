@@ -250,6 +250,7 @@ static struct flash_area flash_areas[] = {
 
 };
 
+/* These are indexes into the above table and do not directly correspond with the fa_id */
 struct flash_area *boot_area_descs[] = {
     &flash_areas[0U],
     &flash_areas[1U],
@@ -261,10 +262,15 @@ struct flash_area *boot_area_descs[] = {
     &flash_areas[4U],
     &flash_areas[5U],
 #endif
+	/* NOTE: The application does not ever reference SWAP_STATUS, it is here for completeness */
 #ifdef FLASH_AREA_IMAGE_SWAP_STATUS_START
+#if MCUBOOT_IMAGE_NUMBER >= 2
     &flash_areas[6U],
+#else
+    &flash_areas[4U], 	/* when there is only 1 image, the table entry is directly after SCRATCH_START */
 #endif
-    #if MCUBOOT_IMAGE_NUMBER >= 3
+#endif
+#if MCUBOOT_IMAGE_NUMBER >= 3
     &flash_areas[7U],
     &flash_areas[8U],
 #endif

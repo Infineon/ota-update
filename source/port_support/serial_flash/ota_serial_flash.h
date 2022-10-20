@@ -56,18 +56,18 @@ extern "C" {
 
 
 /** The function or operation is not supported on the target or the memory */
-#define CY_RSLT_SERIAL_FLASH_ERR_UNSUPPORTED (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 1))
+#define CY_RSLT_SERIAL_FLASH_ERR_UNSUPPORTED (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 1))
 /** The Serial Flash not initialized */
-#define CY_RSLT_SERIAL_FLASH_ERR_NOT_INITED (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 2))
+#define CY_RSLT_SERIAL_FLASH_ERR_NOT_INITED (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 2))
 /** Parameters passed to a function are invalid */
-#define CY_RSLT_SERIAL_FLASH_ERR_BAD_PARAM   (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 3))
+#define CY_RSLT_SERIAL_FLASH_ERR_BAD_PARAM   (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 3))
 /** A previously initiated read operation is not yet complete */
-#define CY_RSLT_SERIAL_FLASH_ERR_READ_BUSY   (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 4))
+#define CY_RSLT_SERIAL_FLASH_ERR_READ_BUSY   (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 4))
 /** A DMA error occurred during read transfer */
-#define CY_RSLT_SERIAL_FLASH_ERR_DMA         (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 5))
+#define CY_RSLT_SERIAL_FLASH_ERR_DMA         (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 5))
 
 /** Read abort failed. QSPI block is busy. */
-#define CY_RSLT_SERIAL_FLASH_ERR_QSPI_BUSY   (CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 6))
+#define CY_RSLT_SERIAL_FLASH_ERR_QSPI_BUSY   (cy_rslt_t)(CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_BOARD_LIB_SERIAL_FLASH, 6))
 
 extern
 
@@ -82,8 +82,6 @@ extern
  * \returns CY_RSLT_SUCCESS or error condition
  */
 cy_rslt_t ota_smif_initialize(void);
-
-
 
 /**
  * \brief Returns the page size for programming of the sector to which the given
@@ -106,8 +104,8 @@ uint32_t ota_smif_get_erase_size(uint32_t addr);
  * function. Returns error if (addr + length) exceeds the flash size.
  *
  * \param offset Starting offset within flash area to read from
- * \param length Number of data bytes to read
- * \param buf Pointer to the buffer to store the data read from the memory
+ * \param data   Pointer to the buffer to store the data read from the memory
+ * \param len    Number of data bytes to read
  * \returns CY_RSLT_SUCCESS if the read was successful, an error code otherwise.
  */
 cy_rslt_t ota_smif_read(uint32_t offset, uint8_t *data, size_t len);
@@ -115,11 +113,9 @@ cy_rslt_t ota_smif_read(uint32_t offset, uint8_t *data, size_t len);
 /**
  * \brief Writes the data to the serial flash memory. The program area
  * must have been erased prior to calling this API using
- * \ref cy_ota_serial_flash_qspi_erase() This is a blocking function. Returns error if
- * (addr + length) exceeds the flash size.
  * \param offset Starting offset within flash area to write to
- * \param length Number of bytes to write
- * \param buf Pointer to the buffer storing the data to be written
+ * \param data   Pointer to the buffer to write to flash
+ * \param length Number of data bytes to read
  * \returns CY_RSLT_SUCCESS if the write was successful, an error code
  *          otherwise.
  */
@@ -133,8 +129,6 @@ cy_rslt_t ota_smif_write(uint32_t offset, const uint8_t *data, size_t length);
  * For memories with hybrid sectors, returns error if the end address
  * (addr + length) is not aligned to the size of the sector in which the end
  * address is located.
- * Call \ref ota_smif_get_size() to get the flash size and
- * call \ref ota_smif_get_erase_size() to get the size of an erase sector.
  *
  * \param offset Starting offset to begin erasing
  * \param length Number of bytes to erase
