@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Over The Air (OTA) Update Library: Over The Air v2.0.0 Overview</title>
+<title>Over The Air (OTA) Update Library: Over The Air v3.0.0 Overview</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,10 +96,10 @@ $(document).ready(function(){initNavTree('index.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Over The Air v2.0.0 Overview </div>  </div>
+<div class="title">Over The Air v3.0.0 Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This library provides support for OTA updating of the application code running on a PSoC™ 6 Connectivity Device or CYW920829M2EVB-01 Device, using Wi-Fi or Bluetooth®.<br />
+<div class="textblock"><p>This library provides support for OTA updating of the application code running on a PSoC™ 6 Connectivity Device or 20829(CYW920829M2EVK-02) Device, using Wi-Fi or Bluetooth®.<br />
 <br />
  For simplification, this document may refer to an MQTT Broker or an HTTP Server as "server".<br />
 <br />
@@ -124,18 +124,19 @@ $(document).ready(function(){initNavTree('index.html','');});
 <li>The OTA Agent will download the OTA image to the upgrade (secondary) slot. <br />
  On the next reboot, MCUbootApp will copy the new version of the application from the upgrade (secondary) slot to the boot (primary) slot and run the application.</li>
 </ul>
-<p>You can skip Step 1 by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p>You can skip Step 1 by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
 <p>The ModusToolbox OTA code examples import this OTA library automatically.</p>
 <h1><a class="anchor" id="section_features"></a>
 Features and Functionality</h1>
 <p>This library utilizes MQTT or HTTPS and TLS, or Bluetooth® to securely connect to and download an update for the users application.</p>
 <p>Other features:</p>
-<p>Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p>Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
 <p>MQTT and HTTP</p><ul>
 <li>Configuration to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker connection.</li>
-<li>Runs in a separate background thread, only connecting to the server based on the parameters passed to <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</li>
+<li>Runs in a separate background thread, only connecting to the server based on the parameters passed to <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</li>
 <li>Provides a callback mechanism to report stages of connect, download percentage, and errors.</li>
 <li>Once the application starts the OTA Agent, the OTA Agent will contact the server at the defined intervals to see if there is an update available.</li>
+<li>Upon receiving the upgrade image, OTA Agent gives a callback to the application for writing the upgrade image to upgrade the slot partition of Flash.</li>
 </ul>
 <p>Bluetooth®</p><ul>
 <li>Runs in a separate thread with callbacks to the users application to handle the connection messages and download data.</li>
@@ -151,26 +152,37 @@ Integration Notes</h1>
  directory to the top-level code example directory.<br />
 <br />
 </li>
-<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6) or CM33 (CYW920829M2EVB-01) device used.<br />
+<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6) or CM33 (CYW920829M2EVK-02) device used.<br />
  Copy the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/configs/FreeRTOS directory to the top-level code example directory.<br />
 <br />
 </li>
+<li>Template OTA linker files are provided for all the supported platforms.<br />
+</li>
+<li>OTA library user is expected to copy the linker file template from the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;//<br />
+ to the top-level code example directory and update it. Or user can also create new one.<br />
+</li>
+<li>Please refer to the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/OTA_MCUBOOT_LINKER_FILES_README.md file for more details on OTA linker files.<br />
+</li>
+<li>Provide OTA linker file path in the project Makefile:<br />
+<div class="fragment"><div class="line">OTA_LINKER_FILE=&lt;Path to linker file&gt;</div>
+</div><!-- fragment --> <br />
+</li>
 <li>For <b>HTTP support</b>, add the following to the project Makefile:<br />
-<div class="fragment"><div class="line">COMPONENTS+=OTA_HTTP</div>
+<div class="fragment"><div class="line">OTA_HTTP_SUPPORT=1</div>
 </div><!-- fragment --> <br />
 </li>
 <li>For <b>MQTT support</b>, add the following to the project Makefile:<br />
-<div class="fragment"><div class="line">COMPONENTS+=OTA_MQTT</div>
+<div class="fragment"><div class="line">OTA_MQTT_SUPPORT=1</div>
 </div><!-- fragment --> <br />
 </li>
 <li>For <b>Non-Secure Bluetooth®</b> support, add the following to the project Makefile:<br />
-<div class="fragment"><div class="line">COMPONENTS+=OTA_BLUETOOTH OTA_BLUETOOTH_NON_SECURE</div>
+<div class="fragment"><div class="line">OTA_BT_SUPPORT=1 OTA_BT_SECURE=0</div>
 </div><!-- fragment --> <br />
 </li>
 <li>For <b>Secure Bluetooth®</b> support, add the following to the project Makefile:<br />
-<div class="fragment"><div class="line">COMPONENTS+=OTA_BLUETOOTH OTA_BLUETOOTH_SECURE</div>
+<div class="fragment"><div class="line">OTA_BT_SUPPORT=1 OTA_BT_SECURE=1</div>
 </div><!-- fragment --> <br />
- COMPONENTS OTA_BLUETOOTH, OTA_MQTT and OTA_HTTP can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
+ OTA_MQTT_SUPPORT, OTA_HTTP_SUPPORT and OTA_BT_SUPPORT can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
 <br />
 </li>
 </ul>
@@ -206,11 +218,11 @@ General Concept</h1>
  a. MCUBootApp verifies the update.<br />
  b. MCUBootApp SWAPs (or OVERWRITEs) the current with the update applications.<br />
  c. MCUBootApp starts the new (updated) application.<br />
- d. The updated application must call <a class="el" href="group__group__ota__functions.html#ga1a84d3c1849c666e2630417da3edf728" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a> to validate the update.<br />
- e. For SWAP, if the new application does not call <a class="el" href="group__group__ota__functions.html#ga1a84d3c1849c666e2630417da3edf728" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a>, MCUBootApp will REVERT on the next reset.<br />
+ d. The updated application must call <a class="el" href="group__group__ota__platform__functions.html#gad21f7262eb1aeffee97f18cf33bc38b2" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a> to validate the update.<br />
+ e. For SWAP, if the new application does not call <a class="el" href="group__group__ota__platform__functions.html#gad21f7262eb1aeffee97f18cf33bc38b2" title="The application has validated the new OTA image. ">cy_ota_storage_validated()</a>, MCUBootApp will REVERT on the next reset.<br />
 <br />
-<b>NOTE:</b> On secure MCUs such as 064, MCUBootApp is flashed as part of the provisioning step performed by the provisioning tools, and does not need to be built separately.<br />
- For more info see &lt;ota-update&gt;/&lt;version/&gt;/OTA_MCUBOOTAPP_README.md) section "5. cysecuretools for CY8CKIT-064B0S2-4343W".<br />
+<b>NOTE:</b> On secure MCUs such as PSoC™ 64, MCUBootApp is flashed as part of the provisioning step performed by the provisioning tools, and does not need to be built separately.<br />
+ For more info see &lt;mtb_shared&gt;/ota-update/&lt;version/&gt;/OTA_MCUBOOTAPP_README.md) section "5. cysecuretools for PSoC™ 64 and CYW20829 devices".<br />
  For more general information, see the various README.md files in the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/ directory:</li>
 </ol>
 <ul>
@@ -222,6 +234,8 @@ General Concept</h1>
 </li>
 <li>OTA_FLASH_LAYOUT_README.md<br />
 </li>
+<li>OTA_MCUBOOT_LINKER_FILES_README.md<br />
+</li>
 <li>configs/flashmap/MCUBoot_Build_Commands.md<br />
 </li>
 </ul>
@@ -232,7 +246,7 @@ API Overview</h1>
  When using Bluetooth®, <code>cy_ota_start_agent()</code> is called after the Peer sends a PREPARE_DOWNLOAD message.<br />
  When using MQTT or HTTP, the OTA Agent uses callbacks to signal the application when events occur.<br />
  <br />
- <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c" title="Start the OTA Background Agent. ">cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ctx_ptr)</a>;</code></p>
+ <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_agent_mem_interface_t *flash_interface, cy_ota_context_ptr *ctx_ptr)</a>;</code></p>
 <p>These defines determine when the checks happen. Between checks, the OTA Agent is not connected to a server, and not checking for updates.<br />
 </p><ul>
 <li>CY_OTA_INITIAL_CHECK_SECS</li>
@@ -251,7 +265,7 @@ API Overview</h1>
  <code>cy_rslt_t <a class="el" href="group__group__ota__functions.html#ga06bc6c2f2eb7cb6f52f80ef16574fd1e" title="Check for OTA update availability and download update now. ">cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr)</a>;</code></p>
 <h1><a class="anchor" id="section_override"></a>
 Override Default Settings</h1>
-<p>For MQTT and HTTP usage, copy the cy_ota_config.h file from the libs/ota-update/configs<br />
+<p>For MQTT and HTTP usage, copy the cy_ota_config.h file from the &lt;mtb_shared&gt;/ota-update/&lt;version&gt;/configs<br />
  directory to the top-level code example directory in the project.<br />
  Change these values to your preferred settings.<br />
  </p><div class="fragment"><div class="line"></div>
@@ -456,6 +470,184 @@ Code Snippets</h1>
 <div class="line">    .cb_arg = &amp;ota_context,                 <span class="comment">/* Set the value to NULL if the callback function is not used. */</span></div>
 <div class="line">    .reboot_upon_completion = 1             <span class="comment">/* Reboot after completing OTA with success. */</span></div>
 <div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*Storage APIs for flash operations. */</span></div>
+<div class="line"><a class="code" href="structcy__ota__agent__mem__interface__t.html">cy_ota_agent_mem_interface_t</a> storage_interfaces =</div>
+<div class="line">{</div>
+<div class="line">        .<a class="code" href="structcy__ota__agent__mem__interface__t.html#a3ef82b5bb41e23c740efa7a48ded51cf">read</a> = ota_mem_read,                      <span class="comment">/* Function callback for flash read. */</span></div>
+<div class="line">        .write = ota_mem_write,                    <span class="comment">/* Function callback for flash write. */</span></div>
+<div class="line">        .erase = ota_mem_erase,                    <span class="comment">/* Function callback for flash erase. */</span></div>
+<div class="line">        .get_erase_size = ota_mem_get_erase_size,  <span class="comment">/* Function callback to get flash erase size. */</span></div>
+<div class="line">        .get_prog_size = ota_mem_get_prog_size     <span class="comment">/* Function callback to get flash program size. */</span></div>
+<div class="line">};</div>
+<div class="line"></div>
+</div><!-- fragment --><p> <br />
+ <b>OTA flash operations callback:</b><br />
+ This example functions demonstrates the usage of the OTA flash operation(read/write/erase) callback functions. Implementation of flash operation callbacks is mandatory because OTA Agent depends on these callbacks for storing upgrade images.<br />
+ <br />
+ Note: You must initialize Flash before registering these callbacks.<br />
+ </p><div class="fragment"><div class="line"><span class="comment">/*******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Function Name: ota_mem_read()</span></div>
+<div class="line"><span class="comment"> *******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Summary:</span></div>
+<div class="line"><span class="comment"> *  Got a callback from OTA for flash read.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement read operation functionality.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   addr       Starting address to read from.</span></div>
+<div class="line"><span class="comment"> *  @param[out]  data       Pointer to the buffer to store the data read from the memory.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   len        Number of data bytes to read.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @return  CY_RSLT_SUCCESS</span></div>
+<div class="line"><span class="comment"> *           CY_RSLT_TYPE_ERROR</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *******************************************************************************/</span></div>
+<div class="line">cy_rslt_t ota_mem_read(<a class="code" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, <span class="keywordtype">void</span> *data, <span class="keywordtype">size_t</span> len)</div>
+<div class="line">{</div>
+<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add internal flash read logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add External flash read logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Not supported */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> result;</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Function Name: ota_mem_write()</span></div>
+<div class="line"><span class="comment"> *******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Summary:</span></div>
+<div class="line"><span class="comment"> *  Got a callback from OTA for flash write.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement write operation functionality.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   addr       Starting address to write to.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   data       Pointer to the buffer containing the data to be written.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   len        Number of bytes to write.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @return  CY_RSLT_SUCCESS</span></div>
+<div class="line"><span class="comment"> *           CY_RSLT_TYPE_ERROR</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *******************************************************************************/</span></div>
+<div class="line">cy_rslt_t ota_mem_write(<a class="code" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, <span class="keywordtype">void</span> *data, <span class="keywordtype">size_t</span> len)</div>
+<div class="line">{</div>
+<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add internal flash write logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add External flash write logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Not supported */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> result;</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Function Name: ota_mem_erase()</span></div>
+<div class="line"><span class="comment"> *******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Summary:</span></div>
+<div class="line"><span class="comment"> *  Got a callback from OTA for flash erase.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement erase operation functionality.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   addr       Starting address to begin erasing.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   len        Number of bytes to erase.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @return  CY_RSLT_SUCCESS</span></div>
+<div class="line"><span class="comment"> *           CY_RSLT_TYPE_ERROR</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *******************************************************************************/</span></div>
+<div class="line">cy_rslt_t ota_mem_erase(<a class="code" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, <span class="keywordtype">size_t</span> len)</div>
+<div class="line">{</div>
+<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add internal flash erase logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add External flash erase logic here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Not supported */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> result;</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Function Name: ota_mem_get_prog_size()</span></div>
+<div class="line"><span class="comment"> *******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Summary:</span></div>
+<div class="line"><span class="comment"> *  Got a callback from OTA to get flash programming size.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get program size functionality.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   addr       Address that belongs to the sector for which programming page size needs to be returned.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @return    Page size in bytes.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *******************************************************************************/</span></div>
+<div class="line"><span class="keywordtype">size_t</span> ota_mem_get_prog_size(<a class="code" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</div>
+<div class="line">{</div>
+<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add logic to get internal flash programing size here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add logic to get external flash programing size here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Not supported */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> result;</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/*******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Function Name: ota_mem_get_erase_size()</span></div>
+<div class="line"><span class="comment"> *******************************************************************************</span></div>
+<div class="line"><span class="comment"> * Summary:</span></div>
+<div class="line"><span class="comment"> *  Got a callback from OTA to get flash erase sector size.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get erase size functionality.</span></div>
+<div class="line"><span class="comment"> *  @param[in]   addr       Address that belongs to the sector for which sector erase size needs to be returned.</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *  @return    Erase sector size in bytes</span></div>
+<div class="line"><span class="comment"> *</span></div>
+<div class="line"><span class="comment"> *******************************************************************************/</span></div>
+<div class="line"><span class="keywordtype">size_t</span> ota_mem_get_erase_size(<a class="code" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</div>
+<div class="line">{</div>
+<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add logic to get internal flash erase sector size here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(mem_type == <a class="code" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Add logic to get external flash erase sector size here */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">    {</div>
+<div class="line">        <span class="comment">/* Not supported */</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">return</span> result;</div>
+<div class="line">}</div>
 <div class="line"></div>
 </div><!-- fragment --><p> <br />
  <b>OTA Application callback:</b><br />
@@ -818,7 +1010,7 @@ Code Snippets</h1>
 <div class="line">     agent_params.cb_arg                 = ota;</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Initialize and start the OTA Agent. */</span></div>
-<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
+<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;storage_interfaces, &amp;ota_context);</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>
@@ -848,13 +1040,13 @@ Code Snippets</h1>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Register with stack to receive GATT callback */</span></div>
 <div class="line">    status = wiced_bt_gatt_register(app_bt_gatt_event_handler);</div>
-<div class="line">    cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_DEBUG, <span class="stringliteral">&quot;wiced_bt_gatt_register() status (0x%lx) %s\n&quot;</span>, status, app_get_gatt_status_name(status));</div>
+<div class="line">    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, <span class="stringliteral">&quot;wiced_bt_gatt_register() status (0x%lx) %s\n&quot;</span>, status, app_get_gatt_status_name(status));</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Initialize GATT Database */</span></div>
 <div class="line">    status = wiced_bt_gatt_db_init(gatt_database, gatt_database_len, NULL);</div>
 <div class="line">    <span class="keywordflow">if</span>(status != WICED_BT_GATT_SUCCESS)</div>
 <div class="line">    {</div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_ERR, <span class="stringliteral">&quot;%s() wiced_bt_gatt_db_init() FAILED 0x%lx !\n&quot;</span>, __func__, status);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, <span class="stringliteral">&quot;%s() wiced_bt_gatt_db_init() FAILED 0x%lx !\n&quot;</span>, __func__, status);</div>
 <div class="line">    }</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Allow peer to pair */</span></div>
@@ -864,14 +1056,14 @@ Code Snippets</h1>
 <div class="line">    status = app_bt_set_advertisement_data();</div>
 <div class="line">    <span class="keywordflow">if</span>(status != WICED_SUCCESS)</div>
 <div class="line">    {</div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_ERR, <span class="stringliteral">&quot;%s() app_bt_set_advertisement_data() FAILED 0x%lx !\n&quot;</span>, __func__, status);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, <span class="stringliteral">&quot;%s() app_bt_set_advertisement_data() FAILED 0x%lx !\n&quot;</span>, __func__, status);</div>
 <div class="line">    }</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Start Undirected LE Advertisements on device startup. */</span></div>
 <div class="line">    status = wiced_bt_start_advertisements(BTM_BLE_ADVERT_UNDIRECTED_HIGH, BLE_ADDR_PUBLIC, NULL);</div>
 <div class="line">    <span class="keywordflow">if</span>(status != WICED_SUCCESS)</div>
 <div class="line">    {</div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_ERR, <span class="stringliteral">&quot;%s() wiced_bt_start_advertisements()  FAILED 0x%lx\n&quot;</span>, __func__, status);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, <span class="stringliteral">&quot;%s() wiced_bt_start_advertisements()  FAILED 0x%lx\n&quot;</span>, __func__, status);</div>
 <div class="line">    }</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Register call back and configuration with stack */</span></div>
@@ -910,24 +1102,24 @@ Code Snippets</h1>
 <div class="line">    {</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> GATT_CONNECTION_STATUS_EVT:    <span class="comment">/* GATT connection status change. Event data: #wiced_bt_gatt_connection_status_t */</span></div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_CONNECTION_STATUS_EVT:  %d\n&quot;</span>, __func__, event);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_CONNECTION_STATUS_EVT:  %d\n&quot;</span>, __func__, event);</div>
 <div class="line">        status = app_bt_connect_callback(&amp;p_event_data-&gt;connection_status);</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> GATT_ATTRIBUTE_REQUEST_EVT:    <span class="comment">/* GATT attribute request (from remote client). Event data: #wiced_bt_gatt_attribute_request_t */</span></div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_ATTRIBUTE_REQUEST_EVT:  %d type:%d\n&quot;</span>, __func__, event, p_attr_req-&gt;opcode);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_ATTRIBUTE_REQUEST_EVT:  %d type:%d\n&quot;</span>, __func__, event, p_attr_req-&gt;opcode);</div>
 <div class="line">        status = app_bt_server_callback(p_event_data);</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> GATT_GET_RESPONSE_BUFFER_EVT:      <span class="comment">/* GATT buffer request, typically sized to max of bearer mtu - 1 */</span></div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_GET_RESPONSE_BUFFER_EVT\n&quot;</span>, __func__);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_GET_RESPONSE_BUFFER_EVT\n&quot;</span>, __func__);</div>
 <div class="line">        p_event_data-&gt;buffer_request.buffer.p_app_rsp_buffer = app_bt_alloc_buffer (p_event_data-&gt;buffer_request.len_requested);</div>
 <div class="line">        p_event_data-&gt;buffer_request.buffer.p_app_ctxt       = (<span class="keywordtype">void</span>*)app_bt_free_buffer;</div>
 <div class="line">        status = WICED_BT_GATT_SUCCESS;</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> GATT_APP_BUFFER_TRANSMITTED_EVT:    <span class="comment">/* GATT buffer transmitted event,  check \ref wiced_bt_gatt_buffer_transmitted_t*/</span></div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_APP_BUFFER_TRANSMITTED_EVT.\n&quot;</span>, __func__);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_APP_BUFFER_TRANSMITTED_EVT.\n&quot;</span>, __func__);</div>
 <div class="line">        {</div>
 <div class="line">            pfn_free_buffer_t pfn_free = (pfn_free_buffer_t)p_event_data-&gt;buffer_xmitted.p_app_ctxt;</div>
 <div class="line"></div>
@@ -940,11 +1132,11 @@ Code Snippets</h1>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">case</span> GATT_OPERATION_CPLT_EVT:       <span class="comment">/* GATT operation complete. Event data: #wiced_bt_gatt_event_data_t */</span></div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_OPERATION_CPLT_EVT:  We are a server, nothing to do.\n&quot;</span>, __func__);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, <span class="stringliteral">&quot;\n\n%s() GATT_OPERATION_CPLT_EVT:  We are a server, nothing to do.\n&quot;</span>, __func__);</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">default</span>:</div>
-<div class="line">        cy_log_msg(<a class="code" href="group__group__cy__ota.html#ga480236f4e09abc4c72181b5dbdb6333b">CYLF_OTA</a>, CY_LOG_WARNING, <span class="stringliteral">&quot;\n\n%s()------------------&gt; Unhandled GATT event: %d\n\n&quot;</span>, __func__, event);</div>
+<div class="line">        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, <span class="stringliteral">&quot;\n\n%s()------------------&gt; Unhandled GATT event: %d\n\n&quot;</span>, __func__, event);</div>
 <div class="line">        status = WICED_BT_GATT_SUCCESS;</div>
 <div class="line">        <span class="keywordflow">break</span>;</div>
 <div class="line"></div>
@@ -996,7 +1188,7 @@ Code Snippets</h1>
 <div class="line">     network_params.<a class="code" href="structcy__ota__network__params__t.html#abcc290be8049d49f332165ac7aafb3e0">initial_connection</a> = <a class="code" href="group__group__ota__typedefs.html#ggabc03646427dec963bef37cb5dbb550faaa6e2c528481c3eb950755dd86dfb272f">CY_OTA_CONNECTION_BLE</a>;</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">/* Initialize and start the OTA Agent. */</span></div>
-<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga1b2b079590b8d0538e393e22e917e31c">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;ota_context);</div>
+<div class="line">    result = <a class="code" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8">cy_ota_agent_start</a>(&amp;network_params, &amp;agent_params, &amp;storage_interfaces, &amp;ota_context);</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>

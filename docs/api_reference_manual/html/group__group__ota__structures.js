@@ -29,5 +29,12 @@ var group__group__ota__structures =
       [ "do_not_send_result", "structcy__ota__agent__params__t.html#a05406d6107cc20e7cf9cde995ad3b33d", null ],
       [ "cb_func", "structcy__ota__agent__params__t.html#a2f3b68d908f64e031aca84d871554850", null ],
       [ "cb_arg", "structcy__ota__agent__params__t.html#a8734130b240a3c0121a412c1a92afffa", null ]
+    ] ],
+    [ "cy_ota_agent_mem_interface_t", "structcy__ota__agent__mem__interface__t.html", [
+      [ "read", "structcy__ota__agent__mem__interface__t.html#a3ef82b5bb41e23c740efa7a48ded51cf", null ],
+      [ "write", "structcy__ota__agent__mem__interface__t.html#a243ce7708d0cbe34711b1ead49b9abf6", null ],
+      [ "erase", "structcy__ota__agent__mem__interface__t.html#aabdd0254dc81308505cabb314fe6d111", null ],
+      [ "get_prog_size", "structcy__ota__agent__mem__interface__t.html#a92a8ca0829e2d51d32b0d3472e407e10", null ],
+      [ "get_erase_size", "structcy__ota__agent__mem__interface__t.html#a75fc22ae91e9a042868baa3a53de5151", null ]
     ] ]
 ];

@@ -6,7 +6,7 @@ Supported devices:
 - PSoC™ 6 MCU with
   - AIROC™ CYW4343W
   - CYW43012 Wi-Fi & Bluetooth® combo chip
-- CYW920829M2EVB-01 evaluation board.
+- CYW920829M2EVK-02 evaluation board.
 - CY8CKIT-062-BLE
 - CY8CPROTO-063-BLE
 - CYBLE-416045-EVAL
@@ -18,19 +18,21 @@ For <b>WiFi</b>, the OTA library utilizes MQTT or HTTP and TLS to securely conne
 For <b>Bluetooth®</b>, the OTA library works with an intermediate peer application on a laptop (or phone) to push the image to the device.
 
 ## Library Versions
+ota-update v3.0.0 works with ModusToolbox 3.0.
+
 ota-update v2.0.0 works with ModusToolbox 3.0 and is <b>not</b> backwards compatible with ModusToolbox 2.4.
 
 ota-update v1.0.0 works with ModusToolbox 2.4 and replaces anycloud-ota (all versions).
 
 The anycloud-ota vx.x.x library will be depricated soon.
 
-## 1. OTA Updating uses MCUBootApp
+## 1. OTA Update with MCUBootloader Application
 
 The OTA library works in concert with MCUBootApp to provide a no-fail solution to updating device software in the field.
 
-MCUBootApp is a separate application that is built outside of your application. It is programmed separately to the device and is not updated for the life of the device.
+MCUBootApp is a secure bootloader application for 32-bit microcontrollers and users should build it outside of the user OTA application. It is programmed separately to the device before flashing the user OTA application and is not updated for the life of the device.
 
-Your application will include the ota-update library, which will set the appropriate flags so that MCUBootApp knows when to perform an update of your application. The OTA library will download a new (updated) application, store it in flash, and set flags so that on the next reset, MCUBootApp will see there is an update available.
+User OTA application will include the ota-update library, which will set the appropriate flags so that MCUBootApp knows when to perform an update of your application. The OTA library will download a new (updated) application, store it in flash, and set flags so that on the next reset, MCUBootApp will see there is an update available.
 
 <b>The basic device boot sequence is as follows:</b>
 
@@ -44,7 +46,7 @@ Your application will include the ota-update library, which will set the appropr
    d. The updated application must call cy_ota_storage_validated() to validate the update.<br>
    e. For SWAP, if the new application does not call cy_ota_storage_validated(), MCUBootApp will REVERT on the next reset.<br>
 
-<b>NOTE:</b> On secure MCUs such as 064, MCUBootApp is flashed as part of the provisioning step performed by the provisioning tools, and does not need to be built separately. For more info see [MCUBootApp Information](./OTA_MCUBOOTAPP_README.md) section "5. cysecuretools for CY8CKIT-064B0S2-4343W".<br><br>
+<b>NOTE:</b> On secure MCUs such as PSoC™ 64, MCUBootApp is flashed as part of the provisioning step performed by the provisioning tools, and does not need to be built separately. For more information see [MCUBootApp Information](./OTA_MCUBOOTAPP_README.md#5-cysecuretools-for-psoc-64-and-cyw20829-devices).<br><br>
 
 <b>1.1 Flash layout requirements</b><br>
 
@@ -62,27 +64,20 @@ Besides primary and secondary slots, MCUBootApp has a code section, a section fo
 | Swap Buffer     | Varies by flash size | Used by MCUBootApp for SWAP operation |
 | Status          | Varies by size of Slots | Used by MCUBootApp for update status |
 
-For more information, please see \<ota-update\>/OTA_FLASH_LAYOUT_README.md.<br><br>
+For more information, please see [OTA Flash Layout Information](./OTA_FLASH_LAYOUT_README.md).<br><br>
 
-<b>1.2 MCUBootApp Cloning and Building</b><br>
+<b>1.2 Target and Flashmap Use</b><br>
 
-MCUBootApp is a standalone application that runs on CM0+ core. It is open source software taken and customized in terms of Flash map and is built outside of ModusToolbox. MCUBootApp is programmed/flashed on the device one time, at manufacture (or for development).
-
-MCUBoot itself is not OTA upgradable.
-
-For more information, please see \<ota-update\>/OTA_MCUBOOTAPP_README.md.
-
-<b>1.3 Target and Flashmap Use</b><br>
-
-These flashmaps are defaults for the supported targets as of v2.0.0 release.
+These flashmaps are defaults for the supported targets as of v3.0.0 release.
 
 | Target | Internal<br>Flash size | Flashmaps |
 |-------------------|---------------------|----------|
-| CY8CKIT-062S2-43012<br>CY8CKIT-064B0S2-4343W<br>CY8CPROTO-062-4343W<br>CY8CEVAL-062S2-CYW943439M2IPA1<br>CY8CEVAL-062S2-MUR-43439M2| 2M | psoc62_2m_ext_overwrite_single.json<br>psoc62_2m_ext_swap_single.json<br>psoc62_2m_int_overwrite_single.json<br>psoc62_2m_int_swap_single.json|
-| CY8CKIT-062-BLE | 1M | psoc62_1m_cm0_int_swap_single.json |
-| CY8CPROTO-063-BLE<br>CYBLE-416045-EVAL | 1M |psoc63_1m_cm0_int_swap_single.json |
-| CY8CPROTO-062S3-4343W  | 512K | psoc62_512k_ext_overwrite_single.json<br>psoc62_512k_ext_swap_single.json<br>psoc62_512k_ext_swap_single.json |
-| CYW920829M2EVB-01<br>CYW920829-VR | 0K | cyw20829_xip_overwrite_single.json<br>cyw20829_xip_swap_single.json|
+| CY8CKIT-062S2-43012<br>CY8CKIT-064B0S2-4343W<br>CY8CPROTO-062-4343W<br>CY8CEVAL-062S2-LAI-4373M2<br>CY8CEVAL-062S2-MUR-43439M2| 2M | Default - psoc62_2m_ext_swap_single.json<br>psoc62_2m_ext_overwrite_single.json<br>psoc62_2m_int_overwrite_single.json<br>psoc62_2m_int_swap_single.json|
+| CY8CPROTO-062-4343W | 2M | Default - psoc62_2m_int_swap_single.json |
+| CY8CKIT-062-BLE | 1M | Default - psoc62_1m_cm0_int_swap_single.json |
+| CY8CPROTO-063-BLE<br>CYBLE-416045-EVAL | 1M | Default - psoc63_1m_cm0_int_swap_single.json |
+| CY8CPROTO-062S3-4343W  | 512K | Default - psoc62_512k_xip_swap_single.json<br> psoc62_512k_ext_overwrite_single.json<br>psoc62_512k_ext_swap_single.json |
+| CYW920829M2EVK-02 | 0K | Default - cyw20829_xip_swap_single.json<br> cyw20829_xip_overwrite_single.json |
 
 <br>
 <br>
@@ -90,13 +85,13 @@ These flashmaps are defaults for the supported targets as of v2.0.0 release.
 | 2M Internal Flash Maps | Memory Usage |
 |--------------------------------|--------------|
 | psoc62_2m_ext_overwrite_single.json   | Internal primary, external secondary  |
- | psoc62_2m_ext_swap_single.json        | Internal primary, external secondary  |
+| psoc62_2m_ext_swap_single.json        | Internal primary, external secondary  |
 | psoc62_2m_int_overwrite_single.json   | Internal only (primary and secondary) |
 | psoc62_2m_int_swap_single.json        | Internal only (primary and secondary) |
 
 | 1M Internal Flash Maps | Memory Usage |
 |--------------------------------|--------------|
-|psoc62_1m_cm0_int_swap_single.json    | Internal only (primary and secondary) |
+| psoc62_1m_cm0_int_swap_single.json    | Internal only (primary and secondary) |
 | psoc63_1m_cm0_int_swap_single.json    | Internal only (primary and secondary) |
 
 
@@ -110,40 +105,52 @@ These flashmaps are defaults for the supported targets as of v2.0.0 release.
 | 0K Internal Flash Maps | Memory Usage |
 |--------------------------------|--------------|
 | cyw20829_xip_overwrite_single.json       | External only (primary and secondary) |
-|cyw20829_xip_swap_single.json             | External only (primary and secondary) |
+| cyw20829_xip_swap_single.json            | External only (primary and secondary) |
+| cyw20829_xip_swap_single_psvp.json       | External only (primary and secondary) |
 
+<b>1.3 MCUBootApp Cloning and Building</b><br>
 
-For more info see:
-- [OTA Flash Layout Information](./OTA_FLASH_LAYOUT_README.md)
-- [MCUBootApp Build Commands](./configs/flashmap/MCUBoot_Build_Commands.md)
+MCUBootApp is a standalone application. It is an open source software taken and customized in terms of Flash map and is built outside of ModusToolbox. MCUBootApp is programmed/flashed on the device one time, at manufacture (or for development).
+
+- MCUBootApp runs on the CM0+ CPU and starts any OTA enabled application on CM4 core in case of multicore Psoc6 devices.
+- In case of 20829 devices, MCUBootApp runs on CM33 CPU along with the OTA enabled applications.
+
+MCUBoot itself is not OTA upgradable.
+
+For cloning and building MCUBootApp refer to [MCUBootApp README](./OTA_MCUBOOTAPP_README.md).
 
 
 ## 2. Enabling OTA in an Application
 
-An application that is OTA Enabled runs on CM4. This application is built in ModusToolbox, incorporating the OTA library and making initialization calls to start the OTA process.
+OTA Enabled application is built in ModusToolbox, incorporating the OTA library and making initialization calls to start the OTA process.
+
+- It runs on CM4 CPU in case of multicore Psoc6 devices
+- In case of 20829 devices, it runs on CM33 CPU along with the MCUboot application.
 
 On a virgin device, main application is programmed / flashed to the device first time. Subsequent versions of the application (so called updates) are downloaded and upgraded using OTA.
 
-On some devices such as 064 kits, there will be multiple images such as main application and the TFM images that are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images.
+On some devices such as PSoC™ 64 kits, there will be multiple images such as main application and the TFM images that are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images.
 
 The ModusToolbox OTA code examples import the ota-update library automatically.
 
-For more information, please see \<ota-update\>/OTA_MAKEFILE_INFO_README.md.
+
+## 3. Push Model Updates
+
+<b>Bluetooth®</b> updates use a "Push" model. On reset / boot, the device advertises that it can handle an update, and a Host (laptop, phone, etc.) is used to connect and "Push" the update to the device.
 
 
-## 3. Pull Model Updates
+## 4. Pull Model Updates
 
 <b>WiFi</b> updates use a "Pull" model. There are two WiFi "Update Flows" that a user can designate. HTTP and MQTT transports can be used for this type of update.<br>
-<b>Bluetooth®</b> updates use a "Push" model. See section 4 below.<br><br>
 
-<b>3.1. Direct Flow</b><br>
+<b>4.1. Direct Flow</b><br>
 With "Direct" flow approach, device downloads a known file from the server/broker.
 
 a. HTTP: The device connects to the known HTTP Server and downloads the OTA update image using HTTP `GET` requests, asking for a range of data sequentially until all data is transferred.
 
 b. MQTT: The device connects to the known MQTT Broker topic and publishes a "Request Download" message with a "Unique Topic Name" to the Publisher. The Publisher python application then splits the OTA update image into chunks and publishes them on the unique topic.<br>
 
-<b>3.2. Job Flow</b><br>
+<b>4.2. Job Flow</b><br>
 With a "Job" flow approach, the device downloads a JSON formatted job document that provides information about where the update file is, its version, and other information concerning the update.
 
 a. The device connects to the server/broker to obtain the Job document.
@@ -152,29 +159,73 @@ a. The device connects to the server/broker to obtain the Job document.
 
 b. The device uses the Job document to determine if the OTA update image is an appropriate update.
 
-c. The device connects to the data server/broker and downloads the OTa image.
+c. The device connects to the data server/broker and downloads the OTA image.
 - HTTP: The image is downloaded using HTTP `GET` requests, asking for a range of data sequentially until all data is transferred.
 - MQTT: The device sends a "Request Download" message with the "Unique Topic Name" on the known topic. The puthon Publisher application then splits the OTA image into chunks and publishes them on the unique topic.
 
 
+## 5. Quick start
 
-## 4. Push Model Updates
+- Create OTA Application Makefile by referring [OTA Application Makefile Readme](./OTA_MAKEFILE_INFO_README.md).
 
-<b>Bluetooth®</b> updates use a "Push" model. On reset / boot, the device advertises that it can handle an update, and a Host (laptop, phone, etc.) is used to connect and "Push" the update to the device.
+- Update given template OTA linker file(Or Create new one) and use it in OTA Application Makefile. Refer [OTA Linker file Readme](./OTA_MCUBOOT_LINKER_FILES_README.md) for details.
 
-## 5. OTA Library Features and Functionality
+- The "cy_ota_config.h" file provides configuration options to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker/HTTP Server connection.
+  Copy the configuration file "\<ota-update library\>configs/cy_ota_config.h" file to the directory where your application Makefile is, and adjust as needed.
 
-The "cy_ota_config.h" file provides configuration options to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker/HTTP Server connection. Copy the configuration file "\<ota-update library\>configs/cy_ota_config.h" file to the directory where your application Makefile is, and adjust as needed.
+- To add the required flash support at the application level itself, the OTA update library implements a callback mechanism and offloads flash operations to application.
 
-- The OTA Agent runs in a separate background thread, only connecting to MQTT Broker/HTTP server based on the timing configuration. For Bluetooth® operation, the OTA library starts the Bluetooth® module and starts advertising.
+- The application must implement these flash operation callbacks and must register callbacks during OTA agent start by giving a parameter of type 'cy_ota_agent_mem_interface_t' in 'cy_ota_agent_start()'.
 
-- Parameters such as MQTT Broker/HTTP server and credentials are passed into `cy_ota_agent_start()`.
+    ```
+    typedef struct cy_ota_agent_mem_interface
+    {
+        cy_ota_agent_mem_read read;                    /**< Reads a block of data from the specified memory location.                   */
+        cy_ota_agent_mem_write write;                  /**< Write a block of data to the specified memory location at the given offset. */
+        cy_ota_agent_mem_erase erase;                  /**< Erase a block of memory area.                                               */
+        cy_ota_agent_mem_prog_size get_prog_size;      /**< Get programming block size.                                                 */
+        cy_ota_agent_mem_erase_size get_erase_size;    /**< Get Erase block size.                                                       */
+    } cy_ota_agent_mem_interface_t;
+    ```
+
+- For more details like Flash operation callback syntaxes, refer to "\<ota-update library\>include/cy_ota_api.h" .
+
+- Parameters such as MQTT Broker/HTTP server and credentials along with memory operation callbacks are passed into `cy_ota_agent_start()`.
+
+- The OTA Agent runs in a separate background thread, only connecting to MQTT Broker/HTTP server based on the timing configuration.
+  For Bluetooth® operation, the OTA library starts the Bluetooth® module and starts advertising.
 
 - The OTA Agent provides a callback mechanism to report stages of connect, download percentage, and errors. The application can override the default OTA Agent behavior for each step, or stop the current download during the callback.
 
 Once the application starts the OTA agent, the OTA agent will contact the MQTT Broker/HTTP server at the defined intervals to check whether an update is available. If available, the update will be downloaded. If the `reset_after_complete` flag was set in the agent parameters, the OTA Agent will automatically reset the device. On the next system reset, MCUBootApp will perform the update.
 
-## 6. Example Job Flow Update Sequence Using HTTP
+
+## 6. Example Update Sequence Using BLE (PUSH Model)
+
+- The Host(laptop, phone, etc) downloads the upgrade OTA Image from the server using LAN/WLAN/BT.
+
+- BLE devices running OTA application on reset advertises that they can handle OTA updates.
+
+- An intermediate application like WsOtaUpgrade.exe can be used for BT connection and update transfer.
+
+    ```
+    ./WsOtaUpgrade.exe /file ota-update.signed.bin
+    ```
+
+- From the scanned device list, Select the appropriate BLE OTA-supported device.
+
+- Click on the start button to initiate the upgrade image transfer from host to device.
+
+- Host application pushes the update to the device sequentially.
+
+- BLE OTA device stores the received chunks of upgrade image into its secondary Slot.
+
+- After transfer completion, On the next reboot MCUBootloader updates the image in a primary slot with the image in a secondary slot using OVERWRITE/SWAP option.
+
+- Now, the updated application runs from the primary slot.
+
+
+## 7. Example Job Flow Update Sequence Using HTTP
 
 1. The device connects to the HTTP server and uses the HTTP `GET` request to obtain the Job document (for example: *ota_update.json*).
 
@@ -186,9 +237,10 @@ Once the application starts the OTA agent, the OTA agent will contact the MQTT B
 
 For Job document information, please see Job Document section below.
 
-## 7. Example Job Flow Update Sequence Using MQTT
 
-1. The Publisher Python script (*libs/ota-update/scripts/publisher.py*) subscribes to a known topic (for example: *OTAUpdate/CY8CPROTO_062_4343W/publish_notify*) on the specified MQTT Broker.
+## 8. Example Job Flow Update Sequence Using MQTT
+
+1. The Publisher Python script (*mtb_shared/ota-update/scripts/publisher.py*) subscribes to a known topic (for example: *OTAUpdate/CY8CPROTO_062_4343W/publish_notify*) on the specified MQTT Broker.
 
 2. The device publishes the message "Update Availability" to the known topic. The message includes information about the device (manufacturer, product, serial number, application version, etc.), and a "Unique Topic Name" for the Publisher to send messages to the device.
 
@@ -203,7 +255,7 @@ For Job document information, please see Job Document section below.
 For Job document information, please see Job Document section below.
 
 
-## 8. The Pull Model Job Document
+## 9. The Pull Model Job Document
 
 The Job document is a JSON-formatted file that contains fields used to communicate between the Publisher script and the OTA Agent running on the device.
 
@@ -268,9 +320,9 @@ The following is an example Job document for an OTA update image that is availab
 }
 ```
 
-## 9. Setting Up the Supplied Publisher Python Script for MQTT Updates
+## 10. Setting Up the Supplied Publisher Python Script for MQTT Updates
 
-The *libs/ota-update/scripts/publisher.py* script contains several configurable values. Ensure that the parameters in the script match the application values. In addition, check the example application you are using for any special needs.
+The *mtb_shared/ota-update/scripts/publisher.py* script contains several configurable values. Ensure that the parameters in the script match the application values. In addition, check the example application you are using for any special needs.
 
 The Publisher and Subscriber scripts require an additional Python module.
 
@@ -281,7 +333,7 @@ pip install paho-mqtt
 Using the publisher script to test MQTT updates:
 
 ```
-cd libs/ota-update/scripts
+cd mtb_shared/ota-update/scripts
 python publisher.py [tls] [-l] [-f <filepath>] [-b <broker>] [-k <kit>] [-c <company_topic>]
 ```
 
@@ -340,14 +392,14 @@ Usage:
 
   This must also be mirrored in the application for the topic name. This allows for multiple devices being tested to simultaneously connect to different instances of the  Publisher running on different systems so that they do not interfere with each other.
 
-## 10. Using the Subscriber Python Script for testing MQTT Updates
+## 11. Using the Subscriber Python Script for testing MQTT Updates
 
 The *subscriber.py* script is provided as a verification script that acts the same as a device. It can be used to verify that the Publisher is working as expected. Ensure that the `BROKER_ADDRESS` matches the Broker used in *publisher.py*.
 
 Using the publisher script for verifying the Broker connection:
 
 ```
-cd libs/ota-update/scripts
+cd mtb_shared/ota-update/scripts
 python subscriber.py [tls] [-l] [-b broker] [-k kit] [-f filepath] [-c <chunk_size>] [-e <company_topic>]
 ```
 
@@ -409,7 +461,7 @@ Usage:
   This must also be mirrored in the application for the topic name. This allows for multiple devices being tested to simultaneously connect to different instances of the Publisher running on different systems so that they do not interfere with each other.
 
 
-## 11. Note on Using Windows 10
+## 12. Note on Using Windows 10
 
 When using ModusToolbox, you will need to install the pip requirements to Python in the ModusToolbox installation.
 
@@ -418,57 +470,60 @@ When using ModusToolbox, you will need to install the pip requirements to Python
 ```
 
 
-## 12. Supported Toolchains
-
-Please refer to \<ota-update\>/RELEASE.md for latest information.
+## 13. Supported Toolchains
 
 - GCC
 - IAR
 - ARM C
 
-## 13. Supported OS
+For the toolchain version information, please refer to [OTA Release.md](./RELEASE.md).
+
+## 14. Supported OS
 
 - FreeRTOS
 
-## 14. Supported Kits
 
-- [PSoC™ 6 Wi-Fi BT Prototyping Kit](https://www.cypress.com/CY8CPROTO-062-4343W) (CY8CPROTO-062-4343W)
-- [PSoC™ 62S2 Wi-Fi BT Pioneer Kit](https://www.cypress.com/CY8CKIT-062S2-43012) (CY8CKIT-062S2-43012)
+## 15. Supported Kits
+
+- [PSoC™ 6 Wi-Fi BT Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062-4343w/) (CY8CPROTO-062-4343W)
+- [PSoC™ 62S2 Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/) (CY8CKIT-062S2-43012)
 - [PSoC™ 62S3 Wi-Fi BT Prototyping Kit ](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062s3-4343w/)(CY8CPROTO-062S3-4343W)
-- [PSoC™ 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.cypress.com/documentation/development-kitsboards/psoc-64-secure-boot-wi-fi-bt-pioneer-kit-cy8ckit-064b0s2-4343w) (CY8CKIT-064B0S2-4343W)
-- [CY8CEVAL-062S2 Evaluation Kit](https://www.cypress.com/part/cy8ceval-062s2)(CY8CEVAL-062S2-LAI-4373M2 and CY8CEVAL-062S2-MUR-43439M2)
+- [PSoC™ 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-064b0s2-4343w/) (CY8CKIT-064B0S2-4343W)
+- [CY8CEVAL-062S2 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ceval-062s2/)(CY8CEVAL-062S2-LAI-4373M2 and CY8CEVAL-062S2-MUR-43439M2)
 - [PSoC™ 6-BLE Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062-ble/) (CY8CKIT-062-BLE)
 - [PSoC™ 6 BLE Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-063-ble/) (CY8CPROTO-063-BLE)
 - [EZ-BLE Arduino Evaluation Board](https://www.infineon.com/cms/en/product/evaluation-boards/cyble-416045-eval/) (CYBLE-416045-EVAL)
-- [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVB-01)
+- [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVK-02)
 
-## 15. Hardware Setup
+
+## 16. Hardware Setup
 
 This example uses the board's default configuration. See the kit user guide to ensure the board is configured correctly.
 
-**Note:** Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/cypresssemiconductorco/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
+**Note:** Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
 
-## 16. Software Setup
+
+## 17. Software Setup
 
 1. Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://ttssh2.osdn.jp/index.html.en).
 
 2. Python Interpreter. The supplied *publisher.py* script is tested with [Python 3.8.1](https://www.python.org/downloads/release/python-381/).
 
-## 17. Enabling Debug Output
 
-The *cy_log* facility is used to enable more levels of logging. To use the logging features, you need to call the initialization function. After that, you can adjust the level of logging for various "facilities".
+## 18. Enabling Debug Output
 
-At the minimum, you can initialize the logging system by including the header file, and calling the initialization function with a logging level. The other arguments are for callbacks to allow the application to handle the actual output (this enables you to log to an alternate destination), and provide a time stamp. See the *cy_log.h* file for the log levels. For OTA logging, use the `CYLF_OTA` facility.
+The 'ota-update' library disables all debug log messages by default. Do the following to enable log messages:
 
-```
-#include "cy_log.h"
+1. Add the `ENABLE_OTA_LOGS` macro to the *DEFINES* in the code example's Makefile. The Makefile entry should look like as follows:
+    ```
+    DEFINES+=ENABLE_OTA_LOGS
+    ```
 
-   cy_log_init(CY_LOG_WARNING, NULL, NULL);
-```
+2. Call the `cy_log_init()` function provided by the *cy-log* module. cy-log is part of the *connectivity-utilities* library. See [connectivity-utilities library API documentation](https://infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html) for cy-log details.
 
-## 18. Prepare for Building Your OTA Application
+## 19. Prepare for Building Your OTA Application
 
-Copy *\<ota-update-library\>/configs/cy_ota_config.h* to your application's top-level directory, and adjust for your application needs.
+Copy [OTA's cy_ota_config.h](./configs/cy_ota_config.h) to your application's top-level directory, and adjust for your application needs.
 
    ```
    cp \<ota-update-library\>/configs/cy_ota_config.h <application dir>
@@ -476,7 +531,8 @@ Copy *\<ota-update-library\>/configs/cy_ota_config.h* to your application's top-
 
 Also, a reminder to look at configuration files for other libraries.
 
-## 19. Limitations
+
+## 20. Limitations
 
 1. If not using a Job document with MQTT, and the device is not subscribed to the topic on the MQTT Broker when the Publisher sends the update, it will miss the update.
 
@@ -490,7 +546,8 @@ Also, a reminder to look at configuration files for other libraries.
 
 5. When using the ARM compiler with the CYW20829 or BLE platforms, ensure that MBEDTLS_ENTROPY_HARDWARE_ALT is not defined in mbedtls_user_config.h. When MBEDTLS_ENTROPY_HARDWARE_ALT is defined it is possible to encounter an unresolved symbol error during the link phase when using the ARM compiler.
 
-## 20. Additional Information
+
+## 21. Additional Information
 
 - [OTA Release version](./RELEASE.md)
 - [OTA Flash Layout Information](./OTA_FLASH_LAYOUT_README.md)
@@ -498,23 +555,26 @@ Also, a reminder to look at configuration files for other libraries.
 - [OTA API reference guide](https://infineon.github.io/ota-update/api_reference_manual/html/index.html)
 - ModusToolbox OTA Examples
     - [OTA MQTT Example](https://github.com/infineon/mtb-example-ota-mqtt)
-    - [OTA HTTP Example](https://github.com/infineon/mtb-example-ota-http)
-- [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.cypress.com/products/modustoolbox-software-environment)
+    - [OTA HTTP Example](https://github.com/infineon/mtb-example-ota-https)
+- [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.infineon.com/modustoolbox)
 - [MCUBootApp Information](./OTA_MCUBOOTAPP_README.md)
 - [MCUboot](https://github.com/JuulLabs-OSS/mcuboot/blob/cypress/docs/design.md) documentation
 
 Infineon also provides a wealth of data at www.infineon.com to help you select the right device, and quickly and effectively integrate it into your design.
 
-For PSoC™ 6 MCU devices, see [How to Design with PSoC 6 MCU - KBA223067](https://community.cypress.com/docs/DOC-14644) in the Infineon community.
-
-## 21. Document History
-
-| Document Version | Description of Change                                      |
-| ---------------- | ---------------------------------------------------------- |
-| 1.0.0            | New middleware library                                     |
+For PSoC™ 6 MCU devices, see [How to Design with PSoC 6 MCU - KBA223067](https://community.infineon.com/t5/Knowledge-Base-Articles/How-to-Design-with-PSoC-6-MCU-KBA223067/ta-p/248857) in the Infineon community.
 
 
+## Additional Information
 
-© 2022, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
-This software, associated documentation and materials ("Software") is owned by Cypress Semiconductor Corporation or one of its affiliates ("Cypress") and is protected by and subject to worldwide patent protection (United States and foreign), United States copyright laws and international treaty provisions. Therefore, you may use this Software only as provided in the license agreement accompanying the software package from which you obtained this Software ("EULA"). If no EULA applies, then any reproduction, modification, translation, compilation, or representation of this Software is prohibited without the express written permission of Cypress.
-Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress reserves the right to make changes to the Software without notice. Cypress does not assume any liability arising out of the application or use of the Software or any product or circuit described in the Software. Cypress does not authorize its products for use in any products where a malfunction or failure of the Cypress product may reasonably be expected to result in significant property damage, injury or death ("High Risk Product"). By including Cypress's product in a High Risk Product, the manufacturer of such system or application assumes all risk of such use and in doing so agrees to indemnify Cypress against all liability.
+- [ota-update RELEASE.md](./RELEASE.md)
+
+- [ota-update API documentation](https://Infineon.github.io/ota-update/api_reference_manual/html/index.html)
+
+- [ota-update version](./version.xml)
+
+- [Connectivity utilities API documentation - for cy-log details](https://Infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html)
+
+- [ModusToolbox® Software Environment, Quick Start Guide, Documentation, and Videos](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
+
+- [ModusToolbox&trade; code examples](https://github.com/infineon?q=mtb-example-anycloud%20NOT%20Deprecated)

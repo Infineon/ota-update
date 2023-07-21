@@ -4,7 +4,12 @@
 
 ## 1. Clone MCUBoot
 
-You need to first build and program the bootloader app *MCUBootApp* that is available in the MCUBoot GitHub repo before using an OTA application. MCUBootApp runs on the CM0+ CPU and starts any OTA enabled application on CM4. Clone the MCUBoot repository onto your local machine, **outside of your application directory.**
+- You need to first build and program the bootloader app *MCUBootApp* that is available in the MCUBoot GitHub repo before using an OTA application.
+
+    - MCUBootApp runs on the CM0+ CPU and starts any OTA enabled application on CM4 core in case of multicore Psoc6 devices.
+    - MCUBootApp runs on CM33 CPU along with the OTA enabled applications in the case of 20829 devices.
+
+- Clone the MCUBoot repository onto your local machine, **outside of your application directory.**
 
 -  Open a CLI terminal and run the following command:
 
@@ -20,7 +25,7 @@ You need to first build and program the bootloader app *MCUBootApp* that is avai
 - Change the branch to get the appropriate version:
 
    ```
-   git checkout v1.8.3-cypress
+   git checkout v1.8.4-cypress
    ```
 
 - Pull in sub-modules to build mcuboot:
@@ -37,7 +42,7 @@ You need to first build and program the bootloader app *MCUBootApp* that is avai
    ```
 
 <b>Note:</b>
-- The **CY8CKIT-064B0S2-4343W** is a special kit that uses cysecureboot. See "cysecuretools for CY8CKIT-064B0S2-4343W" information below.
+- The **CY8CKIT-064B0S2-4343W** is a special kit that uses cysecureboot. See [cysecuretools for PSoC™ 64 and CYW20829 devices](#5-cysecuretools-for-psoc-64-and-cyw20829-devices) information section below.
 
 ## 2. UART differences
 
@@ -47,7 +52,7 @@ The UART Tx and Rx pins are common across most TARGET boards. However, there are
 
 MCUBootApp supports using a JSON document to define the flash regions used for updating the application.
 
-Read **"\<ota-update library\>/configs/flashmap/MCUBoot_Build_Commands.md"** to see the flashmaps and build command to use. This ****must**** be the same flashmap used to buid your OTA application.
+Read **[MCUBoot Build Commands](./configs/flashmap/MCUBoot_Build_Commands.md)** to see the flashmaps and build command to use. This ****must**** be the same flashmap used to buid your OTA application.
 
 <b>Notes:</b>
 - The JSON files use ABSOLUTE address, which indicate which flash part is to be used for the particular section. The usage in MCUBootApp and OTA library defines the location by device_id and RELATIVE address. You do not need to do anything, this information is to reduce confusion.
@@ -56,34 +61,34 @@ Read **"\<ota-update library\>/configs/flashmap/MCUBoot_Build_Commands.md"** to 
 
 ## 4. Program MCUBootApp
 
--  Connect the board to your PC using the provided USB cable through the USB connector.
+- Connect the board to your PC using the provided USB cable through the USB connector.
 
- - Program the board using CyProgrammer or the instructions in your Customer Example Application notes.
+- From the terminal, execute the make program command to program the application using the default toolchain to the default target.
+    ```
+    make program TARGET=<BSP> TOOLCHAIN=<toolchain>
+    ```
 
-## 5. cysecuretools for CY8CKIT-064B0S2-4343W
+- Alternatively, program the board using CyProgrammer or the instructions in your Customer Example Application notes.
 
-For the CY8CKIT-062B0S2-4343W, we use a procedure called "provisioning" to put the CyBootloader into the device. Please refer to the board instructions for this procedure.
+## 5. cysecuretools for PSoC™ 64 and CYW20829 devices
 
-[PSoC™ 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.cypress.com/documentation/development-kitsboards/psoc-64-secure-boot-wi-fi-bt-pioneer-kit-cy8ckit-064b0s2-4343w) (CY8CKIT-064B0S2-4343W)
+For CY8CKIT-062B0S2-4343W kit and CYW20829 devices (SECURE), we use a procedure called "provisioning" to put the CyBootloader into the device. Please refer to the following cysecuretools documents for this procedure.
 
-## 6. Additional Information
+[Provisioning Steps for CY8CKIT-064B0S2-4343W](https://github.com/Infineon/cysecuretools/blob/master/docs/README_PSOC64.md)
 
-- [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.cypress.com/products/modustoolbox-software-environment)
--  [MCUboot](https://github.com/JuulLabs-OSS/mcuboot/blob/cypress/docs/design.md) documentation
+[Provisioning Steps for CYW20829 devices](https://github.com/Infineon/cysecuretools/blob/master/docs/README_CYW20829.md)
 
-Infineon also provides a wealth of data at www.infineon.com to help you select the right device, and quickly and effectively integrate it into your design.
+<b>Note:</b>
+- For 20829 NORMAL_NO_SECURE mode, MCUBootApp should be built and programmed separately.
 
-For PSoC™ 6 MCU devices, see [How to Design with PSoC 6 MCU - KBA223067](https://community.cypress.com/docs/DOC-14644) in the Infineon community.
+- Windows version of ModusToolbox 3.0/3.1 contains a Python package with CySecureTools 4.1.0. But, mcuboot v1.8.4-cypress requires the latest CySecureTools 4.2.0 version of the package for 20829 platforms.
 
-## 7. Document History
+- The following command can be used in the modus-shell terminal to find the current version of CySecureTools.
+    ````
+    cysecuretools version
+    ````
 
-| Document Version | Description of Change                                      |
-| ---------------- | ---------------------------------------------------------- |
-| 1.0.1            | Add UART information                                       |
-| 1.0.0            | New MCUBootApp usage document                                     |
-
-------
-
-© 2022, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
-This software, associated documentation and materials ("Software") is owned by Cypress Semiconductor Corporation or one of its affiliates ("Cypress") and is protected by and subject to worldwide patent protection (United States and foreign), United States copyright laws and international treaty provisions. Therefore, you may use this Software only as provided in the license agreement accompanying the software package from which you obtained this Software ("EULA"). If no EULA applies, then any reproduction, modification, translation, compilation, or representation of this Software is prohibited without the express written permission of Cypress.
-Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress reserves the right to make changes to the Software without notice. Cypress does not assume any liability arising out of the application or use of the Software or any product or circuit described in the Software. Cypress does not authorize its products for use in any products where a malfunction or failure of the Cypress product may reasonably be expected to result in significant property damage, injury or death ("High Risk Product"). By including Cypress's product in a High Risk Product, the manufacturer of such system or application assumes all risk of such use and in doing so agrees to indemnify Cypress against all liability.
+- If the current CySecureTools is not the latest 4.2.0 version, the following command can be used in modus-shell terminal to update it.
+    ````
+    pip install --upgrade --force-reinstall cysecuretools
+    ````

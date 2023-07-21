@@ -109,6 +109,21 @@ Typedefs</h2></td></tr>
 <tr class="memitem:gada4cd31993f1831e886a4beac9039220"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">cy_ota_callback_results_t</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gada4cd31993f1831e886a4beac9039220">cy_ota_callback_t</a> )(<a class="el" href="structcy__ota__cb__struct__t.html">cy_ota_cb_struct_t</a> *cb_data)</td></tr>
 <tr class="memdesc:gada4cd31993f1831e886a4beac9039220"><td class="mdescLeft">&#160;</td><td class="mdescRight">OTA Agent callback to the application.  <a href="#gada4cd31993f1831e886a4beac9039220">More...</a><br /></td></tr>
 <tr class="separator:gada4cd31993f1831e886a4beac9039220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4277185fd8a9835c2a5818b2732fb53a"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga4277185fd8a9835c2a5818b2732fb53a">cy_ota_agent_mem_read</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td></tr>
+<tr class="memdesc:ga4277185fd8a9835c2a5818b2732fb53a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory read callback function pointer type.  <a href="#ga4277185fd8a9835c2a5818b2732fb53a">More...</a><br /></td></tr>
+<tr class="separator:ga4277185fd8a9835c2a5818b2732fb53a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gae3c48dd64cbae8ecad60a0efc6fd2365">cy_ota_agent_mem_write</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td></tr>
+<tr class="memdesc:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory write callback function pointer type.  <a href="#gae3c48dd64cbae8ecad60a0efc6fd2365">More...</a><br /></td></tr>
+<tr class="separator:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5b2727b506829514e5ee301ea8fd402c"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga5b2727b506829514e5ee301ea8fd402c">cy_ota_agent_mem_erase</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, size_t len)</td></tr>
+<tr class="memdesc:ga5b2727b506829514e5ee301ea8fd402c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory erase callback function pointer type.  <a href="#ga5b2727b506829514e5ee301ea8fd402c">More...</a><br /></td></tr>
+<tr class="separator:ga5b2727b506829514e5ee301ea8fd402c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9bae329b7e83403ce241b8f3f96dec85"><td class="memItemLeft" align="right" valign="top">typedef size_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga9bae329b7e83403ce241b8f3f96dec85">cy_ota_agent_mem_prog_size</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td></tr>
+<tr class="memdesc:ga9bae329b7e83403ce241b8f3f96dec85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get program size callback function pointer type.  <a href="#ga9bae329b7e83403ce241b8f3f96dec85">More...</a><br /></td></tr>
+<tr class="separator:ga9bae329b7e83403ce241b8f3f96dec85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga36104e01a895d467de80afa363497b56"><td class="memItemLeft" align="right" valign="top">typedef size_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga36104e01a895d467de80afa363497b56">cy_ota_agent_mem_erase_size</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td></tr>
+<tr class="memdesc:ga36104e01a895d467de80afa363497b56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get erase size callback function pointer type.  <a href="#ga36104e01a895d467de80afa363497b56">More...</a><br /></td></tr>
+<tr class="separator:ga36104e01a895d467de80afa363497b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="gada4cd31993f1831e886a4beac9039220"></a>
@@ -130,6 +145,131 @@ Typedefs</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd></dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4277185fd8a9835c2a5818b2732fb53a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_read)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Memory read callback function pointer type. </p>
+<p>Callback of this type is invoked when a OTA Agent wants to read from memory.</p>
+<p>A function of this type must be implemented by the application to read contents from given memory location.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement read operation functionality. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to read from. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">data</td><td>Pointer to the buffer to store the data read from the memory. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of data bytes to read.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gae3c48dd64cbae8ecad60a0efc6fd2365"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_write)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Memory write callback function pointer type. </p>
+<p>Callback of this type is invoked when a OTA Agent wants to write to memory.</p>
+<p>A function of this type must be implemented by the application to write contents to given memory location.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement write operation functionality. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to write to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Pointer to the buffer containing the data to be written. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of bytes to write.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5b2727b506829514e5ee301ea8fd402c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_erase)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, size_t len)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Memory erase callback function pointer type. </p>
+<p>Callback of this type is invoked when a OTA Agent wants to erase memory.</p>
+<p>A function of this type must be implemented by the application to erase memory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement erase operation functionality. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to begin erasing. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of bytes to erase.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga9bae329b7e83403ce241b8f3f96dec85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef size_t( *  cy_ota_agent_mem_prog_size)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get program size callback function pointer type. </p>
+<p>Callback of this type is invoked when a OTA Agent wants to get programming page size.</p>
+<p>A function of this type must be implemented by the application to get programming page size.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement get program size functionality. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address that belongs to the sector for which programming page size needs to be returned.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Page size in bytes. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga36104e01a895d467de80afa363497b56"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef size_t( *  cy_ota_agent_mem_erase_size)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get erase size callback function pointer type. </p>
+<p>Callback of this type is invoked when a OTA Agent wants to get erase sector size.</p>
+<p>A function of this type must be implemented by the application to get erase sector size.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement get erase size functionality. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address that belongs to the sector for which sector erase size needs to be returned.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Erase sector size in bytes </dd></dl>
 
 </div>
 </div>

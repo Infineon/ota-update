@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 #include "cyabs_rtos.h"
-#include "cy_log.h"
+#include "cy_ota_log.h"
 #include "untar.h"
 
 /* This is so that Eclipse doesn't complain about the Logging messages */
@@ -326,13 +326,13 @@ typedef struct cy_ota_context_s {
 
     cy_ota_network_params_t     network_params;             /**< copy of initial connection parameters                      */
     cy_ota_agent_params_t       agent_params;               /**< copy of initial agent parameters                           */
-
+    cy_ota_agent_mem_interface_t flash_iface;               /**< Flash memory handle                                        */
     cy_event_t                  ota_event;                  /**< Event signaling @ref ota_events_t                          */
     cy_thread_t                 ota_agent_thread;           /**< OTA Agent Thread                                           */
 
     cy_ota_agent_state_t        curr_state;                 /**< current OTA system state                                   */
 
-    uint8_t                     stop_OTA_session;           /**< App callback returned CY_RSLT_OTA_ERROR_APP_RETURNED_STOP */
+    uint8_t                     stop_OTA_session;           /**< App callback returned CY_RSLT_OTA_ERROR_APP_RETURNED_STOP  */
     uint32_t                    initial_timer_sec;          /**< Seconds before connecting after cy_ota_agent_start()       */
     uint32_t                    next_timer_sec;             /**< Seconds between connect after successful download          */
     uint32_t                    retry_timer_sec;            /**< Seconds between connect retry after failed download        */

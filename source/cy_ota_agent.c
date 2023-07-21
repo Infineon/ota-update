@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,9 +23,10 @@
 
 #include "cy_ota_api.h"
 #include "cy_ota_internal.h"
+#include "cy_ota_platform.h"
 #include "cy_json_parser.h"
 
-#include "cy_log.h"
+#include "cy_ota_log.h"
 
 /***********************************************************************
  *
@@ -430,7 +431,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
     CY_OTA_CONTEXT_ASSERT(ctx);
     if (ctx->agent_params.cb_func != NULL)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "%s() CB reason:%d\n", __func__, reason);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "%s() CB reason:%d\n", __func__, reason);
 
         /* set up callback data */
         memset(&ctx->callback_data, 0x00, sizeof(ctx->callback_data));
@@ -468,7 +469,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         {
             strncpy(ctx->callback_data.json_doc, ctx->http.json_doc, (sizeof(ctx->callback_data.json_doc) - 1) );
             strncpy(ctx->callback_data.file, ctx->http.file, (sizeof(ctx->callback_data.file) - 1) );
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "------------> cb file: '%s'    http.file'%s' params:'%s'\n", ctx->callback_data.file, ctx->http.file, ctx->network_params.http.file);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "------------> cb file: '%s'    http.file'%s' params:'%s'\n", ctx->callback_data.file, ctx->http.file, ctx->network_params.http.file);
             if ( (ctx->curr_state == CY_OTA_STATE_DATA_CONNECT) &&
                  (ctx->network_params.use_get_job_flow == CY_OTA_JOB_FLOW) )
             {
@@ -497,9 +498,9 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         }
 
         /* call the Application Callback function */
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() calling OTA Callback state: %d\n", __func__, ctx->curr_state);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() calling OTA Callback state: %d\n", __func__, ctx->curr_state);
         cb_result = ctx->agent_params.cb_func(&ctx->callback_data);
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s()\n                         ----> CB returned: %d\n", __func__, cb_result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s()\n                         ----> CB returned: %d\n", __func__, cb_result);
 
         /* copy connection specific fields */
         if (ctx->curr_state == CY_OTA_STATE_JOB_PARSE)
@@ -574,7 +575,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         } /* if starting a connection */
         else
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() %d Not starting a connection\n", __func__, __LINE__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() %d Not starting a connection\n", __func__, __LINE__);
         }
 
         if ( (cb_result == CY_OTA_CB_RSLT_APP_SUCCESS) &&
@@ -607,7 +608,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         }
     } /* called callback */
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s(reason:%d) CB returning 0x%lx\n", __func__, reason, cb_result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s(reason:%d) CB returning 0x%lx\n", __func__, reason, cb_result);
 
     return cb_result;
 }
@@ -624,11 +625,11 @@ void cy_ota_set_state(cy_ota_context_t *ctx, cy_ota_agent_state_t state)
     /* sanity check */
     if (state >= CY_OTA_NUM_STATES )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() BAD STATE: %d\n", __func__, state);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() BAD STATE: %d\n", __func__, state);
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() state: %d\n", __func__, state);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() state: %d\n", __func__, state);
         ctx->curr_state = state;
     }
 }
@@ -638,7 +639,7 @@ static void cy_ota_set_last_error(cy_ota_context_t *ctx, cy_rslt_t error)
 {
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s(0x%lx) state:%d\n", __func__, error, ctx->curr_state);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s(0x%lx) state:%d\n", __func__, error, ctx->curr_state);
 
 
     if (error == CY_RSLT_SUCCESS)
@@ -659,7 +660,7 @@ static void cy_ota_set_last_error(cy_ota_context_t *ctx, cy_rslt_t error)
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s(0x%lx) DID NOT SET STATE curr state:%d\n", __func__, error, ctx->curr_state);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s(0x%lx) DID NOT SET STATE curr state:%d\n", __func__, error, ctx->curr_state);
     }
 }
 #endif
@@ -675,11 +676,11 @@ static void cy_ota_timer_callback(cy_timer_callback_arg_t arg)
 
     if (ctx->curr_state < CY_OTA_STATE_AGENT_WAITING )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Timer event with bad state: %s\n", __func__, cy_ota_get_state_string(ctx->curr_state));
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Timer event with bad state: %s\n", __func__, cy_ota_get_state_string(ctx->curr_state));
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() new timer event: 0x%lx\n", __func__, ctx->ota_timer_event);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() new timer event: 0x%lx\n", __func__, ctx->ota_timer_event);
         cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)ctx->ota_timer_event, 0);
     }
 }
@@ -698,7 +699,7 @@ static cy_rslt_t cy_ota_start_timer(cy_ota_context_t *ctx, uint32_t secs, ota_ev
 
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s() new timer event: 0x%lx\n", __func__, event);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() new timer event: 0x%lx\n", __func__, event);
 
     cy_ota_stop_timer(ctx);
     ctx->ota_timer_event = event;
@@ -720,13 +721,13 @@ static cy_rslt_t cy_ota_setup_connection_type(cy_ota_context_t *ctx)
     else if (ctx->curr_state == CY_OTA_STATE_JOB_REDIRECT)
     {
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "redirect:   curr: %s : %d\n", ctx->curr_server->host_name, ctx->curr_server->port);
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "redirect: parsed: %s : %d\n", ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "redirect:   curr: %s : %d\n", ctx->curr_server->host_name, ctx->curr_server->port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "redirect: parsed: %s : %d\n", ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
         if ( (strcmp(ctx->curr_server->host_name, ctx->parsed_job.broker_server.host_name) != 0 ) ||
              (ctx->curr_server->port != ctx->parsed_job.broker_server.port) )
         {
             ctx->curr_server    = &ctx->parsed_job.broker_server;
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() Redirect Change to %s %s : %d\n", __func__,
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() Redirect Change to %s %s : %d\n", __func__,
                     (ctx->curr_connect_type == CY_OTA_CONNECTION_MQTT) ? "MQTT Broker" : "HTTP Server",
                     ctx->curr_server->host_name, ctx->curr_server->port);
             result = CY_RSLT_OTA_CHANGING_SERVER;
@@ -735,7 +736,7 @@ static cy_rslt_t cy_ota_setup_connection_type(cy_ota_context_t *ctx)
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() connection:%d state:%s!\n", __func__,
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() connection:%d state:%s!\n", __func__,
                     ctx->curr_connect_type, cy_ota_get_state_string(ctx->curr_state));
         switch (ctx->curr_connect_type)
         {
@@ -749,7 +750,7 @@ static cy_rslt_t cy_ota_setup_connection_type(cy_ota_context_t *ctx)
             if (ctx->curr_server != &ctx->network_params.mqtt.broker)
             {
                 ctx->curr_server    = &ctx->network_params.mqtt.broker;
-                cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Set to MQTT Broker %s : %d\n", __func__,
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Set to MQTT Broker %s : %d\n", __func__,
                         ctx->curr_server->host_name, ctx->curr_server->port);
                 result = CY_RSLT_OTA_CHANGING_SERVER;
             }
@@ -764,7 +765,7 @@ static cy_rslt_t cy_ota_setup_connection_type(cy_ota_context_t *ctx)
             if (ctx->curr_server != &ctx->network_params.http.server )
             {
                 ctx->curr_server    = &ctx->network_params.http.server;
-                cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Set to HTTP Server %s : %d\n", __func__,
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Set to HTTP Server %s : %d\n", __func__,
                         ctx->curr_server->host_name, ctx->curr_server->port);
                 result = CY_RSLT_OTA_CHANGING_SERVER;
             }
@@ -804,8 +805,8 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
     obj_len = json_obj->object_string_length;
     val = json_obj->value;
     val_len = json_obj->value_length;
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "%s() name : %.*s\n", __func__, obj_len, obj);
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "%s() value: %.*s\n", __func__, val_len, val);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "%s() name : %.*s\n", __func__, obj_len, obj);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "%s() value: %.*s\n", __func__, val_len, val);
 
     /* Note - memcpy is used to limit the length of the copy.
      * The whole job_info struct is cleared to 0x00 before
@@ -820,7 +821,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.message) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Message text too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Message text too long!\n");
                     val_len = sizeof(ctx->parsed_job.message) - 1;
                 }
                 memcpy(ctx->parsed_job.message, val, val_len);
@@ -830,7 +831,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.manuf) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Manufacturer name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Manufacturer name too long!\n");
                     val_len = sizeof(ctx->parsed_job.manuf) - 1;
                 }
                 memcpy(ctx->parsed_job.manuf, val, val_len);
@@ -841,7 +842,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 /* Manuf Id before Manuf as start of field name is the same */
                 if (val_len > sizeof(ctx->parsed_job.manuf_id) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Manufacturer ID name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Manufacturer ID name too long!\n");
                     val_len = sizeof(ctx->parsed_job.manuf_id) - 1;
                 }
                 memcpy(ctx->parsed_job.manuf_id, val, val_len);
@@ -851,7 +852,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.product) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Product Name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Product Name too long!\n");
                     val_len = sizeof(ctx->parsed_job.product) - 1;
                 }
                 memcpy(ctx->parsed_job.product, val, val_len);
@@ -861,7 +862,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.serial) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Serial Number text too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Serial Number text too long!\n");
                     val_len = sizeof(ctx->parsed_job.serial) - 1;
                 }
                 memcpy(ctx->parsed_job.serial, val, val_len);
@@ -873,7 +874,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 const char  *dot;
                 if (val_len > sizeof(ctx->parsed_job.app_ver) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Version Number text too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Version Number text too long!\n");
                     val_len = sizeof(ctx->parsed_job.app_ver) - 1;
                 }
                 memcpy(ctx->parsed_job.app_ver, val, val_len);
@@ -882,7 +883,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 dot = strchr(ctx->parsed_job.app_ver, '.');
                 if (dot == NULL)
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() OTA Job Bad Version field %.*s\n", __func__, val_len, val);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() OTA Job Bad Version field %.*s\n", __func__, val_len, val);
                     return CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
                 }
                 dot++;
@@ -890,7 +891,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 dot = strchr(dot, '.');
                 if (dot == NULL)
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() OTA Job Bad Version field %.*s\n", __func__, val_len, val);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() OTA Job Bad Version field %.*s\n", __func__, val_len, val);
                     return CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
                 }
                 dot++;
@@ -902,7 +903,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.board) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Board Name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Board Name too long!\n");
                     val_len = sizeof(ctx->parsed_job.board) - 1;
                 }
                 memcpy(ctx->parsed_job.board, val, val_len);
@@ -925,7 +926,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 }
                 else
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() OTA Job Unknown Connection Type %.*s\n", __func__, val_len, val);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() OTA Job Unknown Connection Type %.*s\n", __func__, val_len, val);
                     return CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
                 }
             }
@@ -939,7 +940,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
                 {
                     if (val_len > sizeof(ctx->parsed_job.new_host_name) )
                     {
-                        cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Broker / Server text too long. Increase CY_OTA_JOB_URL_BROKER_LEN!\n");
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Broker / Server text too long. Increase CY_OTA_JOB_URL_BROKER_LEN!\n");
                         val_len = sizeof(ctx->parsed_job.new_host_name) - 1;
                     }
                     memset(ctx->parsed_job.new_host_name, 0x00, sizeof(ctx->parsed_job.new_host_name));
@@ -958,7 +959,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.file) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: File name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: File name too long!\n");
                     val_len = sizeof(ctx->parsed_job.file) - 1;
                 }
                 memcpy(ctx->parsed_job.file, val, val_len);
@@ -968,14 +969,14 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
             {
                 if (val_len > sizeof(ctx->parsed_job.topic) )
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Topic name too long!\n");
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Topic name too long!\n");
                     val_len = sizeof(ctx->parsed_job.topic) - 1;
                 }
                 memcpy(ctx->parsed_job.topic, val, val_len);
             }
             else
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Job parse: Unknown Field: %.*s   Value: %.*s\n!!", obj_len, obj, val_len, val);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Job parse: Unknown Field: %.*s   Value: %.*s\n!!", obj_len, obj, val_len, val);
             }
         }
         break;
@@ -988,7 +989,7 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
     case JSON_NULL_TYPE:
     case UNKNOWN_JSON_TYPE:
     default:
-        cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() unknown JSON type: %d Field: %.*s \n", __func__, json_obj->value_type, obj_len, obj);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() unknown JSON type: %d Field: %.*s \n", __func__, json_obj->value_type, obj_len, obj);
         break;
     }
 
@@ -997,42 +998,42 @@ static cy_rslt_t cy_OTA_JSON_callback(cy_JSON_object_t* json_obj, void *arg)
 
 static void cy_ota_print_parsed_doc_info(cy_ota_context_t *ctx)
 {
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "\n");
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Parsed OTA JSON Job doc info:\n");
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Message  : %s\n", ctx->parsed_job.message);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Manuf    : %s\n", ctx->parsed_job.manuf);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Manuf ID : %s\n", ctx->parsed_job.manuf_id);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Product  : %s\n", ctx->parsed_job.product);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Serial # : %s\n", ctx->parsed_job.serial);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Version  : %s (%d.%d.%d)\n", ctx->parsed_job.app_ver, ctx->parsed_job.ver_major,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "\n");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Parsed OTA JSON Job doc info:\n");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Message  : %s\n", ctx->parsed_job.message);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Manuf    : %s\n", ctx->parsed_job.manuf);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Manuf ID : %s\n", ctx->parsed_job.manuf_id);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Product  : %s\n", ctx->parsed_job.product);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Serial # : %s\n", ctx->parsed_job.serial);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Version  : %s (%d.%d.%d)\n", ctx->parsed_job.app_ver, ctx->parsed_job.ver_major,
                                              ctx->parsed_job.ver_minor, ctx->parsed_job.ver_build);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Board    : %s\n", ctx->parsed_job.board);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "  Connection: %s\n", (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_MQTT) ? CY_OTA_MQTT_STRING :
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Board    : %s\n", ctx->parsed_job.board);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "  Connection: %s\n", (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_MQTT) ? CY_OTA_MQTT_STRING :
                                 (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTP) ? CY_OTA_HTTP_STRING :
                                 (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTPS) ? CY_OTA_HTTPS_STRING :
                                 "Unknown");
     if (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_MQTT)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Broker   : %s\n", ctx->parsed_job.broker_server.host_name);
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Port     : %d\n", ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Broker   : %s\n", ctx->parsed_job.broker_server.host_name);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Port     : %d\n", ctx->parsed_job.broker_server.port);
 
     }
     else if ( (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTP) ||
               (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTPS) )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Server   : %s\n", ctx->parsed_job.broker_server.host_name);
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Port     : %d\n", ctx->parsed_job.broker_server.port);
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   FILE     : %s\n", ctx->parsed_job.file);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Server   : %s\n", ctx->parsed_job.broker_server.host_name);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Port     : %d\n", ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   FILE     : %s\n", ctx->parsed_job.file);
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Bad Connection Type in Job Doc : %s\n", (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_MQTT) ? CY_OTA_MQTT_STRING :
-						(ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTP) ? CY_OTA_HTTP_STRING :
-					    (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTPS) ? CY_OTA_HTTPS_STRING :
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Bad Connection Type in Job Doc : %s\n", (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_MQTT) ? CY_OTA_MQTT_STRING :
+                        (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTP) ? CY_OTA_HTTP_STRING :
+                        (ctx->parsed_job.connect_type == CY_OTA_CONNECTION_HTTPS) ? CY_OTA_HTTPS_STRING :
                                 "Unknown");
     }
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Unique Topic : %s\n", ctx->parsed_job.topic);
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "\n");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Unique Topic : %s\n", ctx->parsed_job.topic);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "\n");
 }
 #endif
 
@@ -1079,7 +1080,7 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
     result = cy_JSON_parser( buffer, length);
     if (result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "OTA Could not parse the Job JSON document! 0x%lx\n", result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "OTA Could not parse the Job JSON document! 0x%lx\n", result);
         cy_rtos_delay_milliseconds(1000); /* delay so message can be printed before printing doc data */
         cy_ota_print_data(buffer, length);
         result = CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
@@ -1099,7 +1100,7 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
            ( (uint32_t)(APP_VERSION_BUILD + 1) >=     /* fix Coverity 238370 when APP_VERSION_BUILD == 0 */
              (uint32_t)(ctx->parsed_job.ver_build + 1) ) ) )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "OTA Job - Current Application version %d.%d.%d update version %d.%d.%d. Fail.\n",
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "OTA Job - Current Application version %d.%d.%d update version %d.%d.%d. Fail.\n",
                     APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_BUILD,
                     ctx->parsed_job.ver_major, ctx->parsed_job.ver_minor, ctx->parsed_job.ver_build);
         result = CY_RSLT_OTA_ERROR_INVALID_VERSION;
@@ -1109,7 +1110,7 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
     /* validate kit type */
     if (strcmp(ctx->parsed_job.board, CY_TARGET_BOARD_STRING) != 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "OTA Job - board %s does not match this kit %s.\n", ctx->parsed_job.board, CY_TARGET_BOARD_STRING);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "OTA Job - board %s does not match this kit %s.\n", ctx->parsed_job.board, CY_TARGET_BOARD_STRING);
         result = CY_RSLT_OTA_ERROR_WRONG_BOARD;
         goto _end_JSON_parse;
     }
@@ -1118,7 +1119,7 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
          (ctx->parsed_job.broker_server.port != 0) &&
          (ctx->parsed_job.broker_server.port != ctx->curr_server->port) )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "OTA Job - Switching ports from %d to %d.\n", ctx->curr_server->port, ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "OTA Job - Switching ports from %d to %d.\n", ctx->curr_server->port, ctx->parsed_job.broker_server.port);
     }
 
     /* do we need to change Broker/Server ? */
@@ -1131,12 +1132,12 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
     {
         strncpy(ctx->parsed_job.new_host_name, ctx->curr_server->host_name, (sizeof(ctx->parsed_job.new_host_name) - 1));
         ctx->parsed_job.broker_server.port = ctx->curr_server->port;
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s Use same server '%s:%d'\n", __func__, ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s Use same server '%s:%d'\n", __func__, ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s Switch server was: %s:%d\n", __func__, ctx->curr_server->host_name, ctx->curr_server->port);
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s Switch server new: %s:%d\n", __func__, ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s Switch server was: %s:%d\n", __func__, ctx->curr_server->host_name, ctx->curr_server->port);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s Switch server new: %s:%d\n", __func__, ctx->parsed_job.broker_server.host_name, ctx->parsed_job.broker_server.port);
         result = CY_RSLT_OTA_CHANGING_SERVER;
         goto _end_JSON_parse;
     }
@@ -1148,7 +1149,7 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
              (ctx->parsed_job.broker_server.port != CY_OTA_MQTT_BROKER_PORT_TLS) &&
              (ctx->parsed_job.broker_server.port != CY_OTA_MQTT_BROKER_PORT_TLS_CERT) )
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "  Check Job Doc for correct MQTT Port: %d\n", ctx->parsed_job.broker_server.port);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "  Check Job Doc for correct MQTT Port: %d\n", ctx->parsed_job.broker_server.port);
         }
 
     }
@@ -1158,12 +1159,12 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
         if ( (ctx->parsed_job.broker_server.port != CY_OTA_HTTP_SERVER_PORT) &&
              (ctx->parsed_job.broker_server.port != CY_OTA_HTTP_SERVER_PORT_TLS) )
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "  Check Job Doc for correct HTTP Port: %d\n", ctx->parsed_job.broker_server.port);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "  Check Job Doc for correct HTTP Port: %d\n", ctx->parsed_job.broker_server.port);
         }
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "  Check Job Doc - connection type\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "  Check Job Doc - connection type\n");
         result = CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
         goto _end_JSON_parse;
     }
@@ -1215,7 +1216,7 @@ static void cy_ota_start_initial_timer(cy_ota_context_t *ctx)
         secs = 1;
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() START INITIAL TIMER %ld secs\n", __func__, ctx->initial_timer_sec);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() START INITIAL TIMER %ld secs\n", __func__, ctx->initial_timer_sec);
     cy_ota_start_timer(ctx, secs, CY_OTA_EVENT_START_UPDATE);
 }
 
@@ -1223,7 +1224,7 @@ static void cy_ota_start_retry_timer(cy_ota_context_t *ctx)
 {
     if (ctx->retry_timer_sec > 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() START RETRY TIMER %ld secs\n", __func__, ctx->retry_timer_sec);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() START RETRY TIMER %ld secs\n", __func__, ctx->retry_timer_sec);
         cy_ota_start_timer(ctx, ctx->retry_timer_sec, CY_OTA_EVENT_START_UPDATE);
     }
 }
@@ -1233,7 +1234,7 @@ static void cy_ota_start_next_timer(cy_ota_context_t *ctx)
     /* Use CY_OTA_NEXT_CHECK_SECS to set timer */
     if (ctx->next_timer_sec > 0 )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() START NEXT TIMER %ld secs\n", __func__, ctx->next_timer_sec);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() START NEXT TIMER %ld secs\n", __func__, ctx->next_timer_sec);
         cy_ota_start_timer(ctx, ctx->next_timer_sec, CY_OTA_EVENT_START_UPDATE);
     }
 }
@@ -1278,12 +1279,12 @@ static cy_rslt_t cy_ota_wait_for_start(cy_ota_context_t *ctx)
 
     while ( true )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() Wait for timer event to start us off \n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() Wait for timer event to start us off \n", __func__);
 
         /* get event */
         waitfor = CY_OTA_EVENT_THREAD_EVENTS;
         result = cy_rtos_waitbits_event(&ctx->ota_event, &waitfor, 1, 0, CY_OTA_WAIT_FOR_EVENTS_MS);
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "%s() OTA Agent cy_rtos_waitbits_event: 0x%lx type:%d mod:0x%lx code:%d\n", __func__, waitfor,
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "%s() OTA Agent cy_rtos_waitbits_event: 0x%lx type:%d mod:0x%lx code:%d\n", __func__, waitfor,
                     CY_RSLT_GET_TYPE(result), CY_RSLT_GET_MODULE(result), CY_RSLT_GET_CODE(result) );
 
         /* We only want to act on events we are waiting on.
@@ -1302,7 +1303,7 @@ static cy_rslt_t cy_ota_wait_for_start(cy_ota_context_t *ctx)
         if (waitfor & CY_OTA_EVENT_SHUTDOWN_NOW)
         {
             cy_ota_stop_timer(ctx);
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() SHUTDOWN NOW \n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() SHUTDOWN NOW \n", __func__);
             result = CY_RSLT_OTA_EXITING;
             break;
         }
@@ -1328,7 +1329,7 @@ static cy_rslt_t cy_ota_determine_flow(cy_ota_context_t *ctx)
     /* possibly restore the connection */
     result = cy_ota_setup_connection_type(ctx);
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() cy_ota_setup_connection_type() result: 0x%lx to server %s:%d.\n", __func__,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() cy_ota_setup_connection_type() result: 0x%lx to server %s:%d.\n", __func__,
             result, ctx->curr_server->host_name, ctx->curr_server->port);
 #endif
     if ( (result == CY_RSLT_SUCCESS) || (result == CY_RSLT_OTA_CHANGING_SERVER) )
@@ -1344,7 +1345,7 @@ static cy_rslt_t cy_ota_determine_flow(cy_ota_context_t *ctx)
         }
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "OTA Begin %s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "OTA Begin %s\n",
         (ctx->network_params.use_get_job_flow == CY_OTA_JOB_FLOW) ? "Job Flow" : "Direct Flow");
 
 #ifdef COMPONENT_OTA_HTTP
@@ -1353,24 +1354,24 @@ static cy_rslt_t cy_ota_determine_flow(cy_ota_context_t *ctx)
      * - If Direct flow, App set to the name of the OTA Image file
      * */
     memset(ctx->http.file, 0x00, sizeof(ctx->http.file));
-    strncpy(ctx->http.file, ctx->network_params.http.file, (sizeof(ctx->http.file) - 1) );
+    strncpy(ctx->http.file, ctx->network_params.http.file, (sizeof(ctx->http.file) - 1));
     if (strlen(ctx->http.file) < 1)
     {
-		if ( strlen(CY_OTA_HTTP_JOB_FILE) > (sizeof(ctx->http.file) - 1))
-		{
-			size_t copy_max = sizeof(ctx->http.file) - 1;
-			if (strlen(CY_OTA_HTTP_JOB_FILE) < copy_max)
-			{
-				copy_max = strlen(CY_OTA_HTTP_JOB_FILE);
-			}
-			strncpy(ctx->http.file, CY_OTA_HTTP_JOB_FILE, copy_max);
-		}
-		else
-		{
-			strcpy(ctx->http.file, CY_OTA_HTTP_JOB_FILE);
-		}
+        if ( strlen(CY_OTA_HTTP_JOB_FILE) > (sizeof(ctx->http.file) - 1))
+        {
+            size_t copy_max = sizeof(ctx->http.file) - 1;
+            if (strlen(CY_OTA_HTTP_JOB_FILE) < copy_max)
+            {
+                copy_max = strlen(CY_OTA_HTTP_JOB_FILE);
+            }
+            strncpy(ctx->http.file, CY_OTA_HTTP_JOB_FILE, copy_max);
+        }
+        else
+        {
+            strcpy(ctx->http.file, CY_OTA_HTTP_JOB_FILE);
+        }
     }
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "OTA Begin %s [%s]\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "OTA Begin %s [%s]\n",
         (ctx->network_params.use_get_job_flow == CY_OTA_JOB_FLOW) ? "Job Flow" : "Direct Flow", ctx->http.file);
 #endif
     return result;
@@ -1391,7 +1392,7 @@ static cy_rslt_t cy_ota_open_filesystem(cy_ota_context_t *ctx)
 
     if (result == CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Filesystem open\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Filesystem open\n");
         ctx->storage_open = 1;
     }
 
@@ -1407,7 +1408,7 @@ static cy_rslt_t cy_ota_close_filesystem(cy_ota_context_t *ctx)
     {
         result = cy_ota_storage_close(ctx);
 
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Filesystem closed\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Filesystem closed\n");
     }
 
     ctx->storage_open = 0;
@@ -1422,7 +1423,7 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
     /* ChecK if we are already connected */
     if (ctx->device_connected == 1)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() Already connected!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() Already connected!\n", __func__);
         return CY_RSLT_OTA_ALREADY_CONNECTED;
     }
 
@@ -1441,13 +1442,13 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
         /* check if app provided connection */
         if (ctx->mqtt.connection_from_app == true)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() App provided MQTT connection.\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() App provided MQTT connection.\n", __func__);
             return CY_RSLT_SUCCESS;
         }
 
         if (ctx->mqtt.connection_established == true)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() MQTT Already connected.\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() MQTT Already connected.\n", __func__);
             return CY_RSLT_OTA_ALREADY_CONNECTED;
         }
 
@@ -1462,13 +1463,13 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
         /* check if app provided connection */
         if (ctx->http.connection_from_app == true)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() App provided HTTP connection.\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() App provided HTTP connection.\n", __func__);
             return CY_RSLT_SUCCESS;
         }
 
         if (ctx->http.connection != NULL)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() HTTP Already connected.\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() HTTP Already connected.\n", __func__);
             return CY_RSLT_OTA_ALREADY_CONNECTED;
         }
         result = cy_ota_http_connect(ctx);
@@ -1476,7 +1477,7 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
     else
 #endif
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() CONNECT Invalid job Connection type :%d\n", __func__, ctx->curr_connect_type);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() CONNECT Invalid job Connection type :%d\n", __func__, ctx->curr_connect_type);
         result = CY_RSLT_OTA_ERROR_GET_JOB;
     }
 
@@ -1491,7 +1492,7 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
         ctx->device_connected = 1;
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s %s Connection %s.\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s %s Connection %s.\n",
             (ctx->curr_state == CY_OTA_STATE_JOB_CONNECT) ? "Job" :
                     (ctx->curr_state == CY_OTA_STATE_DATA_CONNECT) ? "Data" :
                     (ctx->curr_state == CY_OTA_STATE_RESULT_CONNECT) ? "Result" : "Unknown",
@@ -1501,7 +1502,7 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
             (ctx->device_connected == 1) ? "Succeeded" : cy_ota_get_error_string(result));
 
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   %s:%d.\n", ctx->curr_server->host_name, ctx->curr_server->port );
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   %s:%d.\n", ctx->curr_server->host_name, ctx->curr_server->port );
 #endif
 
     return result;
@@ -1511,7 +1512,7 @@ static cy_rslt_t cy_ota_disconnect(cy_ota_context_t *ctx)
 {
     cy_rslt_t                   result = CY_RSLT_SUCCESS;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() ctx->curr_state: %d %s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() ctx->curr_state: %d %s\n",
                         __func__, ctx->curr_state, cy_ota_get_state_string(ctx->curr_state) );
 
     if (ctx->device_connected == 1)
@@ -1531,7 +1532,7 @@ static cy_rslt_t cy_ota_disconnect(cy_ota_context_t *ctx)
             result = cy_ota_http_disconnect(ctx);
         }
 #endif
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s %s Disconnected.\n",
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s %s Disconnected.\n",
                 (ctx->curr_state == CY_OTA_STATE_JOB_DISCONNECT) ? "Job" :
                         (ctx->curr_state == CY_OTA_STATE_DATA_DISCONNECT) ? "Data" :
                         (ctx->curr_state == CY_OTA_STATE_RESULT_DISCONNECT) ? "Result" : "Unknown",
@@ -1553,7 +1554,7 @@ static cy_rslt_t cy_ota_job_download(cy_ota_context_t *ctx)
     /* Use CY_OTA_JOB_CHECK_TIME_SECS to set timer for when we decide we can't get the Job */
     if (ctx->job_check_timeout_sec > 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "\n\n%s() START DOWNLOAD CHECK TIMER %ld secs\n", __func__, ctx->job_check_timeout_sec);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "\n\n%s() START DOWNLOAD CHECK TIMER %ld secs\n", __func__, ctx->job_check_timeout_sec);
         cy_ota_start_timer(ctx, ctx->job_check_timeout_sec, CY_OTA_EVENT_DATA_DOWNLOAD_TIMEOUT);
     }
 
@@ -1573,7 +1574,7 @@ static cy_rslt_t cy_ota_job_download(cy_ota_context_t *ctx)
     /* stop the "check for an update" timer */
     cy_ota_stop_timer(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Job Document download (0x%lx) %s.\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Job Document download (0x%lx) %s.\n",
                          result, (result == CY_RSLT_SUCCESS) ? "Succeeded" :
                                  cy_ota_get_error_string(result));
     return result;
@@ -1584,7 +1585,7 @@ static cy_rslt_t cy_ota_job_parse(cy_ota_context_t *ctx)
     cy_rslt_t result = CY_RSLT_SUCCESS;
 
     ctx->parsed_job.parse_result = cy_ota_parse_job_info(ctx, ctx->job_doc, strlen(ctx->job_doc));
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() cy_ota_parse_job_info result: 0x%lx\n", __func__, ctx->parsed_job.parse_result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() cy_ota_parse_job_info result: 0x%lx\n", __func__, ctx->parsed_job.parse_result);
 
     if ( (ctx->parsed_job.parse_result != CY_RSLT_SUCCESS) &&
          (ctx->parsed_job.parse_result != CY_RSLT_OTA_CHANGING_SERVER) )
@@ -1592,7 +1593,7 @@ static cy_rslt_t cy_ota_job_parse(cy_ota_context_t *ctx)
         result = ctx->parsed_job.parse_result;
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Job Parse %s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Job Parse %s\n",
                          (result == CY_RSLT_SUCCESS) ? "Succeeded" :
                                  cy_ota_get_error_string(result));
     return result;
@@ -1602,13 +1603,13 @@ static cy_rslt_t cy_ota_job_redirect(cy_ota_context_t *ctx)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s() parse_result:0x%lx\n", __func__, ctx->parsed_job.parse_result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() parse_result:0x%lx\n", __func__, ctx->parsed_job.parse_result);
     if (ctx->parsed_job.parse_result == CY_RSLT_OTA_CHANGING_SERVER)
     {
         ctx->curr_connect_type = ctx->parsed_job.connect_type;
         result = cy_ota_setup_connection_type(ctx);
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "JOB document redirect to Data server %s:%d.\n",
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "JOB document redirect to Data server %s:%d.\n",
                 ctx->curr_server->host_name, ctx->curr_server->port);
 #endif
 
@@ -1627,7 +1628,7 @@ static cy_rslt_t cy_ota_job_redirect(cy_ota_context_t *ctx)
     }
     else if (ctx->parsed_job.parse_result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() JOB document redirect failure.\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() JOB document redirect failure.\n", __func__);
         result = CY_RSLT_OTA_ERROR_REDIRECT;
     }
     else
@@ -1656,7 +1657,7 @@ static cy_rslt_t cy_ota_data_download(cy_ota_context_t *ctx)
     /* Use CY_OTA_DATA_CHECK_TIME_SECS to set timer for when we decide we can't get the Job */
     if (ctx->data_check_timeout_sec > 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "\n\n%s() START DOWNLOAD CHECK TIMER %ld secs\n", __func__, ctx->data_check_timeout_sec);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "\n\n%s() START DOWNLOAD CHECK TIMER %ld secs\n", __func__, ctx->data_check_timeout_sec);
         cy_ota_start_timer(ctx, ctx->data_check_timeout_sec, CY_OTA_EVENT_DATA_DOWNLOAD_TIMEOUT);
     }
 
@@ -1681,7 +1682,7 @@ static cy_rslt_t cy_ota_data_download(cy_ota_context_t *ctx)
     /* stop the "check for an update" timer */
     cy_ota_stop_timer(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Data Download %s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Data Download %s\n",
                         (result == CY_RSLT_SUCCESS) ? "Succeeded" :
                                 cy_ota_get_error_string(result));
     return result;
@@ -1698,7 +1699,7 @@ static cy_rslt_t cy_ota_verify_data(cy_ota_context_t *ctx)
         ctx->reboot_after_sending_result = ctx->agent_params.reboot_upon_completion;
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Data Verify %s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Data Verify %s\n",
                          (result == CY_RSLT_SUCCESS) ? "Succeeded" :
                                  cy_ota_get_error_string(result));
     return result;
@@ -1721,7 +1722,7 @@ static cy_rslt_t cy_ota_result_redirect(cy_ota_context_t *ctx)
         ctx->curr_connect_type = ctx->network_params.initial_connection;
         result = cy_ota_setup_connection_type(ctx);
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "Redirect to Result server %s:%d.\n",
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Redirect to Result server %s:%d.\n",
                 ctx->curr_server->host_name, ctx->curr_server->port);
 #endif
     }
@@ -1751,7 +1752,7 @@ static cy_rslt_t cy_ota_result_send(cy_ota_context_t *ctx)
     }
 #endif
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s Result Send %s.\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s Result Send %s.\n",
             (ctx->curr_connect_type == CY_OTA_CONNECTION_MQTT) ? "MQTT" :
                     (ctx->curr_connect_type == CY_OTA_CONNECTION_HTTP) ? "HTTP" :
                     (ctx->curr_connect_type == CY_OTA_CONNECTION_HTTPS) ? "HTTPS" : "unknown",
@@ -1774,8 +1775,8 @@ static cy_rslt_t cy_ota_complete(cy_ota_context_t *ctx)
          (ctx->stop_OTA_session == 0) &&
          (ctx->reboot_after_sending_result != 0) )
     {
-	/* Not really a warning, just want to make sure the message gets printed */
-        cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s()   RESETTING NOW !!!!\n", __func__);
+        /* Not really a warning, just want to make sure the message gets printed */
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s()   RESETTING NOW !!!!\n", __func__);
         cy_rtos_delay_milliseconds(1000);
         NVIC_SystemReset();
     }
@@ -1783,7 +1784,7 @@ static cy_rslt_t cy_ota_complete(cy_ota_context_t *ctx)
     /* start timer for the next check */
     cy_ota_start_next_timer(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "OTA Session done:%s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "OTA Session done:%s\n",
                         (cy_ota_get_last_error() == CY_RSLT_SUCCESS) ? "Succeeded" :
                          cy_ota_get_error_string(cy_ota_get_last_error() ) );
     return result;
@@ -1803,7 +1804,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
     bool                        stay_in_state_loop;
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() Entered New OTA Agent Thread\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() Entered New OTA Agent Thread\n", __func__);
 
     /* let cy_ota_agent_start() know we are alive */
     cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_RUNNING_EXITING, 0);
@@ -1825,7 +1826,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
         while (stay_in_state_loop && (ctx->curr_state != CY_OTA_STATE_EXITING))
         {
             uint16_t idx;
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "Start of state machine loop: %d %s\n\n",
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "Start of state machine loop: %d %s\n\n",
                         ctx->curr_state, cy_ota_get_state_string(ctx->curr_state));
 
             /* look through state table and find the state ! */
@@ -1842,7 +1843,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                     cb_result = CY_OTA_CB_RSLT_OTA_CONTINUE;
                     if (cy_ota_state_table[idx].send_start_cb != false)
                     {
-                        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
                                 cy_ota_get_state_string(ctx->curr_state), ctx->stop_OTA_session);
                         cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_STATE_CHANGE, ctx->curr_state);
                     }
@@ -1870,12 +1871,12 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             }
                             else
                             {
-                                cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback OTA CONTINUE \n", __LINE__);
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback OTA CONTINUE \n", __LINE__);
                             }
                         }
                         break;
                     case CY_OTA_CB_RSLT_OTA_STOP:
-                        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned Stop OTA session\n",
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned Stop OTA session\n",
                                 __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                         result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
                         ctx->stop_OTA_session = 1;
@@ -1884,7 +1885,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         result = CY_RSLT_SUCCESS;
                         break;
                     case CY_OTA_CB_RSLT_APP_FAILED:
-                        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned failure.\n",
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned failure.\n",
                                 __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                         result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
                         break;
@@ -1908,7 +1909,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             /* nothing to do here */
                             break;
                         case CY_OTA_CB_RSLT_OTA_STOP:
-                            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned Stop OTA session\n",
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned Stop OTA session\n",
                                     __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                             result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
                             ctx->stop_OTA_session = 1;
@@ -1917,7 +1918,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             /* nothing to do here */
                             break;
                         case CY_OTA_CB_RSLT_APP_FAILED:
-                            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned failure.\n",
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned failure.\n",
                                     __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                             result = cy_ota_state_table[idx].failure_result;
                             break;
@@ -1939,7 +1940,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         /* either the complete callback or the function failed */
                         new_state = cy_ota_state_table[idx].failure_state;
 
-                        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%d: state %s result:0x%lx %s\n",
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%d: state %s result:0x%lx %s\n",
                                 __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state),
                                 result, cy_ota_get_error_string(result));
 
@@ -1988,7 +1989,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             /* nothing to do here */
                             break;
                         case CY_OTA_CB_RSLT_OTA_STOP:
-                            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned Stop OTA session\n",
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned Stop OTA session\n",
                                     __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                             result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
                             ctx->stop_OTA_session = 1;
@@ -1998,13 +1999,13 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             break;
                         case CY_OTA_CB_RSLT_APP_FAILED:
                             /* nothing to do here */
-                            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned failure.\n",
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned failure.\n",
                                     __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
                             break;
                         }
                     }
 
-                    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%d : %s() mid State Machine result:0x%lx   last_error:%s   curr state: %s   new state: %s\n",
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%d : %s() mid State Machine result:0x%lx   last_error:%s   curr state: %s   new state: %s\n",
                                 __LINE__, __func__, result, cy_ota_get_error_string(cy_ota_last_error),
                                 cy_ota_get_state_string(ctx->curr_state), cy_ota_get_state_string(new_state));
 
@@ -2013,7 +2014,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                     if (ctx->stop_OTA_session != 0)
                     {
                         new_state = cy_ota_state_table[idx].app_stop_state;
-                        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() stop_OTA_session:%d - change to state: %d %s\n", __LINE__, __func__,
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() stop_OTA_session:%d - change to state: %d %s\n", __LINE__, __func__,
                                     ctx->stop_OTA_session, new_state, cy_ota_get_state_string(new_state));
                     }
                     else if ( (ctx->curr_state == CY_OTA_STATE_DATA_DOWNLOAD) &&
@@ -2023,7 +2024,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         /* We may be heading for a data download retry. */
                         if (++ctx->download_retry_count < CY_OTA_MAX_DOWNLOAD_TRIES)
                         {
-                            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() state:%s retry_count:%d\n", __LINE__, __func__,
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() state:%s retry_count:%d\n", __LINE__, __func__,
                                         cy_ota_get_state_string(ctx->curr_state), ctx->download_retry_count);
                             /* We are still connected, just try to download again
                              * Always check if we need to erase the storage
@@ -2043,13 +2044,13 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         {
                             /* we connected, reset the retry counter */
                             ctx->contact_server_retry_count = 0;
-                            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() state:%s set contact_server_retry_count = 0\n",
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() state:%s set contact_server_retry_count = 0\n",
                                         __LINE__, __func__, cy_ota_get_state_string(ctx->curr_state));
                        }
                         else if (++ctx->contact_server_retry_count < CY_OTA_CONNECT_RETRIES)
                         {
                             /* Retry */
-                            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() state:%s retry_count:%d\n", __LINE__, __func__,
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() state:%s retry_count:%d\n", __LINE__, __func__,
                                         cy_ota_get_state_string(ctx->curr_state), ctx->contact_server_retry_count);
                             new_state = CY_OTA_STATE_AGENT_WAITING;
                             cy_ota_set_last_error(ctx, CY_RSLT_SUCCESS);
@@ -2058,7 +2059,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         else
                         {
                             /* reconnect tries exceeded, stop here */
-                            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() state:%s retries failed:%d\n", __LINE__, __func__,
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() state:%s retries failed:%d\n", __LINE__, __func__,
                                         cy_ota_get_state_string(ctx->curr_state), ctx->contact_server_retry_count);
                             new_state = CY_OTA_STATE_AGENT_WAITING;
                             cy_ota_set_last_error(ctx, CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES);
@@ -2069,16 +2070,16 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                     else if ( cy_ota_last_error != CY_RSLT_SUCCESS)
                     {
                         new_state = cy_ota_state_table[idx].app_stop_state;
-                        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d : %s() last_error: 0x%lx  %s - change to state: %d %s\n", __LINE__, __func__,
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() last_error: 0x%lx  %s - change to state: %d %s\n", __LINE__, __func__,
                                     cy_ota_last_error, cy_ota_get_error_string(cy_ota_last_error),
                                     new_state, cy_ota_get_state_string(new_state));
                     }
                     else
                     {
-                        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "No errors new state: %d %s\n\n", new_state, cy_ota_get_state_string(new_state) );
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "No errors new state: %d %s\n\n", new_state, cy_ota_get_state_string(new_state) );
                     }
 
-                    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "End of state loop new state: %d %s\n\n", new_state, cy_ota_get_state_string(new_state) );
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "End of state loop new state: %d %s\n\n", new_state, cy_ota_get_state_string(new_state) );
 
                     cy_ota_set_state(ctx, new_state);
                     break;
@@ -2088,7 +2089,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
 
             if (idx >= CY_OTA_NUM_STATE_TABLE_ENTRIES)
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, ">>>>> We are in a state not in the state table! state: %d %s <<<<<<\n",
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, ">>>>> We are in a state not in the state table! state: %d %s <<<<<<\n",
                             ctx->curr_state, cy_ota_get_state_string(ctx->curr_state));
 
             }
@@ -2101,7 +2102,7 @@ _exit_ota_agent:
 
     cy_ota_stop_timer(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() exiting\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() exiting\n", __func__);
     /* let mainline know we are exiting */
     cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_RUNNING_EXITING, 0);
 
@@ -2116,7 +2117,10 @@ _exit_ota_agent:
  *
  *****************************************************************************/
 
-cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ctx_ptr)
+cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
+                             cy_ota_agent_params_t *agent_params,
+                             cy_ota_agent_mem_interface_t *flash_interface,
+                             cy_ota_context_ptr *ctx_ptr)
 {
     cy_rslt_t           result = CY_RSLT_TYPE_ERROR;
     cy_ota_context_t    *ctx;
@@ -2129,7 +2133,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     {
         return CY_RSLT_OTA_ERROR_BADARG;
     }
-    if ( (network_params == NULL) || (agent_params == NULL) )
+    if ( (network_params == NULL) || (agent_params == NULL) || (flash_interface == NULL))
     {
         return CY_RSLT_OTA_ERROR_BADARG;
     }
@@ -2138,7 +2142,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     {
         if (cy_ota_mqtt_validate_network_params(network_params) != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() MQTT Network Parameters incorrect!\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() MQTT Network Parameters incorrect!\n", __func__);
             return CY_RSLT_OTA_ERROR_BADARG;
         }
     }
@@ -2150,7 +2154,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     {
         if (cy_ota_http_validate_network_params(network_params) != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() HTTP Network Parameters incorrect!\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() HTTP Network Parameters incorrect!\n", __func__);
             return CY_RSLT_OTA_ERROR_BADARG;
         }
     }
@@ -2161,16 +2165,27 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     {
         if (cy_ota_ble_validate_network_params(network_params) != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Bluetooth(r) Network Parameters incorrect!\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Bluetooth(r) Network Parameters incorrect!\n", __func__);
             return CY_RSLT_OTA_ERROR_BADARG;
         }
     }
 
 #endif
 
+    /* Check Storage interface callbacks */
+    if((flash_interface->read == NULL) ||
+       (flash_interface->write == NULL) ||
+       (flash_interface->erase == NULL) ||
+       (flash_interface->get_erase_size == NULL) ||
+       (flash_interface->get_prog_size == NULL))
+    {
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Storage(r) interface Parameters incorrect!\n", __func__);
+        return CY_RSLT_OTA_ERROR_BADARG;
+    }
+
     if (ota_context_only_one != NULL)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() OTA context already created!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() OTA context already created!\n", __func__);
         return CY_RSLT_OTA_ERROR_ALREADY_STARTED;
     }
 
@@ -2180,11 +2195,11 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
      * set result value
      * use goto _ota_init_err;
      */
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() allocate OTA context 0x%x bytes!\n", __func__, sizeof(cy_ota_context_t) );
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() allocate OTA context 0x%x bytes!\n", __func__, sizeof(cy_ota_context_t) );
     ctx = (cy_ota_context_t *)malloc(sizeof(cy_ota_context_t) );
     if (ctx == NULL)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Out of memory for OTA context!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Out of memory for OTA context!\n", __func__);
         goto _ota_init_err;
     }
     memset(ctx, 0x00, sizeof(cy_ota_context_t) );
@@ -2194,13 +2209,14 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     /* copy over the initial parameters */
     memcpy(&ctx->network_params, network_params, sizeof(cy_ota_network_params_t) );
     memcpy(&ctx->agent_params, agent_params, sizeof(cy_ota_agent_params_t) );
+    memcpy(&ctx->flash_iface, flash_interface, sizeof(cy_ota_agent_mem_interface_t) );
 
     /* Set up starting Broker / Server */
     ctx->curr_connect_type =ctx->network_params.initial_connection;
     result = cy_ota_setup_connection_type(ctx);
     if (result == CY_RSLT_OTA_ERROR_BADARG)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Bad Network Connection type:%d result:0x%lx!\n", __func__, network_params->initial_connection, result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Bad Network Connection type:%d result:0x%lx!\n", __func__, network_params->initial_connection, result);
         goto _ota_init_err;
     }
 
@@ -2218,7 +2234,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
     if (result != CY_RSLT_SUCCESS)
     {
         /* Event create failed */
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Event Create Failed!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Event Create Failed!\n", __func__);
         goto _ota_init_err;
     }
 
@@ -2228,7 +2244,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
    if (result != CY_RSLT_SUCCESS)
    {
        /* Event create failed */
-       cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Timer Create Failed!\n", __func__);
+       cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Timer Create Failed!\n", __func__);
        goto _ota_init_err;
    }
 
@@ -2244,9 +2260,9 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
    *ctx_ptr = ctx;
 
    /* Set default log level and warn caller if cy_log facility is not enabled */
-   if (cy_log_set_facility_level(CYLF_OTA, ota_logging_level) == CY_RSLT_TYPE_ERROR)
+   if (cy_log_set_facility_level(CYLF_MIDDLEWARE, ota_logging_level) == CY_RSLT_TYPE_ERROR)
    {
-       cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Call cy_log_set_facility_level() to enable logging messages.\n");
+       cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Call cy_log_set_facility_level() to enable logging messages.\n");
    }
 
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
@@ -2263,25 +2279,25 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_age
        if (result != CY_RSLT_SUCCESS)
        {
            /* Thread create failed */
-           cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() OTA Agent Thread Create Failed!\n", __func__);
+           cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() OTA Agent Thread Create Failed!\n", __func__);
            goto _ota_init_err;
         }
 
         /* wait for signal from started thread */
         waitfor = CY_OTA_EVENT_RUNNING_EXITING;
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() Wait for Thread to start\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() Wait for Thread to start\n", __func__);
         result = cy_rtos_waitbits_event(&ctx->ota_event, &waitfor, 1, 1, 1000);
         if (result != CY_RSLT_SUCCESS)
         {
             /* Thread create failed ? */
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() OTA Agent Thread Create No response\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() OTA Agent Thread Create No response\n", __func__);
             goto _ota_init_err;
         }
    }
 #endif
 
     /* keep track of the context */
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() DONE\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() DONE\n", __func__);
     ota_context_only_one = ctx;
 
     return CY_RSLT_SUCCESS;
@@ -2291,7 +2307,7 @@ _ota_init_err:
     /* clear out caller's copy of the context */
     *ctx_ptr = NULL;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Init failed: 0x%lx\n", __func__, result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Init failed: 0x%lx\n", __func__, result);
     if (ctx != NULL)
     {
         cy_ota_agent_stop( (cy_ota_context_ptr *)&ctx);
@@ -2310,7 +2326,7 @@ cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr)
     /* sanity check */
     if (ctx == NULL)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() BAD ARG\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() BAD ARG\n", __func__);
         return CY_RSLT_OTA_ERROR_BADARG;
     }
     CY_OTA_CONTEXT_ASSERT(ctx);
@@ -2324,7 +2340,7 @@ cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr)
 
     if (ctx->curr_state < CY_OTA_STATE_AGENT_WAITING )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s curr state: %d   agent_waiting:%d\r\n", __func__, ctx->curr_state, CY_OTA_STATE_AGENT_WAITING);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s curr state: %d   agent_waiting:%d\r\n", __func__, ctx->curr_state, CY_OTA_STATE_AGENT_WAITING);
         return CY_RSLT_OTA_ERROR_GENERAL;
     }
 
@@ -2370,12 +2386,12 @@ cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr)
 
     /* wait for signal from started thread */
     waitfor = CY_OTA_EVENT_RUNNING_EXITING;
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() Wait for Thread to exit\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() Wait for Thread to exit\n", __func__);
     result = cy_rtos_waitbits_event(&ctx->ota_event, &waitfor, 1, 1, 1000);
     if (result != CY_RSLT_SUCCESS)
     {
         /* Thread exit failed ? */
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() OTA Agent Thread Exit No response\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() OTA Agent Thread Exit No response\n", __func__);
     }
 
     /* wait for thread to exit */
@@ -2394,7 +2410,7 @@ cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr)
     *ctx_ptr = NULL;
     ota_context_only_one = NULL;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG1, "%s() DONE\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG1, "%s() DONE\n", __func__);
     return CY_RSLT_SUCCESS;
 }
 
@@ -2423,7 +2439,7 @@ void cy_ota_set_log_level(CY_LOG_LEVEL_T level)
         level = CY_LOG_DEBUG4;
     }
     ota_logging_level = level;
-    cy_log_set_facility_level(CYLF_OTA, ota_logging_level);
+    cy_log_set_facility_level(CYLF_MIDDLEWARE, ota_logging_level);
 #if 0   /* keep for debugging */
     cy_log_set_facility_level(CYLF_MIDDLEWARE, 5);        /* enable when debugging mqtt & http-client libraries */
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,12 @@
 #include <string.h>
 
 #include "cy_ota_api.h"
+#include "cy_ota_log.h"
 
 #ifdef COMPONENT_OTA_BLUETOOTH
 
 #include "cy_ota_internal.h"
+#include "cy_ota_platform.h"
 #include "cycfg_gatt_db.h"
 #include "cyhal_gpio.h"
 
@@ -143,20 +145,20 @@ static wiced_bt_gatt_status_t app_bt_upgrade_send_notification(uint16_t conn_id,
     if (bt_config_descriptor & (uint16_t)GATT_CLIENT_CONFIG_NOTIFICATION)     /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
     {
         status = wiced_bt_gatt_server_send_notification(conn_id, attr_handle, val_len, p_val, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Notification sent conn_id: 0x%x (%d) handle: 0x%x (%d) val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, attr_handle, val_len, *p_val);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Notification sent conn_id: 0x%x (%d) handle: 0x%x (%d) val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, attr_handle, val_len, *p_val);
     }
     else if (bt_config_descriptor & (uint16_t)GATT_CLIENT_CONFIG_INDICATION)  /* Notify & Indicate flags from HDLD_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_CLIENT_CHAR_CONFIG callback */
     {
         status = wiced_bt_gatt_server_send_indication(conn_id, attr_handle, val_len, p_val, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Indication sent conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, val_len, *p_val);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Indication sent conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, val_len, *p_val);
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Unknown BT descriptor 0x%x for conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, bt_config_descriptor, conn_id, conn_id, attr_handle, val_len, *p_val);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Unknown BT descriptor 0x%x for conn_id: 0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, bt_config_descriptor, conn_id, conn_id, attr_handle, val_len, *p_val);
     }
     if (status != WICED_BT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Notify/Indication FAILED conn_id:0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, val_len, *p_val);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Notify/Indication FAILED conn_id:0x%x (%d) handle: %d val_len: %d value:%d\n", __func__, conn_id, conn_id, attr_handle, val_len, *p_val);
     }
     return status;
 }
@@ -204,7 +206,7 @@ static void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8
     uint32_t total_minus_signature  = (ota_ctx->total_image_size - SIGNATURE_LEN);
     uint32_t size = size_in;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() Total bytes written: 0x%lx total minus sig: 0x%x size in: 0x%x\n", __func__, ota_ctx->total_bytes_written, total_minus_signature, size);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() Total bytes written: 0x%lx total minus sig: 0x%x size in: 0x%x\n", __func__, ota_ctx->total_bytes_written, total_minus_signature, size);
 
     /* The bytes that need to be written to FLASH are already written before this routine is called.
      * The remaining bytes in the chunk are the signature, check if we have any in this chunk.
@@ -228,7 +230,7 @@ static void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8
         /* compute offset into incoming buffer to get the data we want */
         save_sig_offset = (size_in - add_to_signature_len);
 
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() saved area offset: 0x%x save_sig_offset: 0x%x add_to_signature_len : 0x%x\n", __func__, ota_ctx->ble.sig_offset, save_sig_offset, add_to_signature_len );
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() saved area offset: 0x%x save_sig_offset: 0x%x add_to_signature_len : 0x%x\n", __func__, ota_ctx->ble.sig_offset, save_sig_offset, add_to_signature_len );
 /* keep for debugging        cy_ota_print_data((const char *)&buffer[save_sig_offset], add_to_signature_len); */
 
         for ( i = 0; i < add_to_signature_len; i++)
@@ -237,13 +239,13 @@ static void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8
         }
         ota_ctx->ble.sig_offset += add_to_signature_len;
         size -= add_to_signature_len;
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() SIG DATA: ota_ctx->ble.sig_offset:  0x%x\n", __func__, ota_ctx->ble.sig_offset );
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() SIG DATA: ota_ctx->ble.sig_offset:  0x%x\n", __func__, ota_ctx->ble.sig_offset );
 /* keep for debugging        cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
     }
 
     if (size > 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() call mbedtls_sha256_update_ret() 0x%lx\n", __func__, size );
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call mbedtls_sha256_update_ret() 0x%lx\n", __func__, size );
         mbedtls_sha256_update_ret(&ota_ctx->ble.bt_sha2_ctx, buffer, size);
     }
 }
@@ -263,12 +265,12 @@ static cy_rslt_t cy_ota_ble_secure_signature_verify(cy_ota_context_ptr ctx_ptr)
     /* Finalize the signature check */
     mbedtls_sha256_finish_ret(&ota_ctx->ble.bt_sha2_ctx, hash);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "VERIFY DATA\n");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "VERIFY DATA\n");
 /*    cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
 
     if (ota_ecdsa_verify(hash, ota_ctx->ble.signature, &ecdsa256_public_key) != 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "SECURE SIGNATURE CHECK FAILED\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "SECURE SIGNATURE CHECK FAILED\n");
         return CY_RSLT_OTA_ERROR_BLE_VERIFY;
     }
     return CY_RSLT_SUCCESS;
@@ -292,7 +294,7 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr, uint16_t bt_co
     cy_ota_context_t        *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s()\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s()\n", __func__);
 
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
     cy_ota_ble_secure_signature_init(ctx_ptr);
@@ -303,14 +305,14 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr, uint16_t bt_co
     result = cy_ota_storage_open(ota_ctx);      /* Call Open Storage - this erases Secondary Slot for storing downloaded OTA Image */
     if (result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "     cy_ota_storage_open() FAILED\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     cy_ota_storage_open() FAILED\n");
         return CY_RSLT_OTA_ERROR_BLE_GATT;
     }
     ota_ctx->ble.bt_notify_buff = CY_OTA_UPGRADE_STATUS_OK;
     status = app_bt_upgrade_send_notification(bt_conn_id, bt_config_descriptor, HDLC_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_VALUE, 1, &ota_ctx->ble.bt_notify_buff);
     if (status != WICED_BT_GATT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "          app_bt_upgrade_send_notification() failed: 0x%lx\n", status);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "          app_bt_upgrade_send_notification() failed: 0x%lx\n", status);
         return CY_RSLT_OTA_ERROR_BLE_GATT;
     }
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_AGENT_WAITING);
@@ -339,19 +341,19 @@ cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_event_da
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     CY_ASSERT(p_req != NULL);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s()\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s()\n", __func__);
     p_write_req = &p_req->attribute_request.data.write_req;
 
     if (p_write_req->val_len < 4)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "CY_OTA_UPGRADE_COMMAND_DOWNLOAD len < 4\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "CY_OTA_UPGRADE_COMMAND_DOWNLOAD len < 4\n");
         return CY_RSLT_OTA_ERROR_BLE_GATT;
     }
     total_size = (((uint32_t)p_write_req->p_val[4]) << 24) +
                  (((uint32_t)p_write_req->p_val[3]) << 16) +
                  (((uint32_t)p_write_req->p_val[2]) <<  8) +
                  (((uint32_t)p_write_req->p_val[1]) <<  0);
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "CY_OTA_UPGRADE_COMMAND_DOWNLOAD total size: 0x%lx (%ld)\n", total_size, total_size);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "CY_OTA_UPGRADE_COMMAND_DOWNLOAD total size: 0x%lx (%ld)\n", total_size, total_size);
     ota_ctx->total_image_size = total_size;
     ota_ctx->total_bytes_written = 0;
     ota_ctx->ble.crc32 = CRC32_INITIAL_VALUE;
@@ -361,7 +363,7 @@ cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_event_da
     status = app_bt_upgrade_send_notification(bt_conn_id, bt_config_descriptor, HDLC_OTA_FW_UPGRADE_SERVICE_OTA_UPGRADE_CONTROL_POINT_VALUE, 1, &ota_ctx->ble.bt_notify_buff);
     if (status != WICED_BT_GATT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "          app_bt_upgrade_send_notification() failed: 0x%lx\n", status);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "          app_bt_upgrade_send_notification() failed: 0x%lx\n", status);
         return CY_RSLT_OTA_ERROR_BLE_GATT;
     }
 
@@ -390,7 +392,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_ev
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     CY_ASSERT(p_req != NULL);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s()\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s()\n", __func__);
     p_write_req = &p_req->attribute_request.data.write_req;
 
     /* prepare to call ota library write routine */
@@ -423,7 +425,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_ev
 		{
 			cy_rtos_setbits_event(&ota_ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_FAIL, 0);
 
-			cy_log_msg(CYLF_OTA, CY_LOG_ERR, "     cy_ota_write_incoming_data_block() FAILED : 0x%lx \n", result);
+			cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     cy_ota_write_incoming_data_block() FAILED : 0x%lx \n", result);
 			return CY_RSLT_OTA_ERROR_BLE_GATT;
 		}
 	}
@@ -451,7 +453,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_ev
 #endif
     ota_ctx->ble.file_bytes_written += chunk_info.size;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->total_bytes_written, ota_ctx->total_image_size, ota_ctx->ble.percent);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->total_bytes_written, ota_ctx->total_image_size, ota_ctx->ble.percent);
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_DATA_DOWNLOAD);
     return CY_RSLT_SUCCESS;
 
@@ -491,7 +493,7 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_e
     result = cy_ota_ble_secure_signature_verify(ctx_ptr);
     if (result == CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "     Bluetooth(r) Secure Signature Verification Succeeded!\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) Secure Signature Verification Succeeded!\n");
     }
 
 #else
@@ -505,18 +507,18 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_e
 
         if (ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
             result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
         }
         else
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
             result = CY_RSLT_SUCCESS;
         }
     }
     else
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "     check CRC - len from Host !=5 %d\n", p_write_req->val_len);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "     check CRC - len from Host !=5 %d\n", p_write_req->val_len);
         result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
     }
 #endif
@@ -528,14 +530,14 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_e
         result = cy_ota_storage_verify(ota_ctx);
         if (result != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "          cy_ota_storage_verify() failed: 0x%lx\n", result);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "          cy_ota_storage_verify() failed: 0x%lx\n", result);
             result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
         }
     }
     else
     {
         ota_ctx->ble.bt_notify_buff = CY_OTA_UPGRADE_STATUS_BAD;
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "     call wiced_bt_gatt_send_indication(%d) !\n", ota_ctx->ble.bt_notify_buff);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     call wiced_bt_gatt_send_indication(%d) !\n", ota_ctx->ble.bt_notify_buff);
     }
 
     /* Send indication that we are done & verified or not */
@@ -543,7 +545,7 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, wiced_bt_gatt_e
                                                     1, &ota_ctx->ble.bt_notify_buff, NULL);    /* bt_notify_buff is not allocated, no need to keep track of it w/context */
     if (status != WICED_BT_GATT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "          app_bt_upgrade_send_indication() failed: 0x%lx\n", status);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "          app_bt_upgrade_send_indication() failed: 0x%lx\n", status);
         result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
         cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
     }
@@ -567,7 +569,7 @@ cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr)
     cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s(): Set state\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s(): Set state\n", __func__);
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_AGENT_WAITING);
 
     return CY_RSLT_SUCCESS;

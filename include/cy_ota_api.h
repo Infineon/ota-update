@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,11 +97,6 @@ extern "C" {
 #include "wiced_bt_gatt.h"
 #endif
 
-/**
- * @brief - Reuse CYLF_AUDIO for OTA logging.
- */
-#define CYLF_OTA    CYLF_AUDIO
-
  /**
   * \addtogroup group_ota_macros
   * \{
@@ -132,7 +127,7 @@ extern "C" {
 * In MTB, the PSoC 6 MCU target platform is located in <core_lib/include>.
 *
 * Module base: This base is derived from CY_RSLT_MODULE_MIDDLEWARE_BASE (defined in cy_result.h) and is an offset of CY_RSLT_MODULE_MIDDLEWARE_BASE.
-*              Details of the offset and the middleware base are defined in cy_result_mw.h, which is part of [Github connectivity-utilities] (https://github.com/cypresssemiconductorco/connectivity-utilities).
+*              Details of the offset and the middleware base are defined in cy_result_mw.h, which is part of [Github connectivity-utilities] (https://github.com/Infineon/connectivity-utilities).
 *              For example, OTA uses CY_RSLT_MODULE_MIDDLEWARE_OTA_UPDATE as the module base, which is 0x020D.
 *
 * Type: This type is defined in cy_result.h and can be one of CY_RSLT_TYPE_FATAL, CY_RSLT_TYPE_ERROR, CY_RSLT_TYPE_WARNING, or CY_RSLT_TYPE_INFO. MQTT library error codes are of type CY_RSLT_TYPE_ERROR which is 0x2.
@@ -739,6 +734,17 @@ typedef enum
     CY_OTA_CB_NUM_RESULTS             /**< Placeholder, do not use. */
 } cy_ota_callback_results_t;
 
+/**
+ * @brief Enumeration of OTA storage types.
+ */
+typedef enum
+{
+    CY_OTA_MEM_TYPE_INTERNAL_FLASH = 0,      /**<  For internal flash type. */
+    CY_OTA_MEM_TYPE_EXTERNAL_FLASH,          /**<  For external flash type. */
+    CY_OTA_MEM_TYPE_RRAM,                    /**<  For RRAM type.           */
+    CY_OTA_MEM_TYPE_NONE                     /**<  Default value.           */
+} cy_ota_mem_type_t;
+
 /** \} group_ota_typedefs */
 
 /***********************************************************************
@@ -880,6 +886,74 @@ typedef struct
  */
 typedef cy_ota_callback_results_t (*cy_ota_callback_t)(cy_ota_cb_struct_t *cb_data);
 
+/**
+ * @brief Memory read callback function pointer type. Callback of this type is invoked when a OTA Agent wants to read from memory.
+ *
+ * A function of this type must be implemented by the application to read contents from given memory location.
+ *
+ * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement read operation functionality.
+ * @param[in]   addr       Starting address to read from.
+ * @param[out]  data       Pointer to the buffer to store the data read from the memory.
+ * @param[in]   len        Number of data bytes to read.
+ *
+ * @return  CY_RSLT_SUCCESS
+ *          CY_RSLT_TYPE_ERROR
+ */
+typedef cy_rslt_t ( * cy_ota_agent_mem_read ) ( cy_ota_mem_type_t mem_type, uint32_t addr, void *data, size_t len );
+
+/**
+ * @brief Memory write callback function pointer type. Callback of this type is invoked when a OTA Agent wants to write to memory.
+ *
+ * A function of this type must be implemented by the application to write contents to given memory location.
+ *
+ * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement write operation functionality.
+ * @param[in]   addr       Starting address to write to.
+ * @param[in]   data       Pointer to the buffer containing the data to be written.
+ * @param[in]   len        Number of bytes to write.
+ *
+ * @return  CY_RSLT_SUCCESS
+ *          CY_RSLT_TYPE_ERROR
+ */
+typedef cy_rslt_t ( * cy_ota_agent_mem_write ) ( cy_ota_mem_type_t mem_type, uint32_t addr, void *data, size_t len );
+
+/**
+ * @brief Memory erase callback function pointer type. Callback of this type is invoked when a OTA Agent wants to erase memory.
+ *
+ * A function of this type must be implemented by the application to erase memory.
+ *
+ * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement erase operation functionality.
+ * @param[in]   addr       Starting address to begin erasing.
+ * @param[in]   len        Number of bytes to erase.
+ *
+ * @return  CY_RSLT_SUCCESS
+ *          CY_RSLT_TYPE_ERROR
+ */
+typedef cy_rslt_t ( * cy_ota_agent_mem_erase ) ( cy_ota_mem_type_t mem_type, uint32_t addr, size_t len );
+
+/**
+ * @brief Get program size callback function pointer type. Callback of this type is invoked when a OTA Agent wants to get programming page size.
+ *
+ * A function of this type must be implemented by the application to get programming page size.
+ *
+ * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get program size functionality.
+ * @param[in]   addr       Address that belongs to the sector for which programming page size needs to be returned.
+ *
+ * @return    Page size in bytes.
+ */
+typedef size_t ( * cy_ota_agent_mem_prog_size ) ( cy_ota_mem_type_t mem_type, uint32_t addr );
+
+/**
+ * @brief Get erase size callback function pointer type. Callback of this type is invoked when a OTA Agent wants to get erase sector size.
+ *
+ * A function of this type must be implemented by the application to get erase sector size.
+ *
+ * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get erase size functionality.
+ * @param[in]   addr       Address that belongs to the sector for which sector erase size needs to be returned.
+ *
+ * @return    Erase sector size in bytes
+ */
+typedef size_t ( * cy_ota_agent_mem_erase_size ) ( cy_ota_mem_type_t mem_type, uint32_t addr );
+
 /** \} group_ota_callback */
 
 /**
@@ -923,6 +997,20 @@ typedef struct
     void                *cb_arg;            /**< Opaque argument passed to the notification callback function.  */
 } cy_ota_agent_params_t;
 
+/**
+ * @ingroup ota_struct_types
+ * @brief OTA memory Interface structure.
+ * \struct cy_ota_agent_mem_interface_t
+ */
+typedef struct cy_ota_agent_mem_interface
+{
+    cy_ota_agent_mem_read read;                    /**< Reads a block of data from the specified memory location.                   */
+    cy_ota_agent_mem_write write;                  /**< Write a block of data to the specified memory location at the given offset. */
+    cy_ota_agent_mem_erase erase;                  /**< Erase a block of memory area.                                               */
+    cy_ota_agent_mem_prog_size get_prog_size;      /**< Get programming block size.                                                 */
+    cy_ota_agent_mem_erase_size get_erase_size;    /**< Get Erase block size.                                                       */
+} cy_ota_agent_mem_interface_t;
+
 /** \} group_ota_structures */
 
 
@@ -946,6 +1034,7 @@ typedef struct
  *
  * @param[in]   network_params   Pointer to cy_ota_network_params_t.
  * @param[in]   agent_params     Pointer to cy_ota_agent_params_t.
+ * @param[in]   flash_interface  Pointer to cy_ota_agent_mem_interface_t.
  * @param[out]  ctx_ptr          Handle to store the OTA Agent context structure pointer,
  *                               Which is used for other OTA calls.
  *
@@ -954,7 +1043,10 @@ typedef struct
  *          CY_RSLT_OTA_ERROR_ALREADY_STARTED
  *          CY_RSLT_OTA_ERROR
  */
-cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params, cy_ota_agent_params_t *agent_params, cy_ota_context_ptr *ctx_ptr);
+cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
+                             cy_ota_agent_params_t *agent_params,
+                             cy_ota_agent_mem_interface_t *flash_interface,
+                             cy_ota_context_ptr *ctx_ptr);
 
 /**
  * @brief Stop OTA Background Agent.
@@ -984,277 +1076,6 @@ cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr);
  */
 cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr);
 
-/**
- * @brief Open the storage area for download.
- *
- * NOTE: Typically, this erases the secondary slot.
- *
- * @param[in]   ctx_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_OPEN_STORAGE
- */
-cy_rslt_t cy_ota_storage_open(cy_ota_context_ptr ctx_ptr);
-
-/**
- * @brief Read from storage area
- *
- * @param[in]       ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]       chunk_info  Pointer to chunk information, buffer pointer used for the read
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_READ_STORAGE
- */
-cy_rslt_t cy_ota_storage_read(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t *chunk_info);
-
-/**
- * @brief Write data into the storage area.
- *
- * NOTE: This writes data directly into FLASH.
- *       For writing data from a TAR archive, use cy_ota_write_incoming_data_block(),
- *       which checks for TAR archives and separates the data properly.
- *
- * @param[in]   ctx_ptr         Pointer to the OTA agent context @ref cy_ota_context_ptr.
- * @param[in]   chunk_info      Pointer to the chunk information.
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_WRITE_STORAGE
- */
-cy_rslt_t cy_ota_storage_write(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t *chunk_info);
-
-/**
- * @brief Determine if tar or non-tar and call correct write function
- *
- * NOTE: This function handles both TAR archive and non-TAR archive files.
- *       This function is used by Pull Mode for MQTT and HTTP
- *
- * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   chunk_info              Pointer to chunk information
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_write_incoming_data_block(cy_ota_context_ptr ctx_ptr, cy_ota_storage_write_info_t * const chunk_info);
-
-#if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
-
-/**
- * @brief Prepare for Bluetooth® OTA Download
- *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   bt_conn_id              Bluetooth® Connection id
- * @param[in]   bt_config_descriptor    Bluetooth® configuration (notification vs. indication )
- *
- * @return      CY_RSLT_SUCCESS
- *              CY_RSLT_OTA_ERROR_BLE_GATT
- */
-cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ota_ptr, uint16_t bt_conn_id, uint16_t bt_config_descriptor);
-
-/**
- * @brief Bluetooth® OTA Download starting
- *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   p_req                   Pointer to gatt event data structure
- * @param[in]   bt_conn_id              Bluetooth® Connection id
- * @param[in]   bt_config_descriptor    Bluetooth® configuration (notification vs. indication )
- *
- * @return      CY_RSLT_SUCCESS
- *              CY_RSLT_OTA_ERROR_BLE_GATT
- */
-cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id, uint16_t bt_config_descriptor);
-
-/**
- * @brief Bluetooth® OTA data write
- *
- * @param[in]   ota_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   p_req                   Pointer to gatt event data structure
- *
- * @return      CY_RSLT_SUCCESS
- *              CY_RSLT_OTA_ERROR_BLE_GATT
- */
-cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req);
-
-/**
- * @brief Bluetooth® OTA Verify download
- *
- * @param[in]   ota_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   p_req       Pointer to gatt event data structure
- * @param[in]   bt_conn_id              Bluetooth® Connection id
- *
- * @return      CY_RSLT_SUCCESS
- *              CY_RSLT_OTA_ERROR_BLE_GATT
- */
-cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ota_ptr, wiced_bt_gatt_event_data_t *p_req, uint16_t bt_conn_id);
-
-/**
- * @brief Abort Bluetooth® OTA download
- *
- * @param[in]   ota_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
- *
- * @return      CY_RSLT_SUCCESS
- */
-cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ota_ptr);
-
-#endif  /* defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN) */
-
-/**
- * @brief Close the storage area for download.
- *
- * @param[in]   ctx_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_CLOSE_STORAGE
- */
-cy_rslt_t cy_ota_storage_close(cy_ota_context_ptr ctx_ptr);
-
-/**
- * @brief Verify the download signature on the whole OTA image.
- *
- * @param[in]   ctx_ptr - Pointer to the OTA agent context @ref cy_ota_context_ptr.
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_VERIFY
- */
-cy_rslt_t cy_ota_storage_verify(cy_ota_context_ptr ctx_ptr);
-
-/**
- * @brief The application has validated the new OTA image.
- *
- * This call must be after reboot and MCUboot has copied the new application
- *      to the primary slot.
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_storage_validated(void);
-
-#ifdef FW_DATBLOCK_SEPARATE_FROM_APPLICATION
-
-#define FW_DATA_block_header_info_MAGIC    "InfineonFWData  "           /* 16 bytes */
-#define FW_DATA_block_header_info_VERSION  1
-
-typedef struct  cy_ota_fw_data_block_header_s
-{
-    uint8_t     magic[16];          /* Magic value                                  */
-    uint32_t    crc;                /* CRC of FW Data Block (not yet implemented)   */
-    uint32_t    FWDB_version;       /* FW Data Block version (this structure)       */
-
-    uint16_t    WiFi_FW_version[4]; /* WiFi FW version                              */
-    uint32_t    WiFi_FW_offset;     /* Offset to start of WiFi FW                   */
-    uint32_t    WiFi_FW_size;       /* Size of WiFi FW                              */
-
-    uint32_t    CLM_blob_offset;    /* Offset to start of CLM Blob                  */
-    uint32_t    CLM_blob_size;      /* Size of CLM Blob                             */
-
-    uint8_t     BT_FW_version[128]; /* BT FW version                                */
-    uint32_t    BT_FW_offset;       /* Offset to start of BT FW                     */
-    uint32_t    BT_FW_size;         /* Size of BT FW                                */
-} cy_ota_fw_data_block_header_t;
-
-typedef struct cy_ota_fwdb_wifi_fw_info_s
-{
-    uint16_t    WiFi_FW_version[4]; /* WiFi FW version                              */
-    uint32_t    WiFi_FW_addr;       /* External Flash Addr of WiFi FW               */
-    uint32_t    WiFi_FW_size;       /* Size of WiFi FW                              */
-} cy_ota_fwdb_wifi_fw_info_t;
-
-typedef struct cy_ota_fwdb_clm_blob_info_s
-{
-    uint32_t    CLM_blob_addr;      /* External Flash Addr of WiFi FW               */
-    uint32_t    CLM_blob_size;      /* Size of CLM Blob                             */
-} cy_ota_fwdb_clm_blob_info_t;
-
-typedef struct cy_ota_fwdb_bt_fw_info_s
-{
-    uint8_t     *BT_FW_version;     /* ptr to BT FW version                         */
-    uint32_t    BT_FW_addr;         /* External Flash Addr of BT FW                 */
-    uint32_t    BT_FW_size;         /* Size of BT FW                                */
-} cy_ota_fwdb_bt_fw_info_t;
-
-typedef struct cy_ota_fwdb_bt_fw_s
-{
-    uint8_t     *BT_FW_version;     /* ptr to BT FW version                         */
-    uint8_t     *BT_FW_buffer;       /* Offset to start of BT FW                     */
-    uint32_t    BT_FW_size;         /* Size of BT FW                                */
-} cy_ota_fwdb_bt_fw_t;
-
-/**
- * @brief When FW is stored in a separate Data Block, get WiFi FW info
- *
- * Use this call to get the external flash WiFi info
- *
- * @param   wifi_fw_info   - ptr to cy_ota_fwdb_wifi_fw_info
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_fwdb_get_wifi_fw_info(cy_ota_fwdb_wifi_fw_info_t *wifi_fw_info);
-
-/**
- * @brief Read WiFi FW from FW DataBlock
- *
- * @param[in]   offset - offset into data
- * @param[in]   size   - amount to copy
- * @param[in]   dest   - destination buffer for the read
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_READ_STORAGE
- */
-cy_rslt_t cy_ota_fwdb_get_wifi_fw_data(uint32_t offset, uint32_t size, uint8_t *dest);
-
-/**
- * @brief When FW is stored in a separate Data Block, get WiFi CLM blob info
- *
- * Use this call to get the external flash WiFi CLM blob info
- *
- * @param   clm_blob_info   - ptr to cy_ota_fwdb_clm_blob_info
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_fwdb_get_clm_blob_info(cy_ota_fwdb_clm_blob_info_t *clm_blob_info);
-
-
-/**
- * @brief When FW is stored in a separate Data Block, get the BT FW Patch
- *
- * Use this call to get the external flash BT FW info
- *
- * @param   bt_fw_info   - ptr to cy_ota_fwdb_bt_fw_info_t
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_fwdb_get_bt_fw_info(cy_ota_fwdb_bt_fw_info_t *bt_fw_info);
-
-/**
- * @brief Get BT FW for transfer to BT module
- *
- * Use this call to get the external flash BT FW Patch info
- * NOTES: This allocates RAM, Expected to be < 48k
- *        The User must call cy_ota_fwdb_free_bt_fw() after use.
- *
- * @param   bt_fw   - ptr to cy_ota_fwdb_bt_fw_t
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_fwdb_get_bt_fw(cy_ota_fwdb_bt_fw_t *bt_fw);
-
-/**
- * @brief Free BT FW for transfer to BT module
- *
- * Use this call to free the external flash BT FW Patch info
- * NOTES: This frees RAM, Expected to be < 48k
- *
- * @param   bt_fw   - ptr to cy_ota_fwdb_bt_fw_t
- *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_GENERAL
- */
-cy_rslt_t cy_ota_fwdb_free_bt_fw(cy_ota_fwdb_bt_fw_t *bt_fw);
-
-#endif
 /**
  * @brief Set the OTA log output level.
  *

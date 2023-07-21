@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,10 +29,11 @@
 #ifdef COMPONENT_OTA_HTTP
 
 #include "cy_ota_internal.h"
+#include "cy_ota_platform.h"
 #include "cy_http_client_api.h"
 
 #include "cyabs_rtos.h"
-#include "cy_log.h"
+#include "cy_ota_log.h"
 
 
 /***********************************************************************
@@ -155,7 +156,7 @@ static void cy_ota_http_timer_callback(cy_timer_callback_arg_t arg)
     cy_ota_context_t *ctx = (cy_ota_context_t *)arg;
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() new event:%d\n", __func__, ctx->http.http_timer_event);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() new event:%d\n", __func__, ctx->http.http_timer_event);
     /* yes, we set the ota_event as the http get() function uses the same event var */
     cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)ctx->http.http_timer_event, 0);
 }
@@ -355,7 +356,7 @@ cy_rslt_t cy_ota_http_parse_header(uint8_t **ptr, uint16_t *data_len, uint32_t *
     }
     header_end = &header_end[sizeof(HTTP_HEADERS_BODY_SEPARATOR) - 1];
     *data_len -= (header_end - *ptr);
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG3, "Move ptr from %p to %p skipping %d new_len:%d first_byte:0x%x\n", *ptr, header_end, (header_end - *ptr), *data_len, *header_end);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG3, "Move ptr from %p to %p skipping %d new_len:%d first_byte:0x%x\n", *ptr, header_end, (header_end - *ptr), *data_len, *header_end);
 
     *ptr = header_end;
     return CY_RSLT_SUCCESS;
@@ -383,12 +384,12 @@ cy_rslt_t cy_ota_http_validate_network_params(const cy_ota_network_params_t *net
          (network_params->http.server.port == 0)  ||
          (network_params->http.file == NULL)  )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "Missing HTTP args: host:%s:%d file:%s\n",
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "Missing HTTP args: host:%s:%d file:%s\n",
                     network_params->http.server.host_name , network_params->http.server.port,
                     network_params->http.file);
         return CY_RSLT_OTA_ERROR_BADARG;
     }
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "Validated HTTP args: host:%s:%d file:%s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "Validated HTTP args: host:%s:%d file:%s\n",
                 network_params->http.server.host_name , network_params->http.server.port,
                 network_params->http.file);
    return CY_RSLT_SUCCESS;
@@ -409,11 +410,11 @@ static cy_rslt_t cy_ota_http_write_chunk_to_flash(cy_ota_context_t *ctx, cy_ota_
 {
     cy_ota_callback_results_t cb_result;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s()\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s()\n", __func__);
 
     if ( (ctx == NULL) || (chunk_info == NULL) )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Bad args\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Bad args\n", __func__);
         return CY_RSLT_OTA_ERROR_BADARG;
     }
 
@@ -430,19 +431,19 @@ static cy_rslt_t cy_ota_http_write_chunk_to_flash(cy_ota_context_t *ctx, cy_ota_
     case CY_OTA_CB_RSLT_OTA_CONTINUE:
         if (cy_ota_write_incoming_data_block(ctx, chunk_info) != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Write failed\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Write failed\n", __func__);
             cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_FAIL, 0);
             return CY_RSLT_OTA_ERROR_WRITE_STORAGE;
         }
         break;
     case CY_OTA_CB_RSLT_OTA_STOP:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%d: %s() App returned OTA Stop for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d: %s() App returned OTA Stop for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
         return CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
     case CY_OTA_CB_RSLT_APP_SUCCESS:
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%d: %s() App returned APP_SUCCESS for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d: %s() App returned APP_SUCCESS for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
         break;
     case CY_OTA_CB_RSLT_APP_FAILED:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%d: %s() App returned APP_FAILED for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%d: %s() App returned APP_FAILED for STATE_CHANGE for cy_ota_write_incoming_data_block()\n", __LINE__, __func__);
         return CY_RSLT_OTA_ERROR_WRITE_STORAGE;
     }
 
@@ -453,7 +454,7 @@ static cy_rslt_t cy_ota_http_write_chunk_to_flash(cy_ota_context_t *ctx, cy_ota_
     ctx->last_packet_received   = chunk_info->packet_number;
     ctx->total_packets          = chunk_info->total_packets;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "Written to offset:%ld  %ld of %ld (%ld remaining)\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "Written to offset:%ld  %ld of %ld (%ld remaining)\n",
                 ctx->last_offset, ctx->total_bytes_written, ctx->total_image_size,
                 (ctx->total_image_size - ctx->total_bytes_written) );
 
@@ -479,7 +480,7 @@ static void cy_ota_http_disconnect_callback(cy_http_client_t handle, cy_http_cli
      * on a disconnect, so we do not need to do anything here.
      * Keep this callback to give extra debug.
      */
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, " HTTP disconnect callback");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, " HTTP disconnect callback");
 }
 
 
@@ -507,13 +508,13 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
 
     if (ctx->http.connection_established == true)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "Already connected\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "Already connected\n");
         return CY_RSLT_OTA_ALREADY_CONNECTED;
     }
 
     if (ctx->http.connection_from_app == true)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "Already connected by application\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "Already connected by application\n");
         ctx->http.connection_established = true;
         return CY_RSLT_OTA_ALREADY_CONNECTED;
     }
@@ -560,16 +561,16 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
         security = NULL;
     }
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "call cy_http_client_init()\n");
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "call cy_http_client_init()\n");
     result = cy_http_client_init();
     if (result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_init() failed %d.\n", __func__, result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_init() failed %d.\n", __func__, result);
         return CY_RSLT_OTA_ERROR_CONNECT;
     }
 
     /* create the client connection */
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%s() call cy_http_client_create()!! %s.\n", __func__,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call cy_http_client_create()!! %s.\n", __func__,
                          (security == NULL) ? "non-TLS" : "TLS");
     result = cy_http_client_create(security,
                                  server_info,
@@ -579,14 +580,14 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
 
     if (result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_create() failed %d.\n", __func__, result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_create() failed %d.\n", __func__, result);
         cy_http_client_deinit();
         return CY_RSLT_OTA_ERROR_CONNECT;
     }
     result = cy_http_client_connect(ctx->http.connection, CY_OTA_HTTP_TIMEOUT_SEND, CY_OTA_HTTP_TIMEOUT_RECEIVE);
     if (result != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_connect() failed %d.\n", __func__, result);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_connect() failed %d.\n", __func__, result);
         cy_http_client_delete(&ctx->http.connection);
         cy_http_client_deinit();
         return CY_RSLT_OTA_ERROR_CONNECT;
@@ -594,7 +595,7 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
 
     ctx->http.connection_established = true;
 
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "HTTP Connection Successful, server:%s:%d  TLS:%s\n",
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "HTTP Connection Successful, server:%s:%d  TLS:%s\n",
                (server_info->host_name == NULL) ? "None" : server_info->host_name, server_info->port,
                (security == NULL) ? "No" : "Yes");
 
@@ -630,7 +631,7 @@ static cy_rslt_t cy_ota_http_send_get_response(cy_ota_context_t *ctx,
     result = cy_http_client_write_header(ctx->http.connection, request, send_headers, num_send_headers);
     if (result != CY_RSLT_SUCCESS)
     {
-         cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_write_header() Failed ret:0x%lx\n", __func__, result);
+         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_write_header() Failed ret:0x%lx\n", __func__, result);
          result = CY_RSLT_OTA_ERROR_GENERAL;
     }
     else
@@ -638,28 +639,28 @@ static cy_rslt_t cy_ota_http_send_get_response(cy_ota_context_t *ctx,
         result = cy_http_client_send(ctx->http.connection, request, NULL, 0, response);
         if ( (result == CY_RSLT_HTTP_CLIENT_ERROR_NO_RESPONSE) && (ctx->curr_state == CY_OTA_STATE_RESULT_SEND) )
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "  When sending result (POST), treat NO_RESPONSE as SUCCESS, as server may not handle\n");
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "  When sending result (POST), treat NO_RESPONSE as SUCCESS, as server may not handle\n");
             result = CY_RSLT_SUCCESS;
         }
         else if (result != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_send() Failed ret:0x%lx\n", __func__, result);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_send() Failed ret:0x%lx\n", __func__, result);
             result = CY_RSLT_OTA_ERROR_GENERAL;
         }
         else
         {
             result = cy_http_client_read_header(ctx->http.connection, response, read_headers, num_read_headers);
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "cy_http_client_read_header(): result:0x%lx status:%d\n", result, response->status_code);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "cy_http_client_read_header(): result:0x%lx status:%d\n", result, response->status_code);
 
 /*
-            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "response->header: count: %ld\n", response->header_count);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->header: count: %ld\n", response->header_count);
             cy_ota_print_data( (const char *)response->header, response->headers_len);
-            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "response->body:%p sz:%d\n", response->body, response->body_len);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->body:%p sz:%d\n", response->body, response->body_len);
             cy_ota_print_data( (const char *)response->body, response->body_len);
 */
             if (result != CY_RSLT_SUCCESS)
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_http_client_read_header() Failed ret:0x%lx\n", __func__, result);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_read_header() Failed ret:0x%lx\n", __func__, result);
                     result = CY_RSLT_OTA_ERROR_GENERAL;
             }
             else if (response->status_code < 100)
@@ -680,33 +681,33 @@ static cy_rslt_t cy_ota_http_send_get_response(cy_ota_context_t *ctx,
                 if (ctx->total_image_size == 0)
                 {
                     char *full_length = NULL;
-                    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() Parsed HTTP headers: %d\n", __func__, response->header_count);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Parsed HTTP headers: %d\n", __func__, response->header_count);
                     for (i = 0; i < num_read_headers; i++)
                     {
-                        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "read field[%d] %.*s\n", i, read_headers[i].field_len ,read_headers[i].field );
-                        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "read value[%d] %.*s\n", i, read_headers[i].value_len ,read_headers[i].value );
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read field[%d] %.*s\n", i, read_headers[i].field_len ,read_headers[i].field );
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read value[%d] %.*s\n", i, read_headers[i].value_len ,read_headers[i].value );
                         if (strcmp(read_headers[i].field, HTTP_HEADER_CONTENT_RANGE) == 0)
                         {
                             if (read_headers[i].value_len == 0)
                             {
                                 /* did not get a "Content-Range" header */
-                                cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() Content-Range did not have a value!\n", __func__);
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() Content-Range did not have a value!\n", __func__);
                                 result = CY_RSLT_OTA_ERROR_GENERAL;
                                 break;
                             }
-                            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "Content-Range value: %.*s\n", read_headers[i].value_len ,read_headers[i].value );
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Content-Range value: %.*s\n", read_headers[i].value_len ,read_headers[i].value );
 
                             /* We expect "bytes 0-xxxx/<full_size>" */
                             full_length = strstr(read_headers[i].value, "/");
                             if (full_length != NULL)
                             {
-                                cy_log_msg(CYLF_OTA, CY_LOG_INFO, "full-length 1: %s\n", full_length );
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 1: %s\n", full_length );
                                 /* skip past the "/" if we found it */
                                 full_length++;
-                                cy_log_msg(CYLF_OTA, CY_LOG_INFO, "full-length 2: %s\n", full_length );
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 2: %s\n", full_length );
                                 ctx->total_image_size = atoi(full_length);
                             }
-                            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() HTTP File Length: %d\n", __func__, ctx->total_image_size);
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() HTTP File Length: %d\n", __func__, ctx->total_image_size);
                         }
                     }
                 }
@@ -715,18 +716,18 @@ static cy_rslt_t cy_ota_http_send_get_response(cy_ota_context_t *ctx,
             else if (response->status_code < 400 )
             {
                 /* 3xx (Redirection): Further action needs to be taken in order to complete the request */
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, "HTTP response code: %d, redirection - code needed to handle this!\n", response->status_code);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, redirection - code needed to handle this!\n", response->status_code);
                 result = CY_RSLT_OTA_ERROR_GENERAL;
             }
             else
             {
                 /* 4xx (Client Error): The request contains bad syntax or cannot be fulfilled */
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, "HTTP response code: %d, ERROR!\n", response->status_code);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, ERROR!\n", response->status_code);
                 result = CY_RSLT_OTA_ERROR_GENERAL;
             }
         }
     }
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() returning: 0x%lx\n", __func__, result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() returning: 0x%lx\n", __func__, result);
 
     return result;
 }
@@ -790,19 +791,19 @@ cy_rslt_t cy_ota_http_get_job(cy_ota_context_t *ctx)
     }
 
 /*
- *    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "HTTP Get Job \n");
- *    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "                File befote cb: %s\n", ctx->http.file);
- *    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "            json_doc befote cb: %d:%s\n", strlen(ctx->http.json_doc), ctx->http.json_doc);
+ *    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "HTTP Get Job \n");
+ *    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "                File befote cb: %s\n", ctx->http.file);
+ *    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "            json_doc befote cb: %d:%s\n", strlen(ctx->http.json_doc), ctx->http.json_doc);
  */
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
             cy_ota_get_state_string(ctx->curr_state), ctx->stop_OTA_session);
 
     cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_STATE_CHANGE, ctx->curr_state);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "HTTP Get Job        cb result: 0x%lx\n", cb_result);
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "                File After cb: %s\n", ctx->http.file);
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "            json_doc After cb: %d:%s\n", strlen(ctx->http.json_doc), ctx->http.json_doc);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "HTTP Get Job        cb result: 0x%lx\n", cb_result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "                File After cb: %s\n", ctx->http.file);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "            json_doc After cb: %d:%s\n", strlen(ctx->http.json_doc), ctx->http.json_doc);
 
     switch( cb_result )
     {
@@ -827,7 +828,7 @@ cy_rslt_t cy_ota_http_get_job(cy_ota_context_t *ctx)
                 /* fill headers we want to see in the response */
                 if (cy_ota_http_init_headers(ctx, &send_headers, &num_send_headers, &read_headers, &num_read_headers) != CY_RSLT_SUCCESS)
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
                 }
 
                 memset(&response, 0x00, sizeof(response));
@@ -836,11 +837,11 @@ cy_rslt_t cy_ota_http_get_job(cy_ota_context_t *ctx)
                                                         send_headers, num_send_headers,
                                                         read_headers, num_read_headers,
                                                         &response);
-                cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "cy_ota_http_send_get_response() returned: 0x%lx status:%d\n", result, response.status_code);
-                cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "  Buffer:%p   len:%d\n", response.body, response.body_len);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "cy_ota_http_send_get_response() returned: 0x%lx status:%d\n", result, response.status_code);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "  Buffer:%p   len:%d\n", response.body, response.body_len);
                 if (result != CY_RSLT_SUCCESS)
                 {
-                    cy_log_msg(CYLF_OTA, CY_LOG_ERR, "cy_ota_http_send_get_response() returned: 0x%lx\n", result);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_send_get_response() returned: 0x%lx\n", result);
                     result = CY_RSLT_OTA_ERROR_GET_JOB;
                     break;
                 }
@@ -853,10 +854,10 @@ cy_rslt_t cy_ota_http_get_job(cy_ota_context_t *ctx)
                     memcpy(ctx->job_doc, response.body, copy_len); //http.json_do ??
 
 #if 0   /* keep for debugging */
-                    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "response.body:%p sz:%d\n", response.body, response.body_len);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response.body:%p sz:%d\n", response.body, response.body_len);
                     cy_ota_print_data( (const char *)response.body, response.body_len);
 
-                    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "JOB DOC     :%p sz:%d\n", ctx->job_doc, copy_len);
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "JOB DOC     :%p sz:%d\n", ctx->job_doc, copy_len);
                     cy_ota_print_data( ctx->job_doc, copy_len);
 #endif
                     result = CY_RSLT_SUCCESS;
@@ -865,17 +866,17 @@ cy_rslt_t cy_ota_http_get_job(cy_ota_context_t *ctx)
             break;
 
         case CY_OTA_CB_RSLT_OTA_STOP:
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
             result = CY_RSLT_OTA_ERROR_GET_JOB;
             break;
 
         case CY_OTA_CB_RSLT_APP_SUCCESS:
-            cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
             result = CY_RSLT_SUCCESS;
             break;
 
         case CY_OTA_CB_RSLT_APP_FAILED:
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for JOB_DOWNLOAD\n", __func__);
             result = CY_RSLT_OTA_ERROR_GET_JOB;
             break;
     }
@@ -911,11 +912,11 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
 
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s()\n", __func__);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s()\n", __func__);
 
     if (cy_rtos_init_mutex(&ctx->sub_callback_mutex) != CY_RSLT_SUCCESS)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() sub_callback_mutex init failed\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() sub_callback_mutex init failed\n", __func__);
         return CY_RSLT_OTA_ERROR_GET_DATA;
     }
     ctx->sub_callback_mutex_inited = 1;
@@ -925,7 +926,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
     result = cy_rtos_waitbits_event(&ctx->ota_event, &waitfor_clear, 1, 0, 1);
     if (waitfor_clear != 0)
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s() Clearing waitfor: 0x%lx\n", __func__, waitfor_clear);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() Clearing waitfor: 0x%lx\n", __func__, waitfor_clear);
     }
 
     result = cy_rtos_init_timer(&ctx->http.http_timer, CY_TIMER_TYPE_ONCE,
@@ -933,7 +934,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
     if (result != CY_RSLT_SUCCESS)
     {
         /* Timer init failed */
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() Timer Create Failed!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Timer Create Failed!\n", __func__);
         ctx->sub_callback_mutex_inited = 0;
         cy_rtos_deinit_mutex(&ctx->sub_callback_mutex);
         return CY_RSLT_OTA_ERROR_GET_DATA;
@@ -963,7 +964,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
                 ctx->parsed_job.file, ctx->curr_server->host_name, ctx->curr_server->port,
                 (long)range_start, (long)range_end);
     }
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
             cy_ota_get_state_string(ctx->curr_state), ctx->stop_OTA_session);
 
     cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_STATE_CHANGE, ctx->curr_state);
@@ -971,7 +972,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
     {
     default:
     case CY_OTA_CB_RSLT_OTA_STOP:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
         result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
         goto cleanup_and_exit;
 
@@ -980,12 +981,12 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
         break;
 
     case CY_OTA_CB_RSLT_APP_SUCCESS:
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
         result = CY_RSLT_SUCCESS;
         goto cleanup_and_exit;
 
     case CY_OTA_CB_RSLT_APP_FAILED:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for DATA_DOWNLOAD\n", __func__);
         result = CY_RSLT_OTA_ERROR_GET_DATA;
         goto cleanup_and_exit;
     }
@@ -998,7 +999,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
               (ctx->total_bytes_written < ctx->total_image_size) ) &&
             (range_end > range_start) )
     {
-        cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "while(ctx->total_bytes_written (%ld) < (%ld) ctx->total_image_size)\n", ctx->total_bytes_written, ctx->total_image_size);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "while(ctx->total_bytes_written (%ld) < (%ld) ctx->total_image_size)\n", ctx->total_bytes_written, ctx->total_image_size);
         /* Send a request and wait for a response
          * The response call has a timeout value, so when we call waitbits_event below
          * we do not use "forever".
@@ -1021,7 +1022,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
         /* fill headers we want to see in the response */
         if (cy_ota_http_init_headers(ctx, &send_headers, &num_send_headers, &read_headers, &num_read_headers) != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
         }
 
         memset(&response, 0x00, sizeof(response));
@@ -1039,15 +1040,15 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
             http_chunk_info.size       = response.body_len;
             http_chunk_info.total_size = ctx->total_image_size;  // is this correct? Is it set?
 
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG, "call cy_ota_http_write_chunk_to_flash(%p %d)\n", http_chunk_info.buffer, http_chunk_info.size);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "call cy_ota_http_write_chunk_to_flash(%p %d)\n", http_chunk_info.buffer, http_chunk_info.size);
             result = cy_ota_http_write_chunk_to_flash(ctx, &http_chunk_info);
             if (result == CY_RSLT_OTA_ERROR_APP_RETURNED_STOP)
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_WARNING, "%s() cy_ota_storage_write() returned OTA_STOP 0x%lx\n", __func__, result);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() cy_ota_storage_write() returned OTA_STOP 0x%lx\n", __func__, result);
             }
             else if (result != CY_RSLT_SUCCESS)
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_ota_storage_write() failed 0x%lx\n", __func__, result);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_ota_storage_write() failed 0x%lx\n", __func__, result);
                 result = CY_RSLT_OTA_ERROR_WRITE_STORAGE;
                 break;  // drop out of while loop
             }
@@ -1058,7 +1059,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
         }
         else
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "cy_ota_http_send_get_response() ret:0x%lx start:0x%lx =  0x%lx\n", result, request.range_start, range_start);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_send_get_response() ret:0x%lx start:0x%lx =  0x%lx\n", result, request.range_start, range_start);
             result = CY_RSLT_OTA_ERROR_GET_DATA;
             break;  // drop out of while loop
         }
@@ -1070,20 +1071,20 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
         {
             range_end = ctx->total_image_size - 1;
         }
-        cy_log_msg(CYLF_OTA, CY_LOG_INFO, "After :: range_start: 0x%lx  end: 0x%lx total_image_size:0x%lx\n", range_start, range_end, ctx->total_image_size);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "After :: range_start: 0x%lx  end: 0x%lx total_image_size:0x%lx\n", range_start, range_end, ctx->total_image_size);
 
         /* Check the timing between packets */
         if (ctx->packet_timeout_sec > 0 )
         {
             /* got some data - restart the download interval timer */
-            cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%s() RESTART PACKET TIMER %ld secs\n", __func__, ctx->packet_timeout_sec);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() RESTART PACKET TIMER %ld secs\n", __func__, ctx->packet_timeout_sec);
             cy_ota_start_http_timer(ctx, ctx->packet_timeout_sec, CY_OTA_EVENT_PACKET_TIMEOUT);
         }
 
         /* Check for finished getting data */
         if ( (ctx->total_bytes_written > 0) && (ctx->total_bytes_written >= ctx->total_image_size) )
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_INFO, "Done writing all data! %ld of %ld\n", ctx->total_bytes_written, ctx->total_image_size);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Done writing all data! %ld of %ld\n", ctx->total_bytes_written, ctx->total_image_size);
             cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_DONE, 0);
             /* stop timer asap */
             cy_ota_stop_http_timer(ctx);
@@ -1091,7 +1092,7 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
 
     }   /* While not done loading */
 
-    cy_log_msg(CYLF_OTA, CY_LOG_INFO, "%s() HTTP GET DATA DONE result: 0x%lx\n", __func__, result);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() HTTP GET DATA DONE result: 0x%lx\n", __func__, result);
 
 cleanup_and_exit:
     ctx->sub_callback_mutex_inited = 0;
@@ -1148,14 +1149,14 @@ cy_rslt_t cy_ota_http_report_result(cy_ota_context_t *ctx, cy_rslt_t last_error)
             ( (last_error == CY_RSLT_SUCCESS) ? CY_OTA_RESULT_SUCCESS : CY_OTA_RESULT_FAILURE),
             ctx->http.file);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%d : %s() CALLING CB STATE_CHANGE %s stop_OTA_session:%d\n", __LINE__, __func__,
             cy_ota_get_state_string(ctx->curr_state), ctx->stop_OTA_session);
 
     cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_STATE_CHANGE, ctx->curr_state);
     buff_len = strlen(ctx->http.json_doc);
 
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "HTTP POST result     File After cb: %s\n", ctx->http.file);
-    cy_log_msg(CYLF_OTA, CY_LOG_DEBUG2, "HTTP POST result json_doc After cb: %ld:%s\n",buff_len, ctx->http.json_doc);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "HTTP POST result     File After cb: %s\n", ctx->http.file);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "HTTP POST result json_doc After cb: %ld:%s\n",buff_len, ctx->http.json_doc);
 
     /* Form POST message for HTTP Server */
 
@@ -1188,7 +1189,7 @@ cy_rslt_t cy_ota_http_report_result(cy_ota_context_t *ctx, cy_rslt_t last_error)
             /* fill headers we want to see in the response */
             if (cy_ota_http_init_headers(ctx, &send_headers, &num_send_headers, &read_headers, &num_read_headers) != CY_RSLT_SUCCESS)
             {
-                cy_log_msg(CYLF_OTA, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
             }
 
             memset(&response, 0x00, sizeof(response));
@@ -1200,22 +1201,22 @@ cy_rslt_t cy_ota_http_report_result(cy_ota_context_t *ctx, cy_rslt_t last_error)
         }
         if (result != CY_RSLT_SUCCESS)
         {
-            cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() cy_ota_http_send_get_response(len:0x%x) failed 0x%lx\n", __func__, buff_len, result);
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_ota_http_send_get_response(len:0x%x) failed 0x%lx\n", __func__, buff_len, result);
             result = CY_RSLT_OTA_ERROR_SENDING_RESULT;
         }
         break;
 
     case CY_OTA_CB_RSLT_OTA_STOP:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for SEND_RESULT\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned OTA Stop for STATE_CHANGE for SEND_RESULT\n", __func__);
         result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
         break;
 
     case CY_OTA_CB_RSLT_APP_SUCCESS:
-        cy_log_msg(CYLF_OTA, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for SEND_RESULT\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s() App returned APP_SUCCESS for STATE_CHANGE for SEND_RESULT\n", __func__);
         break;
 
     case CY_OTA_CB_RSLT_APP_FAILED:
-        cy_log_msg(CYLF_OTA, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for SEND_RESULT\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() App returned APP_FAILED for STATE_CHANGE for SEND_RESULT\n", __func__);
         result = CY_RSLT_OTA_ERROR_SENDING_RESULT;
         break;
     }

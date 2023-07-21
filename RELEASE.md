@@ -1,10 +1,26 @@
-# Cypress Over The Air (OTA) Library
+# Infineon Over The Air (OTA) Library
 
 ## What's Included?
 
 See the [README.md](./README.md) for a complete description of the OTA library.
 
+## Known issues
+
+| Problem | Workaround |
+| ------- | ---------- |
+| OTA Middleware is currently not supported on IAR toolchain with CYW20829B0 kit. | No workaround. Support will be added in a future release. |
+
+
 ## Changelog
+
+### v3.0.0
+
+- Flash memory operations(Read/Write/Erase) offloaded to user application.
+- Added support for configurable MTU sizes during BLE OTA.
+- MCUBootloader-specific makefile entries are handled within the library.
+- Integrated MQTT-v4.X library version.
+- Added support for 20829B0(CYW920829M2EVK-02) kits.
+- Documentation updates.
 
 ### v2.0.0
 
@@ -38,12 +54,15 @@ See the [README.md](./README.md) for a complete description of the OTA library.
     - CY8CPROTO-062S3-4343W now supports WiFi updates using XIP
 - XIP builds are only supported with GCC and ARM Toolchains
 
-## Additional Information
+## Supported Software and Tools
+This version of the library was validated for compatibility with the following software and tools:
 
-- [ModusToolbox® Software Environment, Quick Start Guide, Documentation, and Videos](https://www.cypress.com/products/modustoolbox-software-environment)
-
-_______________________________________________________________________________________________________
-
-© 2021, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
-This software, associated documentation and materials ("Software") is owned by Cypress Semiconductor Corporation or one of its affiliates ("Cypress") and is protected by and subject to worldwide patent protection (United States and foreign), United States copyright laws and international treaty provisions. Therefore, you may use this Software only as provided in the license agreement accompanying the software package from which you obtained this Software ("EULA"). If no EULA applies, then any reproduction, modification, translation, compilation, or representation of this Software is prohibited without the express written permission of Cypress.
-Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress reserves the right to make changes to the Software without notice. Cypress does not assume any liability arising out of the application or use of the Software or any product or circuit described in the Software. Cypress does not authorize its products for use in any products where a malfunction or failure of the Cypress product may reasonably be expected to result in significant property damage, injury or death ("High Risk Product"). By including Cypress's product in a High Risk Product, the manufacturer of such system or application assumes all risk of such use and in doing so agrees to indemnify Cypress against all liability.
+| Software and Tools                                        | Version |
+| :---                                                      | :----:  |
+| ModusToolbox&trade; Software Environment                  | 3.0     |
+| - ModusToolbox&trade; Device Configurator                 | 4.0     |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 5.0     |
+| Peripheral Driver Library (PDL)                           | 3.3.1   |
+| GCC Compiler                                              | 10.3.1  |
+| IAR Compiler                                              | 9.30    |
+| Arm Compiler 6                                            | 6.16    |
