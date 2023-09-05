@@ -63,7 +63,7 @@ This guide shows Makefile variables and build DEFINES used when building an appl
     ifneq ($(MAKECMDGOALS),getlibs)
     ifneq ($(MAKECMDGOALS),get_app_info)
     ifneq ($(MAKECMDGOALS),printlibs)
-        include ../mtb_shared/ota-update/release-v3.0.0/makefiles/target_ota.mk
+        include ../mtb_shared/ota-update/release-v3.0.1/makefiles/target_ota.mk
     endif
     endif
     endif

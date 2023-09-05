@@ -13,6 +13,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v3.0.1
+
+- Template OTA linker file updated for 20829B0 platform.
+
 ### v3.0.0
 
 - Flash memory operations(Read/Write/Erase) offloaded to user application.
@@ -59,10 +63,10 @@ This version of the library was validated for compatibility with the following s
 
 | Software and Tools                                        | Version |
 | :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.0     |
-| - ModusToolbox&trade; Device Configurator                 | 4.0     |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 5.0     |
-| Peripheral Driver Library (PDL)                           | 3.3.1   |
-| GCC Compiler                                              | 10.3.1  |
-| IAR Compiler                                              | 9.30    |
+| ModusToolbox&trade; Software Environment                  | 3.1     |
+| - ModusToolbox&trade; Device Configurator                 | 4.10    |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.10.0  |
+| Peripheral Driver Library (PDL CAT1)                      | 3.6.0   |
+| GCC Compiler                                              | 11.3.1  |
+| IAR Compiler                                              | 9.30.1  |
 | Arm Compiler 6                                            | 6.16    |

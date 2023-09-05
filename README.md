@@ -18,13 +18,16 @@ For <b>WiFi</b>, the OTA library utilizes MQTT or HTTP and TLS to securely conne
 For <b>Bluetooth®</b>, the OTA library works with an intermediate peer application on a laptop (or phone) to push the image to the device.
 
 ## Library Versions
-ota-update v3.0.0 works with ModusToolbox 3.0.
 
-ota-update v2.0.0 works with ModusToolbox 3.0 and is <b>not</b> backwards compatible with ModusToolbox 2.4.
+- ota-update v3.0.1 works with ModusToolbox 3.1.
 
-ota-update v1.0.0 works with ModusToolbox 2.4 and replaces anycloud-ota (all versions).
+- ota-update v3.0.0 works with ModusToolbox 3.0.
 
-The anycloud-ota vx.x.x library will be depricated soon.
+- ota-update v2.0.0 works with ModusToolbox 3.0 and is <b>not</b> backwards compatible with ModusToolbox 2.4.
+
+- ota-update v1.0.0 works with ModusToolbox 2.4 and replaces anycloud-ota (all versions).
+
+- Older OTA library 'anycloud-ota' depricated.
 
 ## 1. OTA Update with MCUBootloader Application
 
@@ -68,7 +71,7 @@ For more information, please see [OTA Flash Layout Information](./OTA_FLASH_LAYO
 
 <b>1.2 Target and Flashmap Use</b><br>
 
-These flashmaps are defaults for the supported targets as of v3.0.0 release.
+These flashmaps are defaults for the supported targets as of v3.0.1 release.
 
 | Target | Internal<br>Flash size | Flashmaps |
 |-------------------|---------------------|----------|
