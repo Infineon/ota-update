@@ -1,18 +1,34 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
- * SPDX-License-Identifier: Apache-2.0
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
+ *
+ * This software, including source code, documentation and related
+ * materials ("Software") is owned by Cypress Semiconductor Corporation
+ * or one of its affiliates ("Cypress") and is protected by and subject to
+ * worldwide patent protection (United States and foreign),
+ * United States copyright laws and international treaty provisions.
+ * Therefore, you may use this Software only as provided in the license
+ * agreement accompanying the software package from which you
+ * obtained this Software ("EULA").
+ * If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
+ * non-transferable license to copy, modify, and compile the Software
+ * source code solely for use in connection with Cypress's
+ * integrated circuit products.  Any reproduction, modification, translation,
+ * compilation, or representation of this Software except as specified
+ * above is prohibited without the express written permission of Cypress.
+ *
+ * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
+ * reserves the right to make changes to the Software without notice. Cypress
+ * does not assume any liability arising out of the application or use of the
+ * Software or any product or circuit described in the Software. Cypress does
+ * not authorize its products for use in any products where a malfunction or
+ * failure of the Cypress product may reasonably be expected to result in
+ * significant property damage, injury or death ("High Risk Product"). By
+ * including Cypress's product in a High Risk Product, the manufacturer
+ * of such system or application assumes all risk of such use and in doing
+ * so agrees to indemnify Cypress against all liability.
  */
 
 #ifndef CY_OTA_INTERNAL_H__
@@ -25,7 +41,6 @@ extern "C" {
 
 #include "cyabs_rtos.h"
 #include "cy_ota_log.h"
-#include "untar.h"
 
 /* This is so that Eclipse doesn't complain about the Logging messages */
 #ifndef NULL
@@ -243,7 +258,6 @@ typedef struct cy_ota_mqtt_context_s {
 
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
 #include "ota_ecc_pp.h"
-#include "sha256.h"
 #endif
 
 
@@ -266,9 +280,8 @@ typedef struct {
     uint32_t                    crc32;                      /**< Bluetooth® CRC calculated during download                     */
     uint32_t                    file_bytes_written;         /**< Bluetooth® File bytes written                                 */
     uint8_t                     percent;                    /**< Bluetooth® percentage downloaded                              */
-    uint8_t                     bt_notify_buff;             /**< Bluetooth® for notifications and indications                  */
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    mbedtls_sha256_context      bt_sha2_ctx;                /**< Bluetooth® For calculating the signature as we download chunks */
+    void                        *bt_sha2_ctx;               /**< Bluetooth® For calculating the signature as we download chunks */
     uint8_t                     signature[SIGNATURE_LEN];   /**< Bluetooth® Downloaded signature for the file                   */
     uint32_t                    sig_offset;                 /**< Bluetooth® Signature offset for downloading in pieces          */
 #endif
@@ -320,13 +333,11 @@ typedef struct cy_ota_job_parsed_info_s {
 /**
  * @brief internal OTA Context structure
  */
-typedef struct cy_ota_context_s {
-
+typedef struct cy_ota_context_s
+{
     uint32_t                    tag;                        /**< Must be CY_OTA_TAG to be valid                             */
-
     cy_ota_network_params_t     network_params;             /**< copy of initial connection parameters                      */
     cy_ota_agent_params_t       agent_params;               /**< copy of initial agent parameters                           */
-    cy_ota_agent_mem_interface_t flash_iface;               /**< Flash memory handle                                        */
     cy_event_t                  ota_event;                  /**< Event signaling @ref ota_events_t                          */
     cy_thread_t                 ota_agent_thread;           /**< OTA Agent Thread                                           */
 
@@ -346,22 +357,14 @@ typedef struct cy_ota_context_s {
     ota_events_t                ota_timer_event;            /**< event to trigger when timer goes off   */
 
     /* Storage and progress info */
-    void                        *storage_loc;               /**< can be cast as flash_area or FILE as needed                    */
-    uint32_t                    total_image_size;           /**< Total size of OTA Image                                        */
-    uint32_t                    total_bytes_written;        /**< Number of bytes written to FLASH                               */
-    uint32_t                    last_offset;                /**< Last offset written to from cy_ota_storage_write()             */
-    uint32_t                    last_size;                  /**< last size of data written from cy_ota_storage_write()          */
-    uint16_t                    last_packet_received;       /**< Last Packet of data we have received                           */
-    uint16_t                    total_packets;              /**< Total number of Packets of data for the OTA Image              */
-    uint16_t                    num_packets_received;       /**< Total number of Packets received                               */
-    uint16_t                    last_num_packets_received;  /**< last time we saw how many were received, per-packet timer      */
+    cy_ota_storage_context_t    ota_storage_context;
 
     cy_mutex_t                  sub_callback_mutex;         /**< Keep subscription callbacks from being time-sliced             */
     uint8_t                     sub_callback_mutex_inited;  /**< 1 = sub_callback_mutex initialized                             */
 
     /* Network connection */
-    int                         contact_server_retry_count; /**< Keep count of # tries to contact server                        */
-    int                         download_retry_count;       /**< Keep count of # tries to download update                       */
+    uint8_t                     contact_server_retry_count; /**< Keep count of # tries to contact server                        */
+    uint8_t                     download_retry_count;       /**< Keep count of # tries to download update                       */
 
     uint8_t                     reboot_after_sending_result;    /**< Only reboot after verified and result sent                 */
     uint8_t                     app_connected;              /**< Keep track of the App making the connection                    */
@@ -389,8 +392,8 @@ typedef struct cy_ota_context_s {
     cy_ota_cb_struct_t          callback_data;              /**< For passing data to callback function                          */
 
     cy_ota_storage_write_info_t *storage;                   /**< pointer to a chunk of data to write                            */
+    cy_ota_storage_interface_t  storage_iface;
     uint8_t                     storage_open;               /**< 1 = storage is open                                            */
-    uint8_t                     ota_is_tar_archive;         /**< !=0, this is a tar file                                        */
 } cy_ota_context_t;
 
 /***********************************************************************
@@ -447,8 +450,6 @@ cy_ota_callback_results_t cy_ota_internal_call_cb(cy_ota_context_t *ctx,
 cy_rslt_t cy_ota_http_validate_network_params(const cy_ota_network_params_t *network_params);
 cy_rslt_t cy_ota_mqtt_validate_network_params(const cy_ota_network_params_t *network_params);
 cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *network_params);
-
-
 
 /**
  * @brief Connect to OTA Update server

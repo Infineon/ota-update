@@ -1,18 +1,34 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
- * SPDX-License-Identifier: Apache-2.0
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
+ *
+ * This software, including source code, documentation and related
+ * materials ("Software") is owned by Cypress Semiconductor Corporation
+ * or one of its affiliates ("Cypress") and is protected by and subject to
+ * worldwide patent protection (United States and foreign),
+ * United States copyright laws and international treaty provisions.
+ * Therefore, you may use this Software only as provided in the license
+ * agreement accompanying the software package from which you
+ * obtained this Software ("EULA").
+ * If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
+ * non-transferable license to copy, modify, and compile the Software
+ * source code solely for use in connection with Cypress's
+ * integrated circuit products.  Any reproduction, modification, translation,
+ * compilation, or representation of this Software except as specified
+ * above is prohibited without the express written permission of Cypress.
+ *
+ * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
+ * reserves the right to make changes to the Software without notice. Cypress
+ * does not assume any liability arising out of the application or use of the
+ * Software or any product or circuit described in the Software. Cypress does
+ * not authorize its products for use in any products where a malfunction or
+ * failure of the Cypress product may reasonably be expected to result in
+ * significant property damage, injury or death ("High Risk Product"). By
+ * including Cypress's product in a High Risk Product, the manufacturer
+ * of such system or application assumes all risk of such use and in doing
+ * so agrees to indemnify Cypress against all liability.
  */
 
 /** @file
@@ -80,7 +96,10 @@ extern "C" {
  */
 
 #if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
+#if defined(CYBSP_WIFI_CAPABLE)
 #include "cybsp_wifi.h"
+#endif
+
 #include "cy_tcpip_port_secure_sockets.h"
 #endif
 
@@ -171,7 +190,7 @@ extern "C" {
 #if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
 #define CY_RSLT_OTA_ERROR_BLE_GENERAL           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 32) ) /**< General Bluetooth® error.                     */
 #define CY_RSLT_OTA_ERROR_BLE_VERIFY            ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 33) ) /**< Bluetooth® Verification of download error.    */
-#define CY_RSLT_OTA_ERROR_BLE_GATT              ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 34) ) /**< Bluetooth® GATT event error.                  */
+#define CY_RSLT_OTA_ERROR_BLE_STORAGE           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 34) ) /**< Bluetooth® BLE Transport Error.               */
 #endif
 
 #define CY_RSLT_OTA_ERROR_SMIF_TIMEOUT          ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 64) ) /**< SMIF timeout.             */
@@ -734,17 +753,6 @@ typedef enum
     CY_OTA_CB_NUM_RESULTS             /**< Placeholder, do not use. */
 } cy_ota_callback_results_t;
 
-/**
- * @brief Enumeration of OTA storage types.
- */
-typedef enum
-{
-    CY_OTA_MEM_TYPE_INTERNAL_FLASH = 0,      /**<  For internal flash type. */
-    CY_OTA_MEM_TYPE_EXTERNAL_FLASH,          /**<  For external flash type. */
-    CY_OTA_MEM_TYPE_RRAM,                    /**<  For RRAM type.           */
-    CY_OTA_MEM_TYPE_NONE                     /**<  Default value.           */
-} cy_ota_mem_type_t;
-
 /** \} group_ota_typedefs */
 
 /***********************************************************************
@@ -758,7 +766,6 @@ typedef enum
  * \{
  *  Structures used for network connection and OTA Agent behavior.
  */
-
 
 /**
  * @brief Struct to hold information on where to write the data.
@@ -778,12 +785,41 @@ typedef struct
     uint16_t        total_packets;  /**< MQTT: Total packets (chunks) in the OTA image.             */
 } cy_ota_storage_write_info_t;
 
+/**
+ * @brief Struct to hold information on from where to read the data.
+ * Information on from where to read the downloaded chunk of the OTA image.
+ */
+typedef cy_ota_storage_write_info_t cy_ota_storage_read_info_t;
+
+/**
+ * @brief OTA Agent storage context parameters structure.
+ *
+ * These parameters are for describing some storage aspects of the OTA Agent.
+ * \struct cy_ota_storage_context_t
+ */
+typedef struct cy_ota_storage_context_s
+{
+    void        *storage_loc;               /**< can be cast as flash_area or FILE as needed                    */
+    uint32_t    total_image_size;           /**< Total size of OTA Image                                        */
+    uint32_t    total_bytes_written;        /**< Number of bytes written to FLASH                               */
+    uint32_t    last_offset;                /**< Last offset written to from cy_ota_storage_write()             */
+    uint32_t    last_size;                  /**< last size of data written from cy_ota_storage_write()          */
+    uint16_t    last_packet_received;       /**< Last Packet of data we have received                           */
+    uint16_t    total_packets;              /**< Total number of Packets of data for the OTA Image              */
+    uint16_t    num_packets_received;       /**< Total number of Packets received                               */
+    uint16_t    last_num_packets_received;  /**< last time we saw how many were received, per-packet timer      */
+    uint8_t     ota_is_tar_archive;         /**< !=0, this is a tar file                                        */
+    uint8_t     reboot_upon_completion;     /**< 1 = Automatically reboot upon download completion and verify.  */
+    uint8_t     validate_after_reboot;      /**< 0 = OTA will set upgrade image as permanent before reboot.
+                                             *   1 = The application should validate and set the upgrade image as the permanent image after reboot. */
+}cy_ota_storage_context_t;
+
 #ifdef COMPONENT_OTA_HTTP
 /**
  * @brief OTA HTTP-specific connection parameters.
  * \struct cy_ota_http_params_t
  */
-typedef struct
+typedef struct cy_ota_http_params_s
 {
     cy_awsport_server_info_t        server;     /**< HTTP server to get the Job or OTA image.
                                                  *    Set use_get_job_flow in cy_ota_network_params_t
@@ -804,7 +840,7 @@ typedef struct
  *  OTA MQTT-specific connection parameters.
  *  \struct cy_ota_mqtt_params_t
  */
-typedef struct
+typedef struct cy_ota_mqtt_params_s
 {
     bool                        awsIotMqttMode;    /**< 0 = normal MQTT; 1 = Special Amazon mode.    */
     const char                  *pIdentifier;      /**< Pointer to the device ID.                    */
@@ -830,7 +866,7 @@ typedef struct
  * After your function returns, this structure is not available.
  * \struct cy_ota_cb_struct_t
  */
-typedef struct
+typedef struct cy_ota_cb_struct_s
 {
     cy_ota_cb_reason_t          reason;         /**< Reason for the callback.                               */
     void                        *cb_arg;        /**< Argument passed when registering the callback.         */
@@ -852,7 +888,7 @@ typedef struct
 
 #ifdef COMPONENT_OTA_MQTT
     cy_mqtt_t                   mqtt_connection; /**< For Passing MQTT connection instance                  */
-    char                        unique_topic[CY_OTA_MQTT_UNIQUE_TOPIC_BUFF_SIZE];   /**< Topic for receiving the OTA data. */
+    char                        unique_topic[CY_OTA_MQTT_UNIQUE_TOPIC_BUFF_SIZE + 1];   /**< Topic for receiving the OTA data. */
 #endif
 #ifdef COMPONENT_OTA_HTTP
     cy_http_client_t            http_connection; /**< For Passing HTTP connection instance                  */
@@ -862,10 +898,24 @@ typedef struct
     char                        file[CY_OTA_MQTT_FILENAME_BUFF_SIZE]; /**< File name to request OTA data.   */
 
     /* For Get Job Message. */
-    char                        json_doc[CY_OTA_JSON_DOC_BUFF_SIZE];                /**< Message to request the OTA data.  */
+    char                        json_doc[CY_OTA_JSON_DOC_BUFF_SIZE + 1]; /**< Message to request the OTA data.  */
 #endif
 
 } cy_ota_cb_struct_t;
+
+/**
+ * @brief OTA App file information.
+ *
+ * These parameters are for describing properties of application image(BOOT/UPGRADE).
+ * \struct cy_ota_app_info_t
+ */
+typedef struct cy_ota_app_info_s
+{
+    uint16_t app_id;    /**< Application ID.            */
+    uint8_t  major;     /**< Application major version. */
+    uint8_t  minor;     /**< Application major version. */
+    uint8_t  build;     /**< Application build number.  */
+} cy_ota_app_info_t;
 
 /** \} group_ota_structures */
 
@@ -882,77 +932,109 @@ typedef struct
  *
  * @param[in,out]   cb_data   Current information that Application callback can use/modify.
  *
- * @return
+ * @return          CY_OTA_CB_RSLT_OTA_CONTINUE
+ *                  CY_OTA_CB_RSLT_OTA_STOP
+ *                  CY_OTA_CB_RSLT_APP_SUCCESS
+ *                  CY_OTA_CB_RSLT_APP_FAILED
  */
-typedef cy_ota_callback_results_t (*cy_ota_callback_t)(cy_ota_cb_struct_t *cb_data);
+typedef cy_ota_callback_results_t ( *cy_ota_callback_t ) ( cy_ota_cb_struct_t *cb_data );
 
 /**
- * @brief Memory read callback function pointer type. Callback of this type is invoked when a OTA Agent wants to read from memory.
+ * @brief Creates and open new receive file for the data chunks as they come in.
  *
- * A function of this type must be implemented by the application to read contents from given memory location.
+ * @note ota-update library expects user to implement this callback function.
  *
- * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement read operation functionality.
- * @param[in]   addr       Starting address to read from.
- * @param[out]  data       Pointer to the buffer to store the data read from the memory.
- * @param[in]   len        Number of data bytes to read.
+ * @note Opens the file indicated in the OTA agent storage context in the MCU file system.
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_TYPE_ERROR
+ * @note The previous image may be present in the designated image download partition or file, so the
+ * partition or file must be completely erased or overwritten in this routine.
+ *
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_OPEN_STORAGE
  */
-typedef cy_rslt_t ( * cy_ota_agent_mem_read ) ( cy_ota_mem_type_t mem_type, uint32_t addr, void *data, size_t len );
+typedef cy_rslt_t ( * cy_ota_file_open ) ( cy_ota_storage_context_t *storage_ptr );
 
 /**
- * @brief Memory write callback function pointer type. Callback of this type is invoked when a OTA Agent wants to write to memory.
+ * @brief Reads the flash data starting from the given offset.
  *
- * A function of this type must be implemented by the application to write contents to given memory location.
+ * @note ota-update library expects user to implement this callback function.
  *
- * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement write operation functionality.
- * @param[in]   addr       Starting address to write to.
- * @param[in]   data       Pointer to the buffer containing the data to be written.
- * @param[in]   len        Number of bytes to write.
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
+ * @param[in]   chunk_info      Pointer to the chunk information which includes buffer, length, and offset.
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_TYPE_ERROR
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_READ_STORAGE
  */
-typedef cy_rslt_t ( * cy_ota_agent_mem_write ) ( cy_ota_mem_type_t mem_type, uint32_t addr, void *data, size_t len );
+typedef cy_rslt_t ( * cy_ota_file_read ) ( cy_ota_storage_context_t *storage_ptr, cy_ota_storage_read_info_t *chunk_info );
 
 /**
- * @brief Memory erase callback function pointer type. Callback of this type is invoked when a OTA Agent wants to erase memory.
+ * @brief Write a data to the flash at the given offset.
  *
- * A function of this type must be implemented by the application to erase memory.
+ * @note ota-update library expects user to implement this callback function.
  *
- * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement erase operation functionality.
- * @param[in]   addr       Starting address to begin erasing.
- * @param[in]   len        Number of bytes to erase.
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
+ * @param[in]   chunk_info      Pointer to the chunk information which includes buffer, length, and offset.
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_TYPE_ERROR
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_WRITE_STORAGE
  */
-typedef cy_rslt_t ( * cy_ota_agent_mem_erase ) ( cy_ota_mem_type_t mem_type, uint32_t addr, size_t len );
+typedef cy_rslt_t ( * cy_ota_file_write ) ( cy_ota_storage_context_t *storage_ptr, cy_ota_storage_write_info_t *chunk_info );
 
 /**
- * @brief Get program size callback function pointer type. Callback of this type is invoked when a OTA Agent wants to get programming page size.
+ * @brief Close the underlying receive file in the specified OTA context.
  *
- * A function of this type must be implemented by the application to get programming page size.
+ * @note ota-update library expects user to implement this callback function.
  *
- * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get program size functionality.
- * @param[in]   addr       Address that belongs to the sector for which programming page size needs to be returned.
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
  *
- * @return    Page size in bytes.
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_CLOSE_STORAGE
  */
-typedef size_t ( * cy_ota_agent_mem_prog_size ) ( cy_ota_mem_type_t mem_type, uint32_t addr );
+typedef cy_rslt_t ( * cy_ota_file_close ) ( cy_ota_storage_context_t *storage_ptr );
 
 /**
- * @brief Get erase size callback function pointer type. Callback of this type is invoked when a OTA Agent wants to get erase sector size.
+ * @brief Authenticate received OTA update file specified in the OTA context.
  *
- * A function of this type must be implemented by the application to get erase sector size.
+ * @note ota-update library expects user to implement this callback function.
  *
- * @param[in]   mem_type   This is of type cy_ota_mem_type_t. Application can use this to implement get erase size functionality.
- * @param[in]   addr       Address that belongs to the sector for which sector erase size needs to be returned.
+ * @note Authentication method is user choice.
  *
- * @return    Erase sector size in bytes
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_VERIFY
  */
-typedef size_t ( * cy_ota_agent_mem_erase_size ) ( cy_ota_mem_type_t mem_type, uint32_t addr );
+typedef cy_rslt_t ( * cy_ota_file_verify ) ( cy_ota_storage_context_t *storage_ptr );
+
+/**
+ * @brief The application has validated the new OTA image.
+ *
+ * @note This call must be after reboot and updated image is booted.
+ *
+ * @note  Calling this API makes currently executing image as boot image until next update.
+ *
+ * @param[in]   app_id          Application ID.
+ *
+ * @return CY_RSLT_SUCCESS on success; error codes otherwise.
+ *
+ */
+typedef cy_rslt_t ( * cy_ota_file_validate ) ( uint16_t app_id );
+
+/**
+ * @brief Get Application info like Application version and Application ID.
+ *
+ * @note ota-update library expects user to implement this callback function.
+ * @note This API implementation is optional for MCUBootloader based OTA.
+ *
+ * @param[in]        void*                  Pointer to file descriptor. It can be cast as flash_area or FILE as needed.
+ * @param[in, out]   cy_ota_app_info_t*     Pointer to the OTA Application information context @ref cy_ota_app_info_t
+ *
+ * @return           CY_RSLT_SUCCESS
+ *                   CY_RSLT_OTA_ERROR_GENERAL
+ */
+typedef cy_rslt_t ( * cy_ota_file_get_app_info ) ( void* file_des, cy_ota_app_info_t *app_info );
 
 /** \} group_ota_callback */
 
@@ -986,7 +1068,7 @@ typedef struct
  * These parameters are for describing some aspects of the OTA Agent.
  * \struct cy_ota_agent_params_t
  */
-typedef struct
+typedef struct cy_ota_agent_params_s
 {
     uint8_t     reboot_upon_completion;     /**< 1 = Automatically reboot upon download completion and verify.  */
     uint8_t     validate_after_reboot;      /**< 0 = OTA will set MCUboot to permanent before reboot.
@@ -998,18 +1080,21 @@ typedef struct
 } cy_ota_agent_params_t;
 
 /**
- * @ingroup ota_struct_types
- * @brief OTA memory Interface structure.
- * \struct cy_ota_agent_mem_interface_t
+ * @brief OTA storage interface callback APIs structure.
+ *
+ *  This information is used for calling storage APIs.
+ *  \struct cy_ota_storage_interface_t
  */
-typedef struct cy_ota_agent_mem_interface
+typedef struct cy_ota_storage_interface_s
 {
-    cy_ota_agent_mem_read read;                    /**< Reads a block of data from the specified memory location.                   */
-    cy_ota_agent_mem_write write;                  /**< Write a block of data to the specified memory location at the given offset. */
-    cy_ota_agent_mem_erase erase;                  /**< Erase a block of memory area.                                               */
-    cy_ota_agent_mem_prog_size get_prog_size;      /**< Get programming block size.                                                 */
-    cy_ota_agent_mem_erase_size get_erase_size;    /**< Get Erase block size.                                                       */
-} cy_ota_agent_mem_interface_t;
+    cy_ota_file_open           ota_file_open;          /**< To open OTA application image file.          */
+    cy_ota_file_read           ota_file_read;          /**< To read OTA application image from storage.  */
+    cy_ota_file_write          ota_file_write;         /**< To write OTA application image to storage.   */
+    cy_ota_file_close          ota_file_close;         /**< To close OTA application image file.         */
+    cy_ota_file_verify         ota_file_verify;        /**< To verify downloaded OTA application image.  */
+    cy_ota_file_validate       ota_file_validate;      /**< To validate current application.             */
+    cy_ota_file_get_app_info   ota_file_get_app_info;  /**< To get application information.              */
+} cy_ota_storage_interface_t;
 
 /** \} group_ota_structures */
 
@@ -1032,20 +1117,20 @@ typedef struct cy_ota_agent_mem_interface
  * Start a thread to monitor for OTA updates.
  * This consumes resources until cy_ota_agent_stop() is called.
  *
- * @param[in]   network_params   Pointer to cy_ota_network_params_t.
- * @param[in]   agent_params     Pointer to cy_ota_agent_params_t.
- * @param[in]   flash_interface  Pointer to cy_ota_agent_mem_interface_t.
- * @param[out]  ctx_ptr          Handle to store the OTA Agent context structure pointer,
- *                               Which is used for other OTA calls.
+ * @param[in]   network_params     Pointer to cy_ota_network_params_t.
+ * @param[in]   agent_params       Pointer to cy_ota_agent_params_t.
+ * @param[in]   storage_interface  Pointer to cy_ota_storage_interface_t.
+ * @param[out]  ctx_ptr            Handle to store the OTA Agent context structure pointer,
+ *                                 Which is used for other OTA calls.
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_BADARG
- *          CY_RSLT_OTA_ERROR_ALREADY_STARTED
- *          CY_RSLT_OTA_ERROR
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BADARG
+ *              CY_RSLT_OTA_ERROR_ALREADY_STARTED
+ *              CY_RSLT_OTA_ERROR
  */
 cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
                              cy_ota_agent_params_t *agent_params,
-                             cy_ota_agent_mem_interface_t *flash_interface,
+                             cy_ota_storage_interface_t *storage_interface,
                              cy_ota_context_ptr *ctx_ptr);
 
 /**
@@ -1055,8 +1140,8 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
  *
  * @param[in]   ctx_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_BADARG
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BADARG
  */
 cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr);
 
@@ -1070,9 +1155,9 @@ cy_rslt_t cy_ota_agent_stop(cy_ota_context_ptr *ctx_ptr);
  *
  * @param[in]   ctx_ptr         Pointer to the OTA Agent context storage returned from @ref cy_ota_agent_start();
  *
- * @return  CY_RSLT_SUCCESS
- *          CY_RSLT_OTA_ERROR_BADARG
- *          CY_RSLT_OTA_ERROR_ALREADY_STARTED
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BADARG
+ *              CY_RSLT_OTA_ERROR_ALREADY_STARTED
  */
 cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr);
 
@@ -1084,7 +1169,7 @@ cy_rslt_t cy_ota_get_update_now(cy_ota_context_ptr ctx_ptr);
  *
  * @param[in]  level    Required logging level from OTA logs.
  *
- * @result  N/A
+ * @result     N/A
  */
 void cy_ota_set_log_level(CY_LOG_LEVEL_T level);
 
@@ -1097,8 +1182,8 @@ void cy_ota_set_log_level(CY_LOG_LEVEL_T level);
  * @param[in]  ota_ptr          Pointer to the OTA Agent context returned from @ref cy_ota_agent_start();
  * @param[out] ota_state        Current OTA State.
  *
- * @result  CY_RSLT_SUCCESS     sets @ref cy_ota_agent_state_t
- *          CY_RSLT_OTA_ERROR_GENERAL
+ * @result     CY_RSLT_SUCCESS     sets @ref cy_ota_agent_state_t
+ *             CY_RSLT_OTA_ERROR_GENERAL
  */
 cy_rslt_t cy_ota_get_state(cy_ota_context_ptr ota_ptr, cy_ota_agent_state_t *ota_state);
 
@@ -1143,6 +1228,65 @@ const char *cy_ota_get_state_string(cy_ota_agent_state_t state_value);
  * @result  Pointer to the string (NULL for unknown reason).
  */
 const char *cy_ota_get_callback_reason_string(cy_ota_cb_reason_t reason);
+
+#if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
+
+/**
+ * @brief Prepare for Bluetooth® OTA Download
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr);
+
+/**
+ * @brief Bluetooth® OTA Download starting
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   update_file_size        OTA update file size.
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, uint32_t update_file_size);
+
+/**
+ * @brief Bluetooth® OTA data write
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   data_buf                Pointer to data buffer.
+ * @param[in]   len                     Data length.
+ * @param[in]   offset                  Data buffer offset.
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_buf, uint16_t len, uint16_t offset);
+
+/**
+ * @brief Bluetooth® OTA Verify download
+ *
+ * @param[in]   ctx_ptr                   Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   update_file_crc           32 Bit CRC sent from the Host. For SECURE_BT(OTA_BT_SECURE=1) CRC is 0.
+ * @param[in]   verify_crc_or_signature   OTA library need to verify CRC(For SECURE_BT=0) or Signature(For SECURE_BT=1)?
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_VERIFY
+ */
+cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t update_file_crc, bool verify_crc_or_signature);
+
+/**
+ * @brief Abort Bluetooth® OTA download
+ *
+ * @param[in]   ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
+ *
+ * @return      CY_RSLT_SUCCESS
+ */
+cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr);
+
+#endif  /* defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN) */
 
 /** \} group_ota_functions */
 

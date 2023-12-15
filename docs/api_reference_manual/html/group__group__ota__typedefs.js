@@ -133,11 +133,5 @@ var group__group__ota__typedefs =
       [ "CY_OTA_CB_RSLT_APP_SUCCESS", "group__group__ota__typedefs.html#gga83280df2ca46db528cc12901d949fd63a874db6e6b0afe4654eca56b1e66fe419", null ],
       [ "CY_OTA_CB_RSLT_APP_FAILED", "group__group__ota__typedefs.html#gga83280df2ca46db528cc12901d949fd63acd8fc21808d384ae3609318297c3d542", null ],
       [ "CY_OTA_CB_NUM_RESULTS", "group__group__ota__typedefs.html#gga83280df2ca46db528cc12901d949fd63aa831afb765223f42c44dd9f29980bad4", null ]
-    ] ],
-    [ "cy_ota_mem_type_t", "group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09", [
-      [ "CY_OTA_MEM_TYPE_INTERNAL_FLASH", "group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249", null ],
-      [ "CY_OTA_MEM_TYPE_EXTERNAL_FLASH", "group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4", null ],
-      [ "CY_OTA_MEM_TYPE_RRAM", "group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a2665c22f1ff174dea35b677a57ba76ec", null ],
-      [ "CY_OTA_MEM_TYPE_NONE", "group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09ad422b17cdb988fcc9e56655cc8e52326", null ]
     ] ]
 ];

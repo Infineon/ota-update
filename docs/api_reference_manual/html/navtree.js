@@ -8,7 +8,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"group__group__cy__ota.html"
+"group__group__cy__ota.html",
+"structcy__ota__storage__write__info__t.html#a3d5cf26f262a52569a71a8948df60b56"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

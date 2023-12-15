@@ -106,32 +106,38 @@ $(document).ready(function(){initNavTree('group__group__ota__callback.html','');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:gada4cd31993f1831e886a4beac9039220"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">cy_ota_callback_results_t</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gada4cd31993f1831e886a4beac9039220">cy_ota_callback_t</a> )(<a class="el" href="structcy__ota__cb__struct__t.html">cy_ota_cb_struct_t</a> *cb_data)</td></tr>
-<tr class="memdesc:gada4cd31993f1831e886a4beac9039220"><td class="mdescLeft">&#160;</td><td class="mdescRight">OTA Agent callback to the application.  <a href="#gada4cd31993f1831e886a4beac9039220">More...</a><br /></td></tr>
-<tr class="separator:gada4cd31993f1831e886a4beac9039220"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4277185fd8a9835c2a5818b2732fb53a"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga4277185fd8a9835c2a5818b2732fb53a">cy_ota_agent_mem_read</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td></tr>
-<tr class="memdesc:ga4277185fd8a9835c2a5818b2732fb53a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory read callback function pointer type.  <a href="#ga4277185fd8a9835c2a5818b2732fb53a">More...</a><br /></td></tr>
-<tr class="separator:ga4277185fd8a9835c2a5818b2732fb53a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gae3c48dd64cbae8ecad60a0efc6fd2365">cy_ota_agent_mem_write</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td></tr>
-<tr class="memdesc:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory write callback function pointer type.  <a href="#gae3c48dd64cbae8ecad60a0efc6fd2365">More...</a><br /></td></tr>
-<tr class="separator:gae3c48dd64cbae8ecad60a0efc6fd2365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5b2727b506829514e5ee301ea8fd402c"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga5b2727b506829514e5ee301ea8fd402c">cy_ota_agent_mem_erase</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, size_t len)</td></tr>
-<tr class="memdesc:ga5b2727b506829514e5ee301ea8fd402c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory erase callback function pointer type.  <a href="#ga5b2727b506829514e5ee301ea8fd402c">More...</a><br /></td></tr>
-<tr class="separator:ga5b2727b506829514e5ee301ea8fd402c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9bae329b7e83403ce241b8f3f96dec85"><td class="memItemLeft" align="right" valign="top">typedef size_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga9bae329b7e83403ce241b8f3f96dec85">cy_ota_agent_mem_prog_size</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td></tr>
-<tr class="memdesc:ga9bae329b7e83403ce241b8f3f96dec85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get program size callback function pointer type.  <a href="#ga9bae329b7e83403ce241b8f3f96dec85">More...</a><br /></td></tr>
-<tr class="separator:ga9bae329b7e83403ce241b8f3f96dec85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga36104e01a895d467de80afa363497b56"><td class="memItemLeft" align="right" valign="top">typedef size_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga36104e01a895d467de80afa363497b56">cy_ota_agent_mem_erase_size</a> )(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td></tr>
-<tr class="memdesc:ga36104e01a895d467de80afa363497b56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get erase size callback function pointer type.  <a href="#ga36104e01a895d467de80afa363497b56">More...</a><br /></td></tr>
-<tr class="separator:ga36104e01a895d467de80afa363497b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6cd0e1cbbf15c4772a98e65463dcac0a"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">cy_ota_callback_results_t</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga6cd0e1cbbf15c4772a98e65463dcac0a">cy_ota_callback_t</a> )(<a class="el" href="structcy__ota__cb__struct__t.html">cy_ota_cb_struct_t</a> *cb_data)</td></tr>
+<tr class="memdesc:ga6cd0e1cbbf15c4772a98e65463dcac0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">OTA Agent callback to the application.  <a href="#ga6cd0e1cbbf15c4772a98e65463dcac0a">More...</a><br /></td></tr>
+<tr class="separator:ga6cd0e1cbbf15c4772a98e65463dcac0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0fbb65fe9c9e93187a528827ca77f30b"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga0fbb65fe9c9e93187a528827ca77f30b">cy_ota_file_open</a> )(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td></tr>
+<tr class="memdesc:ga0fbb65fe9c9e93187a528827ca77f30b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates and open new receive file for the data chunks as they come in.  <a href="#ga0fbb65fe9c9e93187a528827ca77f30b">More...</a><br /></td></tr>
+<tr class="separator:ga0fbb65fe9c9e93187a528827ca77f30b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae366f3494efffa34e64372f761650818"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gae366f3494efffa34e64372f761650818">cy_ota_file_read</a> )(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr, <a class="el" href="group__group__ota__structures.html#ga2d730f21129ca8e6841f71c351df503f">cy_ota_storage_read_info_t</a> *chunk_info)</td></tr>
+<tr class="memdesc:gae366f3494efffa34e64372f761650818"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the flash data starting from the given offset.  <a href="#gae366f3494efffa34e64372f761650818">More...</a><br /></td></tr>
+<tr class="separator:gae366f3494efffa34e64372f761650818"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga492aecddf859d8f6923e6f569aa40f46"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga492aecddf859d8f6923e6f569aa40f46">cy_ota_file_write</a> )(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr, <a class="el" href="structcy__ota__storage__write__info__t.html">cy_ota_storage_write_info_t</a> *chunk_info)</td></tr>
+<tr class="memdesc:ga492aecddf859d8f6923e6f569aa40f46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a data to the flash at the given offset.  <a href="#ga492aecddf859d8f6923e6f569aa40f46">More...</a><br /></td></tr>
+<tr class="separator:ga492aecddf859d8f6923e6f569aa40f46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga20fd7fa81c8d0a17e601eb935f68ca3c"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga20fd7fa81c8d0a17e601eb935f68ca3c">cy_ota_file_close</a> )(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td></tr>
+<tr class="memdesc:ga20fd7fa81c8d0a17e601eb935f68ca3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the underlying receive file in the specified OTA context.  <a href="#ga20fd7fa81c8d0a17e601eb935f68ca3c">More...</a><br /></td></tr>
+<tr class="separator:ga20fd7fa81c8d0a17e601eb935f68ca3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb6b9845f940fc3f26a31345c61fdc25"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gafb6b9845f940fc3f26a31345c61fdc25">cy_ota_file_verify</a> )(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td></tr>
+<tr class="memdesc:gafb6b9845f940fc3f26a31345c61fdc25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Authenticate received OTA update file specified in the OTA context.  <a href="#gafb6b9845f940fc3f26a31345c61fdc25">More...</a><br /></td></tr>
+<tr class="separator:gafb6b9845f940fc3f26a31345c61fdc25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga499d4a522c6d907be389fc57926dc4e6"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#ga499d4a522c6d907be389fc57926dc4e6">cy_ota_file_validate</a> )(uint16_t app_id)</td></tr>
+<tr class="memdesc:ga499d4a522c6d907be389fc57926dc4e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The application has validated the new OTA image.  <a href="#ga499d4a522c6d907be389fc57926dc4e6">More...</a><br /></td></tr>
+<tr class="separator:ga499d4a522c6d907be389fc57926dc4e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa82e4cd345bade48fe6fee8bb35fc2e9"><td class="memItemLeft" align="right" valign="top">typedef cy_rslt_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__callback.html#gaa82e4cd345bade48fe6fee8bb35fc2e9">cy_ota_file_get_app_info</a> )(void *file_des, <a class="el" href="structcy__ota__app__info__t.html">cy_ota_app_info_t</a> *app_info)</td></tr>
+<tr class="memdesc:gaa82e4cd345bade48fe6fee8bb35fc2e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get Application info like Application version and Application ID.  <a href="#gaa82e4cd345bade48fe6fee8bb35fc2e9">More...</a><br /></td></tr>
+<tr class="separator:gaa82e4cd345bade48fe6fee8bb35fc2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
-<a class="anchor" id="gada4cd31993f1831e886a4beac9039220"></a>
+<a class="anchor" id="ga6cd0e1cbbf15c4772a98e65463dcac0a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">cy_ota_callback_results_t</a>(* cy_ota_callback_t)(<a class="el" href="structcy__ota__cb__struct__t.html">cy_ota_cb_struct_t</a> *cb_data)</td>
+          <td class="memname">typedef <a class="el" href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">cy_ota_callback_results_t</a>( * cy_ota_callback_t)(<a class="el" href="structcy__ota__cb__struct__t.html">cy_ota_cb_struct_t</a> *cb_data)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -144,132 +150,174 @@ Typedefs</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd></dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_OTA_CB_RSLT_OTA_CONTINUE CY_OTA_CB_RSLT_OTA_STOP CY_OTA_CB_RSLT_APP_SUCCESS CY_OTA_CB_RSLT_APP_FAILED </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga4277185fd8a9835c2a5818b2732fb53a"></a>
+<a class="anchor" id="ga0fbb65fe9c9e93187a528827ca77f30b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_read)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_open)(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Memory read callback function pointer type. </p>
-<p>Callback of this type is invoked when a OTA Agent wants to read from memory.</p>
-<p>A function of this type must be implemented by the application to read contents from given memory location.</p>
+<p>Creates and open new receive file for the data chunks as they come in. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function.</dd>
+<dd>
+Opens the file indicated in the OTA agent storage context in the MCU file system.</dd>
+<dd>
+The previous image may be present in the designated image download partition or file, so the partition or file must be completely erased or overwritten in this routine.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement read operation functionality. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to read from. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">data</td><td>Pointer to the buffer to store the data read from the memory. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of data bytes to read.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storage_ptr</td><td>Pointer to the OTA Agent storage context <a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_OPEN_STORAGE </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="gae3c48dd64cbae8ecad60a0efc6fd2365"></a>
+<a class="anchor" id="gae366f3494efffa34e64372f761650818"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_write)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, void *data, size_t len)</td>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_read)(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr, <a class="el" href="group__group__ota__structures.html#ga2d730f21129ca8e6841f71c351df503f">cy_ota_storage_read_info_t</a> *chunk_info)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Memory write callback function pointer type. </p>
-<p>Callback of this type is invoked when a OTA Agent wants to write to memory.</p>
-<p>A function of this type must be implemented by the application to write contents to given memory location.</p>
+<p>Reads the flash data starting from the given offset. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement write operation functionality. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to write to. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Pointer to the buffer containing the data to be written. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of bytes to write.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storage_ptr</td><td>Pointer to the OTA Agent storage context <a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">chunk_info</td><td>Pointer to the chunk information which includes buffer, length, and offset.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_READ_STORAGE </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga5b2727b506829514e5ee301ea8fd402c"></a>
+<a class="anchor" id="ga492aecddf859d8f6923e6f569aa40f46"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef cy_rslt_t( *  cy_ota_agent_mem_erase)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr, size_t len)</td>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_write)(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr, <a class="el" href="structcy__ota__storage__write__info__t.html">cy_ota_storage_write_info_t</a> *chunk_info)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Memory erase callback function pointer type. </p>
-<p>Callback of this type is invoked when a OTA Agent wants to erase memory.</p>
-<p>A function of this type must be implemented by the application to erase memory.</p>
+<p>Write a data to the flash at the given offset. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement erase operation functionality. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Starting address to begin erasing. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>Number of bytes to erase.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storage_ptr</td><td>Pointer to the OTA Agent storage context <a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">chunk_info</td><td>Pointer to the chunk information which includes buffer, length, and offset.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_TYPE_ERROR </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_WRITE_STORAGE </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga9bae329b7e83403ce241b8f3f96dec85"></a>
+<a class="anchor" id="ga20fd7fa81c8d0a17e601eb935f68ca3c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef size_t( *  cy_ota_agent_mem_prog_size)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_close)(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get program size callback function pointer type. </p>
-<p>Callback of this type is invoked when a OTA Agent wants to get programming page size.</p>
-<p>A function of this type must be implemented by the application to get programming page size.</p>
+<p>Close the underlying receive file in the specified OTA context. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement get program size functionality. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address that belongs to the sector for which programming page size needs to be returned.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storage_ptr</td><td>Pointer to the OTA Agent storage context <a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Page size in bytes. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_CLOSE_STORAGE </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga36104e01a895d467de80afa363497b56"></a>
+<a class="anchor" id="gafb6b9845f940fc3f26a31345c61fdc25"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef size_t( *  cy_ota_agent_mem_erase_size)(<a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> mem_type, uint32_t addr)</td>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_verify)(<a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a> *storage_ptr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get erase size callback function pointer type. </p>
-<p>Callback of this type is invoked when a OTA Agent wants to get erase sector size.</p>
-<p>A function of this type must be implemented by the application to get erase sector size.</p>
+<p>Authenticate received OTA update file specified in the OTA context. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function.</dd>
+<dd>
+Authentication method is user choice.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mem_type</td><td>This is of type cy_ota_mem_type_t. Application can use this to implement get erase size functionality. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address that belongs to the sector for which sector erase size needs to be returned.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storage_ptr</td><td>Pointer to the OTA Agent storage context <a class="el" href="structcy__ota__storage__context__t.html">cy_ota_storage_context_t</a></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Erase sector size in bytes </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_VERIFY </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga499d4a522c6d907be389fc57926dc4e6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_validate)(uint16_t app_id)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The application has validated the new OTA image. </p>
+<dl class="section note"><dt>Note</dt><dd>This call must be after reboot and updated image is booted.</dd>
+<dd>
+Calling this API makes currently executing image as boot image until next update.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">app_id</td><td>Application ID.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS on success; error codes otherwise. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa82e4cd345bade48fe6fee8bb35fc2e9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef cy_rslt_t( *  cy_ota_file_get_app_info)(void *file_des, <a class="el" href="structcy__ota__app__info__t.html">cy_ota_app_info_t</a> *app_info)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get Application info like Application version and Application ID. </p>
+<dl class="section note"><dt>Note</dt><dd>ota-update library expects user to implement this callback function. </dd>
+<dd>
+This API implementation is optional for MCUBootloader based OTA.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">void*</td><td>Pointer to file descriptor. It can be cast as flash_area or FILE as needed. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">cy_ota_app_info_t*</td><td>Pointer to the OTA Application information context <a class="el" href="structcy__ota__app__info__t.html">cy_ota_app_info_t</a></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS CY_RSLT_OTA_ERROR_GENERAL </dd></dl>
 
 </div>
 </div>

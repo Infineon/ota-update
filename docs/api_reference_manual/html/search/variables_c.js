@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['offset',['offset',['../structcy__ota__storage__write__info__t.html#a0405b3806c0de934f5f5f55ac693c184',1,'cy_ota_storage_write_info_t']]],
-  ['ota_5fagt_5fstate',['ota_agt_state',['../structcy__ota__cb__struct__t.html#afdc59f29135abdca499c3da7183df1b7',1,'cy_ota_cb_struct_t']]]
+  ['size',['size',['../structcy__ota__storage__write__info__t.html#a20c92fe4a9bba891efd3319efbd05060',1,'cy_ota_storage_write_info_t']]],
+  ['storage',['storage',['../structcy__ota__cb__struct__t.html#aafd5022e59a7d19d6a103f9217710644',1,'cy_ota_cb_struct_t']]],
+  ['storage_5floc',['storage_loc',['../structcy__ota__storage__context__t.html#a259e6237fba59942fda5722f40a91b04',1,'cy_ota_storage_context_t']]]
 ];

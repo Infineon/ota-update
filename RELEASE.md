@@ -13,6 +13,15 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.0.0
+
+- De-coupled MCUBootloader related code from ota-update library.
+- Added user callbacks for bootloader specific storage APIs.
+- Added Ethernet Interface support.
+- Added support for XMC7200(KIT_XMC72_EVK) kits.
+- Abstracted GATT related code from OTA BLE APIs.
+- Documentation updates.
+
 ### v3.0.1
 
 - Template OTA linker file updated for 20829B0 platform.
@@ -66,7 +75,7 @@ This version of the library was validated for compatibility with the following s
 | ModusToolbox&trade; Software Environment                  | 3.1     |
 | - ModusToolbox&trade; Device Configurator                 | 4.10    |
 | - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.10.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.6.0   |
+| Peripheral Driver Library (PDL CAT1)                      | 3.9.0   |
 | GCC Compiler                                              | 11.3.1  |
 | IAR Compiler                                              | 9.30.1  |
 | Arm Compiler 6                                            | 6.16    |

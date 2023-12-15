@@ -1,18 +1,34 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
- * SPDX-License-Identifier: Apache-2.0
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
+ *
+ * This software, including source code, documentation and related
+ * materials ("Software") is owned by Cypress Semiconductor Corporation
+ * or one of its affiliates ("Cypress") and is protected by and subject to
+ * worldwide patent protection (United States and foreign),
+ * United States copyright laws and international treaty provisions.
+ * Therefore, you may use this Software only as provided in the license
+ * agreement accompanying the software package from which you
+ * obtained this Software ("EULA").
+ * If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
+ * non-transferable license to copy, modify, and compile the Software
+ * source code solely for use in connection with Cypress's
+ * integrated circuit products.  Any reproduction, modification, translation,
+ * compilation, or representation of this Software except as specified
+ * above is prohibited without the express written permission of Cypress.
+ *
+ * Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
+ * reserves the right to make changes to the Software without notice. Cypress
+ * does not assume any liability arising out of the application or use of the
+ * Software or any product or circuit described in the Software. Cypress does
+ * not authorize its products for use in any products where a malfunction or
+ * failure of the Cypress product may reasonably be expected to result in
+ * significant property damage, injury or death ("High Risk Product"). By
+ * including Cypress's product in a High Risk Product, the manufacturer
+ * of such system or application assumes all risk of such use and in doing
+ * so agrees to indemnify Cypress against all liability.
  */
 
 #include <stdbool.h>
@@ -23,7 +39,6 @@
 
 #include "cy_ota_api.h"
 #include "cy_ota_internal.h"
-#include "cy_ota_platform.h"
 #include "cy_json_parser.h"
 
 #include "cy_ota_log.h"
@@ -35,6 +50,11 @@
  **********************************************************************/
 /* We have a callback that calls into the application, and we don't want to have a stack overflow */
 #define OTA_AGENT_THREAD_STACK_SIZE    (12 * 1024)
+
+#ifdef COMPONENT_THREADX
+__attribute__((aligned(8)))
+static uint8_t ota_agent_thread_stack[OTA_AGENT_THREAD_STACK_SIZE] = {0};
+#endif
 
 /***********************************************************************
  *
@@ -364,7 +384,7 @@ CY_LOG_LEVEL_T ota_logging_level = CY_LOG_ERR;
  * Utility Functions
  *
  **********************************************************************/
-
+#ifdef CY_OTA_LIB_DEBUG_LOGS /* Define for debugging */
 void cy_ota_print_data(const char *buffer, uint32_t length)
 {
     uint32_t i, j;
@@ -376,7 +396,7 @@ void cy_ota_print_data(const char *buffer, uint32_t length)
 
     for (i = 0 ; i < length; i+=16)
     {
-        printf("0x%04x ", (int)i);
+        printf("0x%04lx ", i);
         for (j = 0 ; j < 16; j++)
         {
             if ( (i + j) < length)
@@ -403,7 +423,7 @@ void cy_ota_print_data(const char *buffer, uint32_t length)
         printf("\n");
     }
 }
-
+#endif
 /***********************************************************************
  *
  * Callback to Application
@@ -455,6 +475,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         memset(ctx->callback_data.file, 0x00, sizeof(ctx->callback_data.file) );
         memset(ctx->callback_data.json_doc, 0x00, sizeof(ctx->callback_data.json_doc));
 #endif
+
 #ifdef COMPONENT_OTA_MQTT
         if (ctx->callback_data.connection_type == CY_OTA_CONNECTION_MQTT)
         {
@@ -463,6 +484,7 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
             ctx->callback_data.credentials = &ctx->network_params.mqtt.credentials;
         }
 #endif
+
 #ifdef COMPONENT_OTA_HTTP
         if ( (ctx->callback_data.connection_type == CY_OTA_CONNECTION_HTTP) ||
                   (ctx->callback_data.connection_type == CY_OTA_CONNECTION_HTTPS) )
@@ -490,11 +512,11 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
         ctx->callback_data.storage = ctx->storage;
 
         /* Total data info */
-        ctx->callback_data.total_size    = ctx->total_image_size;
-        ctx->callback_data.bytes_written = ctx->total_bytes_written;
-        if (ctx->total_image_size > 0)
+        ctx->callback_data.total_size    = ctx->ota_storage_context.total_image_size;
+        ctx->callback_data.bytes_written = ctx->ota_storage_context.total_bytes_written;
+        if (ctx->ota_storage_context.total_image_size > 0)
         {
-           ctx->callback_data.percentage = (ctx->total_bytes_written * 100) / ctx->total_image_size;
+           ctx->callback_data.percentage = (ctx->ota_storage_context.total_bytes_written * 100) / ctx->ota_storage_context.total_image_size;
         }
 
         /* call the Application Callback function */
@@ -606,6 +628,10 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
             }
 #endif
         }
+        else
+        {
+            /* Nothing to do here - Needed for Coverity (MISRA C 2012 Rule 15.7) */
+        }
     } /* called callback */
 
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s(reason:%d) CB returning 0x%lx\n", __func__, reason, cb_result);
@@ -618,19 +644,19 @@ cy_ota_callback_results_t cy_ota_internal_call_cb( cy_ota_context_t *ctx,
  * Miscellaneous Functions
  *
  **********************************************************************/
-void cy_ota_set_state(cy_ota_context_t *ctx, cy_ota_agent_state_t state)
+void cy_ota_set_state(cy_ota_context_t *ctx, cy_ota_agent_state_t ota_state)
 {
     CY_OTA_CONTEXT_ASSERT(ctx);
 
     /* sanity check */
-    if (state >= CY_OTA_NUM_STATES )
+    if (ota_state >= CY_OTA_NUM_STATES )
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() BAD STATE: %d\n", __func__, state);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() BAD STATE: %d\n", __func__, ota_state);
     }
     else
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() state: %d\n", __func__, state);
-        ctx->curr_state = state;
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() state: %d\n", __func__, ota_state);
+        ctx->curr_state = ota_state;
     }
 }
 
@@ -1082,7 +1108,9 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
     {
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "OTA Could not parse the Job JSON document! 0x%lx\n", result);
         cy_rtos_delay_milliseconds(1000); /* delay so message can be printed before printing doc data */
+#ifdef CY_OTA_LIB_DEBUG_LOGS /* Define for debugging */
         cy_ota_print_data(buffer, length);
+#endif
         result = CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC;
         goto _end_JSON_parse;
     }
@@ -1170,10 +1198,8 @@ static cy_rslt_t cy_ota_parse_job_info(cy_ota_context_t *ctx, const char *buffer
     }
 
 _end_JSON_parse:
-/*    if ( (result != CY_RSLT_SUCCESS) && (result != CY_RSLT_OTA_CHANGING_SERVER) ) */
-    {
-        cy_ota_print_parsed_doc_info(ctx);
-    }
+    cy_ota_print_parsed_doc_info(ctx);
+
     return result;
 }
 
@@ -1195,12 +1221,12 @@ static cy_rslt_t cy_ota_clear_received_stats(cy_ota_context_t *ctx)
     /* sanity check */
     CY_OTA_CONTEXT_ASSERT(ctx);
 
-    ctx->last_offset = 0;
-    ctx->last_packet_received = 0;
-    ctx->last_size = 0;
-    ctx->total_bytes_written = 0;
-    ctx->total_image_size = 0;
-    ctx->total_packets = 0;
+    ctx->ota_storage_context.last_offset = 0;
+    ctx->ota_storage_context.last_packet_received = 0;
+    ctx->ota_storage_context.last_size = 0;
+    ctx->ota_storage_context.total_bytes_written = 0;
+    ctx->ota_storage_context.total_image_size = 0;
+    ctx->ota_storage_context.total_packets = 0;
 
     return CY_RSLT_SUCCESS;
 }
@@ -1385,9 +1411,9 @@ static cy_rslt_t cy_ota_open_filesystem(cy_ota_context_t *ctx)
      *   we do not need to erase the FLASH.
      */
     if ( (ctx->download_retry_count == 0) ||
-         (ctx->total_bytes_written > 0) )
+         (ctx->ota_storage_context.total_bytes_written > 0) )
     {
-        result = cy_ota_storage_open(ctx);
+        result = ctx->storage_iface.ota_file_open(&(ctx->ota_storage_context));
     }
 
     if (result == CY_RSLT_SUCCESS)
@@ -1406,8 +1432,7 @@ static cy_rslt_t cy_ota_close_filesystem(cy_ota_context_t *ctx)
 
     if (ctx->storage_open == 1)
     {
-        result = cy_ota_storage_close(ctx);
-
+        result = ctx->storage_iface.ota_file_close(&(ctx->ota_storage_context));
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Filesystem closed\n");
     }
 
@@ -1692,7 +1717,7 @@ static cy_rslt_t cy_ota_verify_data(cy_ota_context_t *ctx)
 {
     cy_rslt_t                   result = CY_RSLT_SUCCESS;
 
-    result = cy_ota_storage_verify(ctx);
+    result = ctx->storage_iface.ota_file_verify(&(ctx->ota_storage_context));
     if (result == CY_RSLT_SUCCESS)
     {
         /* set to reboot after sending result */
@@ -1778,7 +1803,11 @@ static cy_rslt_t cy_ota_complete(cy_ota_context_t *ctx)
         /* Not really a warning, just want to make sure the message gets printed */
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s()   RESETTING NOW !!!!\n", __func__);
         cy_rtos_delay_milliseconds(1000);
+#ifdef COMPONENT_THREADX
+        cyhal_system_reset_device();
+#else
         NVIC_SystemReset();
+#endif
     }
 
     /* start timer for the next check */
@@ -1849,46 +1878,46 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                     }
                     switch( cb_result )
                     {
-                    default:
-                    case CY_OTA_CB_RSLT_OTA_CONTINUE:
-                        if (cy_ota_state_table[idx].state_function != NULL)
-                        {
-                            result = cy_ota_state_table[idx].state_function(ctx);
-                            if ( (ctx->curr_state == CY_OTA_STATE_AGENT_WAITING) &&
-                                 (result == CY_RSLT_OTA_EXITING) )
+                        default:
+                        case CY_OTA_CB_RSLT_OTA_CONTINUE:
+                            if (cy_ota_state_table[idx].state_function != NULL)
                             {
-                                /* exit state_machine_loop, as we finished the session */
-                                stay_in_state_loop = false;
-                                goto _exit_ota_agent;
+                                result = cy_ota_state_table[idx].state_function(ctx);
+                                if ( (ctx->curr_state == CY_OTA_STATE_AGENT_WAITING) &&
+                                     (result == CY_RSLT_OTA_EXITING) )
+                                {
+                                    /* exit state_machine_loop, as we finished the session */
+                                    stay_in_state_loop = false;
+                                    goto _exit_ota_agent;
+                                }
+                                else if ( ( (ctx->curr_state == CY_OTA_STATE_JOB_CONNECT) ||
+                                       (ctx->curr_state == CY_OTA_STATE_DATA_CONNECT) ||
+                                       (ctx->curr_state == CY_OTA_STATE_RESULT_CONNECT) ) &&
+                                     (result == CY_RSLT_OTA_ALREADY_CONNECTED) )
+                                {
+                                    /* If we are already connected, move along */
+                                    result = CY_RSLT_SUCCESS;
+                                }
+                                else
+                                {
+                                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback OTA CONTINUE \n", __LINE__);
+                                }
                             }
-                            else if ( ( (ctx->curr_state == CY_OTA_STATE_JOB_CONNECT) ||
-                                   (ctx->curr_state == CY_OTA_STATE_DATA_CONNECT) ||
-                                   (ctx->curr_state == CY_OTA_STATE_RESULT_CONNECT) ) &&
-                                 (result == CY_RSLT_OTA_ALREADY_CONNECTED) )
-                            {
-                                /* If we are already connected, move along */
-                                result = CY_RSLT_SUCCESS;
-                            }
-                            else
-                            {
-                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback OTA CONTINUE \n", __LINE__);
-                            }
-                        }
-                        break;
-                    case CY_OTA_CB_RSLT_OTA_STOP:
-                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned Stop OTA session\n",
-                                __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                        result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
-                        ctx->stop_OTA_session = 1;
-                        break;
-                    case CY_OTA_CB_RSLT_APP_SUCCESS:
-                        result = CY_RSLT_SUCCESS;
-                        break;
-                    case CY_OTA_CB_RSLT_APP_FAILED:
-                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned failure.\n",
-                                __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                        result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
-                        break;
+                            break;
+                        case CY_OTA_CB_RSLT_OTA_STOP:
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned Stop OTA session\n",
+                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                            result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
+                            ctx->stop_OTA_session = 1;
+                            break;
+                        case CY_OTA_CB_RSLT_APP_SUCCESS:
+                            result = CY_RSLT_SUCCESS;
+                            break;
+                        case CY_OTA_CB_RSLT_APP_FAILED:
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback STATE_CHANGE for state %s - App returned failure.\n",
+                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                            result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
+                            break;
                     }
 
                     /* When we get here, either the OTA Agent function or the App function has been called.
@@ -1904,24 +1933,24 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_SUCCESS, ctx->curr_state);
                         switch( cb_result )
                         {
-                        default:
-                        case CY_OTA_CB_RSLT_OTA_CONTINUE:
-                            /* nothing to do here */
-                            break;
-                        case CY_OTA_CB_RSLT_OTA_STOP:
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned Stop OTA session\n",
-                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                            result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
-                            ctx->stop_OTA_session = 1;
-                            break;
-                        case CY_OTA_CB_RSLT_APP_SUCCESS:
-                            /* nothing to do here */
-                            break;
-                        case CY_OTA_CB_RSLT_APP_FAILED:
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned failure.\n",
-                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                            result = cy_ota_state_table[idx].failure_result;
-                            break;
+                            default:
+                            case CY_OTA_CB_RSLT_OTA_CONTINUE:
+                                /* nothing to do here */
+                                break;
+                            case CY_OTA_CB_RSLT_OTA_STOP:
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned Stop OTA session\n",
+                                        __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                                result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
+                                ctx->stop_OTA_session = 1;
+                                break;
+                            case CY_OTA_CB_RSLT_APP_SUCCESS:
+                                /* nothing to do here */
+                                break;
+                            case CY_OTA_CB_RSLT_APP_FAILED:
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback SUCCESS for state %s - App returned failure.\n",
+                                        __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                                result = cy_ota_state_table[idx].failure_result;
+                                break;
                         }
                     }
 
@@ -1961,15 +1990,15 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         {
                             switch(result)
                             {
-                            case CY_RSLT_OTA_ERROR_NOT_A_JOB_DOC:
-                            case CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC:
-                            case CY_RSLT_OTA_ERROR_WRONG_BOARD:
-                            case CY_RSLT_OTA_ERROR_INVALID_VERSION:
-                                cy_ota_set_last_error(ctx,result);
-                                break;
-                            default:
-                                cy_ota_set_last_error(ctx, cy_ota_state_table[idx].failure_result);
-                                break;
+                                case CY_RSLT_OTA_ERROR_NOT_A_JOB_DOC:
+                                case CY_RSLT_OTA_ERROR_MALFORMED_JOB_DOC:
+                                case CY_RSLT_OTA_ERROR_WRONG_BOARD:
+                                case CY_RSLT_OTA_ERROR_INVALID_VERSION:
+                                    cy_ota_set_last_error(ctx,result);
+                                    break;
+                                default:
+                                    cy_ota_set_last_error(ctx, cy_ota_state_table[idx].failure_result);
+                                    break;
                             }
                         }
                     }
@@ -1984,24 +2013,24 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                         cb_result = cy_ota_internal_call_cb(ctx, CY_OTA_REASON_FAILURE, ctx->curr_state);
                         switch( cb_result )
                         {
-                        default:
-                        case CY_OTA_CB_RSLT_OTA_CONTINUE:
-                            /* nothing to do here */
-                            break;
-                        case CY_OTA_CB_RSLT_OTA_STOP:
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned Stop OTA session\n",
-                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                            result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
-                            ctx->stop_OTA_session = 1;
-                            break;
-                        case CY_OTA_CB_RSLT_APP_SUCCESS:
-                            /* don't care about success here */
-                            break;
-                        case CY_OTA_CB_RSLT_APP_FAILED:
-                            /* nothing to do here */
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned failure.\n",
-                                    __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
-                            break;
+                            default:
+                            case CY_OTA_CB_RSLT_OTA_CONTINUE:
+                                /* nothing to do here */
+                                break;
+                            case CY_OTA_CB_RSLT_OTA_STOP:
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned Stop OTA session\n",
+                                        __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                                result = CY_RSLT_OTA_ERROR_APP_RETURNED_STOP;
+                                ctx->stop_OTA_session = 1;
+                                break;
+                            case CY_OTA_CB_RSLT_APP_SUCCESS:
+                                /* don't care about success here */
+                                break;
+                            case CY_OTA_CB_RSLT_APP_FAILED:
+                                /* nothing to do here */
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%d: App callback FAILURE for state %s - App returned failure.\n",
+                                        __LINE__, cy_ota_get_state_string(cy_ota_state_table[idx].curr_state));
+                                break;
                         }
                     }
 
@@ -2046,7 +2075,7 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             ctx->contact_server_retry_count = 0;
                             cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%d : %s() state:%s set contact_server_retry_count = 0\n",
                                         __LINE__, __func__, cy_ota_get_state_string(ctx->curr_state));
-                       }
+                        }
                         else if (++ctx->contact_server_retry_count < CY_OTA_CONNECT_RETRIES)
                         {
                             /* Retry */
@@ -2064,7 +2093,6 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             new_state = CY_OTA_STATE_AGENT_WAITING;
                             cy_ota_set_last_error(ctx, CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES);
                             cy_ota_start_retry_timer(ctx);
-
                         }
                     }
                     else if ( cy_ota_last_error != CY_RSLT_SUCCESS)
@@ -2119,7 +2147,7 @@ _exit_ota_agent:
 
 cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
                              cy_ota_agent_params_t *agent_params,
-                             cy_ota_agent_mem_interface_t *flash_interface,
+                             cy_ota_storage_interface_t *storage_interface,
                              cy_ota_context_ptr *ctx_ptr)
 {
     cy_rslt_t           result = CY_RSLT_TYPE_ERROR;
@@ -2133,7 +2161,7 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
     {
         return CY_RSLT_OTA_ERROR_BADARG;
     }
-    if ( (network_params == NULL) || (agent_params == NULL) || (flash_interface == NULL))
+    if ( (network_params == NULL) || (agent_params == NULL) || (storage_interface == NULL) )
     {
         return CY_RSLT_OTA_ERROR_BADARG;
     }
@@ -2173,13 +2201,13 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
 #endif
 
     /* Check Storage interface callbacks */
-    if((flash_interface->read == NULL) ||
-       (flash_interface->write == NULL) ||
-       (flash_interface->erase == NULL) ||
-       (flash_interface->get_erase_size == NULL) ||
-       (flash_interface->get_prog_size == NULL))
+    if((storage_interface->ota_file_open == NULL) ||
+       (storage_interface->ota_file_read == NULL) ||
+       (storage_interface->ota_file_write == NULL) ||
+       (storage_interface->ota_file_close == NULL) ||
+       (storage_interface->ota_file_verify == NULL))
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() Storage(r) interface Parameters incorrect!\n", __func__);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() OTA storage platform(r) interface Parameters incorrect!\n", __func__);
         return CY_RSLT_OTA_ERROR_BADARG;
     }
 
@@ -2209,7 +2237,10 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
     /* copy over the initial parameters */
     memcpy(&ctx->network_params, network_params, sizeof(cy_ota_network_params_t) );
     memcpy(&ctx->agent_params, agent_params, sizeof(cy_ota_agent_params_t) );
-    memcpy(&ctx->flash_iface, flash_interface, sizeof(cy_ota_agent_mem_interface_t) );
+    memcpy(&ctx->storage_iface, storage_interface, sizeof(cy_ota_storage_interface_t) );
+
+    ctx->ota_storage_context.reboot_upon_completion = agent_params->reboot_upon_completion;
+    ctx->ota_storage_context.validate_after_reboot = agent_params->validate_after_reboot;
 
     /* Set up starting Broker / Server */
     ctx->curr_connect_type =ctx->network_params.initial_connection;
@@ -2273,9 +2304,19 @@ cy_rslt_t cy_ota_agent_start(cy_ota_network_params_t *network_params,
    if (network_params->initial_connection != CY_OTA_CONNECTION_BLE)
    {
        /* create OTA Agent thread */
-       result = cy_rtos_create_thread(&ctx->ota_agent_thread, cy_ota_agent,
-                                       "CY OTA Agent", NULL, OTA_AGENT_THREAD_STACK_SIZE,
-                                       CY_RTOS_PRIORITY_NORMAL, (cy_thread_arg_t)ctx);
+#ifdef COMPONENT_THREADX
+        result = cy_rtos_thread_create(&ctx->ota_agent_thread,
+                                       &cy_ota_agent,
+                                       "CY OTA Agent",
+                                       &ota_agent_thread_stack,
+                                       OTA_AGENT_THREAD_STACK_SIZE,
+                                       CY_RTOS_PRIORITY_NORMAL,
+                                       (cy_thread_arg_t)ctx);
+#else
+        result = cy_rtos_create_thread(&ctx->ota_agent_thread, cy_ota_agent,
+                                        "CY OTA Agent", NULL, OTA_AGENT_THREAD_STACK_SIZE,
+                                        CY_RTOS_PRIORITY_NORMAL, (cy_thread_arg_t)ctx);
+#endif
        if (result != CY_RSLT_SUCCESS)
        {
            /* Thread create failed */
@@ -2434,13 +2475,14 @@ cy_rslt_t cy_ota_get_state(cy_ota_context_ptr ctx_ptr, cy_ota_agent_state_t *ota
 /* --------------------------------------------------------------- */
 void cy_ota_set_log_level(CY_LOG_LEVEL_T level)
 {
-    if (level > CY_LOG_DEBUG4)
-    {
-        level = CY_LOG_DEBUG4;
-    }
     ota_logging_level = level;
+    if (ota_logging_level > CY_LOG_DEBUG4)
+    {
+        ota_logging_level = CY_LOG_DEBUG4;
+    }
     cy_log_set_facility_level(CYLF_MIDDLEWARE, ota_logging_level);
-#if 0   /* keep for debugging */
+
+#ifdef CY_OTA_LIB_DEBUG_LOGS /* Define for debugging */
     cy_log_set_facility_level(CYLF_MIDDLEWARE, 5);        /* enable when debugging mqtt & http-client libraries */
 #endif
 }

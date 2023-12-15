@@ -483,18 +483,6 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ga83280df2ca46db528cc12901d949fd63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Results from the registered OTA callback.  <a href="group__group__ota__typedefs.html#ga83280df2ca46db528cc12901d949fd63">More...</a><br /></td></tr>
 <tr class="separator:ga83280df2ca46db528cc12901d949fd63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaab757db963c4503260e549eadfdbaf09"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a> { <br />
-&#160;&#160;<a class="el" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249">CY_OTA_MEM_TYPE_INTERNAL_FLASH</a> = 0,
-<br />
-&#160;&#160;<a class="el" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4">CY_OTA_MEM_TYPE_EXTERNAL_FLASH</a>,
-<br />
-&#160;&#160;<a class="el" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09a2665c22f1ff174dea35b677a57ba76ec">CY_OTA_MEM_TYPE_RRAM</a>,
-<br />
-&#160;&#160;<a class="el" href="group__group__ota__typedefs.html#ggaab757db963c4503260e549eadfdbaf09ad422b17cdb988fcc9e56655cc8e52326">CY_OTA_MEM_TYPE_NONE</a>
-<br />
- }</td></tr>
-<tr class="memdesc:gaab757db963c4503260e549eadfdbaf09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of OTA storage types.  <a href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">More...</a><br /></td></tr>
-<tr class="separator:gaab757db963c4503260e549eadfdbaf09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="gaa98a26ac37e321f0747f95198223e0db"></a>
@@ -610,7 +598,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Maximum interval check time. </p>
-<p>This applies to: Initial wait after call to <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> before contacting server. Wait value after failing or completing an OTA download. </p>
+<p>This applies to: Initial wait after call to <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> before contacting server. Wait value after failing or completing an OTA download. </p>
 
 </div>
 </div>
@@ -1379,7 +1367,7 @@ Enumerations</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The OTA context pointer. </p>
-<p>Returned from <a class="el" href="group__group__ota__functions.html#ga4189bfe2e1fb232c71549c041f507ba8" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> and used for subsequent calls. </p>
+<p>Returned from <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a> and used for subsequent calls. </p>
 
 </div>
 </div>
@@ -1652,34 +1640,6 @@ Enumerations</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga83280df2ca46db528cc12901d949fd63aa831afb765223f42c44dd9f29980bad4"></a>CY_OTA_CB_NUM_RESULTS&#160;</td><td class="fielddoc">
 <p>Placeholder, do not use. </p>
-</td></tr>
-</table>
-
-</div>
-</div>
-<a class="anchor" id="gaab757db963c4503260e549eadfdbaf09"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="group__group__ota__typedefs.html#gaab757db963c4503260e549eadfdbaf09">cy_ota_mem_type_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enumeration of OTA storage types. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="ggaab757db963c4503260e549eadfdbaf09aaaba78afcb0a2d0e2ecce4d38985f249"></a>CY_OTA_MEM_TYPE_INTERNAL_FLASH&#160;</td><td class="fielddoc">
-<p>For internal flash type. </p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ggaab757db963c4503260e549eadfdbaf09a62af14d0a3f7a5928e8b3d31ba74c9e4"></a>CY_OTA_MEM_TYPE_EXTERNAL_FLASH&#160;</td><td class="fielddoc">
-<p>For external flash type. </p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ggaab757db963c4503260e549eadfdbaf09a2665c22f1ff174dea35b677a57ba76ec"></a>CY_OTA_MEM_TYPE_RRAM&#160;</td><td class="fielddoc">
-<p>For RRAM type. </p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="ggaab757db963c4503260e549eadfdbaf09ad422b17cdb988fcc9e56655cc8e52326"></a>CY_OTA_MEM_TYPE_NONE&#160;</td><td class="fielddoc">
-<p>Default value. </p>
 </td></tr>
 </table>
 

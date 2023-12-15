@@ -29,7 +29,7 @@
  * including Cypress's product in a High Risk Product, the manufacturer
  * of such system or application assumes all risk of such use and in doing
  * so agrees to indemnify Cypress against all liability.
-*/
+ */
 
 #ifndef CY_OTA_LOG_H__
 #define CY_OTA_LOG_H__ 1

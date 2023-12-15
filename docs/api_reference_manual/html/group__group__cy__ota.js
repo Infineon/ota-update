@@ -4,6 +4,5 @@ var group__group__cy__ota =
     [ "OTA Typedefs", "group__group__ota__typedefs.html", "group__group__ota__typedefs" ],
     [ "OTA Agent Callback", "group__group__ota__callback.html", "group__group__ota__callback" ],
     [ "OTA Structures", "group__group__ota__structures.html", "group__group__ota__structures" ],
-    [ "OTA Functions", "group__group__ota__functions.html", "group__group__ota__functions" ],
-    [ "OTA storage functions", "group__group__ota__platform__functions.html", "group__group__ota__platform__functions" ]
+    [ "OTA Functions", "group__group__ota__functions.html", "group__group__ota__functions" ]
 ];
