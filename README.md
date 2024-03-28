@@ -10,6 +10,7 @@ Supported devices:
 - CY8CPROTO-063-BLE
 - CYBLE-416045-EVAL
 - KIT_XMC72_EVK
+- CYW989829M2EVB-01
 
 For devices with both Wi-Fi and Bluetooth® Interfaces, the device can use Wi-Fi or Bluetooth® Interfaces.
 
@@ -25,6 +26,7 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 | Library Version    | Supported MTB version    | Remarks                    |
 |--------------------| -------------------------|----------------------------|
+| ota-update v4.1.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.0.0  | ModusToolbox 3.1         | cysecuretools v5.0 or greater is required |
 | ota-update v3.0.1  | ModusToolbox 3.1         | cysecuretools v4.2 or greater is required |
 | ota-update v3.0.0  | ModusToolbox 3.0         | cysecuretools v4.2 or greater is required |
@@ -44,7 +46,7 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 - It runs on CM4 CPU in case of multicore Psoc6 devices and on CM7 CPU in XMC7200 devices.
 
-- In case of 20829 devices, it runs on CM33 CPU along with the bootloader application.
+- In case of 20829 and 89829 devices, it runs on CM33 CPU along with the bootloader application.
 
 On a virgin device, main application(BOOT image) is programmed / flashed to the device first time. Subsequent versions of the application (so called updates) are downloaded using OTA.
 
@@ -90,7 +92,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
     ```
 
-- For MCUBootloader-based OTA code examples on platforms like PSoC,20829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
+- For MCUBootloader-based OTA code examples on platforms like PSoC,20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
     ```
     https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
     ```
@@ -107,7 +109,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     **NOTE**: ota-update library currently supports *ethernet-core-freertos-lwip-mbedtls/latest-v1.X* only.
 
-- For BLE-based OTA code examples on platforms like PSoC6 and 20829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
+- For BLE-based OTA code examples on platforms like PSoC6, 20829 and 89829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
     ```
     https://github.com/Infineon/btstack-integration#latest-v4.X#$$ASSET_REPO$$/btstack-integration/latest-v4.X
     ```
@@ -174,7 +176,7 @@ MCUBootloader is a secure bootloader for 32-bits microcontrollers and users shou
 To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
 
 *ota-bootloader-abstraction* library has below support.
-- Template flashmaps for PSoC6, 20829, and XMC7200 platforms.
+- Template flashmaps for PSoC6, 20829, 89829 and XMC7200 platforms.
 - Template linker files for GCC_ARM, ARM, and IAR toolchains.
 - Storage operation callback APIs to handle MCUBootloader based upgrade image.
 - Prebuild and Postbuild scripts for generating and signing MCUBootloader based BOOT and UPGRADE image of an OTA Application.
@@ -310,11 +312,12 @@ The following is an example Job document for an OTA update image that is availab
 
 The *ota-update/WiFi_Ethernet/scripts/publisher.py* script contains several configurable values. Ensure that the parameters in the script match the application values. In addition, check the example application you are using for any special needs.
 
-The Publisher and Subscriber scripts require an additional Python module.
+The Publisher and Subscriber scripts need the 'paho-mqtt' Python module, version 1.6.1.
 
 ```
-pip install paho-mqtt
+pip install paho-mqtt==1.6.1
 ```
+**NOTE**:The Publisher and Subscriber scripts are only compatible with paho-mqtt version 1.6.1.
 
 Using the publisher script to test MQTT updates:
 
@@ -481,6 +484,7 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 - [EZ-BLE Arduino Evaluation Board](https://www.infineon.com/cms/en/product/evaluation-boards/cyble-416045-eval/) (CYBLE-416045-EVAL)
 - [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVK-02)
 - [XMC7200 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK)
+- [AIROC™ CYW989820M2EVB-01 Evaluation kit](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le/cyw20829/)(CYW989820M2EVB-01)
 
 
 ## 16. Hardware Setup

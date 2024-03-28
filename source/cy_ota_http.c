@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -667,81 +667,84 @@ static cy_rslt_t cy_ota_http_send_get_response(cy_ota_context_t *ctx,
         }
         else
         {
-            result = cy_http_client_read_header(ctx->http.connection, response, read_headers, num_read_headers);
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "cy_http_client_read_header(): result:0x%lx status:%d\n", result, response->status_code);
+            if(num_read_headers)
+            {
+                result = cy_http_client_read_header(ctx->http.connection, response, read_headers, num_read_headers);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "cy_http_client_read_header(): result:0x%lx status:%d\n", result, response->status_code);
 
 #ifdef CY_OTA_LIB_DEBUG_LOGS /* Define for debugging */
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->header: count: %ld\n", response->header_count);
-            cy_ota_print_data( (const char *)response->header, response->headers_len);
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->body:%p sz:%d\n", response->body, response->body_len);
-            cy_ota_print_data( (const char *)response->body, response->body_len);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->header: count: %ld\n", response->header_count);
+                cy_ota_print_data( (const char *)response->header, response->headers_len);
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "response->body:%p sz:%d\n", response->body, response->body_len);
+                cy_ota_print_data( (const char *)response->body, response->body_len);
 #endif
-            if(result != CY_RSLT_SUCCESS)
-            {
-                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_read_header() Failed ret:0x%lx\n", __func__, result);
-                    result = CY_RSLT_OTA_ERROR_GENERAL;
-            }
-            else if(response->status_code < 100)
-            {
-                /* do nothing here */
-                /* TODO: do we need to do anything or will cy_http_client_read_header() take care of it ? */
-                result = CY_RSLT_OTA_ERROR_GENERAL;
-            }
-            else if(response->status_code < 200 )
-            {
-                /* 1xx (Informational): The request was received, continuing process */
-                /* TODO: do we need to do anything or will cy_http_client_read_header() take care of it ? */
-                result = CY_RSLT_OTA_ERROR_GENERAL;
-            }
-            else if(response->status_code < 300 )
-            {
-                /* 2xx (Successful): The request was successfully received, understood, and accepted */
-                if(ctx->ota_storage_context.total_image_size == 0)
+                if(result != CY_RSLT_SUCCESS)
                 {
-                    char *full_length = NULL;
-                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Parsed HTTP headers: %d\n", __func__, response->header_count);
-                    for(i = 0; i < num_read_headers; i++)
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_read_header() Failed ret:0x%lx\n", __func__, result);
+                        result = CY_RSLT_OTA_ERROR_GENERAL;
+                }
+                else if(response->status_code < 100)
+                {
+                    /* do nothing here */
+                    /* TODO: do we need to do anything or will cy_http_client_read_header() take care of it ? */
+                    result = CY_RSLT_OTA_ERROR_GENERAL;
+                }
+                else if(response->status_code < 200)
+                {
+                    /* 1xx (Informational): The request was received, continuing process */
+                    /* TODO: do we need to do anything or will cy_http_client_read_header() take care of it ? */
+                    result = CY_RSLT_OTA_ERROR_GENERAL;
+                }
+                else if(response->status_code < 300)
+                {
+                    /* 2xx (Successful): The request was successfully received, understood, and accepted */
+                    if(ctx->ota_storage_context.total_image_size == 0)
                     {
-                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read field[%d] %.*s\n", i, read_headers[i].field_len ,read_headers[i].field );
-                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read value[%d] %.*s\n", i, read_headers[i].value_len ,read_headers[i].value );
-                        if(strcmp(read_headers[i].field, HTTP_HEADER_CONTENT_RANGE) == 0)
+                        char *full_length = NULL;
+                        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Parsed HTTP headers: %d\n", __func__, response->header_count);
+                        for(i = 0; i < num_read_headers; i++)
                         {
-                            if(read_headers[i].value_len == 0)
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read field[%d] %.*s\n", i, read_headers[i].field_len ,read_headers[i].field );
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "read value[%d] %.*s\n", i, read_headers[i].value_len ,read_headers[i].value );
+                            if(strcmp(read_headers[i].field, HTTP_HEADER_CONTENT_RANGE) == 0)
                             {
-                                /* did not get a "Content-Range" header */
-                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() Content-Range did not have a value!\n", __func__);
-                                result = CY_RSLT_OTA_ERROR_GENERAL;
-                                break;
-                            }
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Content-Range value: %.*s\n", read_headers[i].value_len ,read_headers[i].value );
+                                if(read_headers[i].value_len == 0)
+                                {
+                                    /* did not get a "Content-Range" header */
+                                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() Content-Range did not have a value!\n", __func__);
+                                    result = CY_RSLT_OTA_ERROR_GENERAL;
+                                    break;
+                                }
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Content-Range value: %.*s\n", read_headers[i].value_len ,read_headers[i].value );
 
-                            /* We expect "bytes 0-xxxx/<full_size>" */
-                            full_length = strstr(read_headers[i].value, "/");
-                            if(full_length != NULL)
-                            {
-                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 1: %s\n", full_length );
-                                /* skip past the "/" if we found it */
-                                full_length++;
-                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 2: %s\n", full_length );
-                                ctx->ota_storage_context.total_image_size = atoi(full_length);
+                                /* We expect "bytes 0-xxxx/<full_size>" */
+                                full_length = strstr(read_headers[i].value, "/");
+                                if(full_length != NULL)
+                                {
+                                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 1: %s\n", full_length );
+                                    /* skip past the "/" if we found it */
+                                    full_length++;
+                                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "full-length 2: %s\n", full_length );
+                                    ctx->ota_storage_context.total_image_size = atoi(full_length);
+                                }
+                                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() HTTP File Length: %d\n", __func__, ctx->ota_storage_context.total_image_size);
                             }
-                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() HTTP File Length: %d\n", __func__, ctx->ota_storage_context.total_image_size);
                         }
                     }
+                    result = CY_RSLT_SUCCESS;
                 }
-                result = CY_RSLT_SUCCESS;
-            }
-            else if(response->status_code < 400 )
-            {
-                /* 3xx (Redirection): Further action needs to be taken in order to complete the request */
-                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, redirection - code needed to handle this!\n", response->status_code);
-                result = CY_RSLT_OTA_ERROR_GENERAL;
-            }
-            else
-            {
-                /* 4xx (Client Error): The request contains bad syntax or cannot be fulfilled */
-                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, ERROR!\n", response->status_code);
-                result = CY_RSLT_OTA_ERROR_GENERAL;
+                else if(response->status_code < 400)
+                {
+                    /* 3xx (Redirection): Further action needs to be taken in order to complete the request */
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, redirection - code needed to handle this!\n", response->status_code);
+                    result = CY_RSLT_OTA_ERROR_GENERAL;
+                }
+                else
+                {
+                    /* 4xx (Client Error): The request contains bad syntax or cannot be fulfilled */
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "HTTP response code: %d, ERROR!\n", response->status_code);
+                    result = CY_RSLT_OTA_ERROR_GENERAL;
+                }
             }
         }
     }
@@ -1211,8 +1214,11 @@ cy_rslt_t cy_ota_http_report_result(cy_ota_context_t *ctx, cy_rslt_t last_error)
                     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_init_headers() failed for state: %s\n", cy_ota_get_state_string(ctx->curr_state));
                 }
 
-                memset(&response, 0x00, sizeof(response));
+                /* Some HTTP server may not support POST command, So just POST result and No need to read header response. */
+                read_headers = NULL;
+                num_read_headers = 0;
 
+                memset(&response, 0x00, sizeof(response));
                 result = cy_ota_http_send_get_response(ctx, &request,
                                                         send_headers, num_send_headers,
                                                         read_headers, num_read_headers,

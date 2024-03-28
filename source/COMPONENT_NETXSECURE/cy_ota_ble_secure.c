@@ -41,14 +41,12 @@
 #include "cy_ota_internal.h"
 
 #ifdef COMPONENT_OTA_BLUETOOTH_SECURE
-#include "sha256.h"
+
+#include "nx_crypto_sha2.h"
 
 extern Point ecdsa256_public_key;
-#endif
 
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-
-mbedtls_sha256_context  *bt_sha2_ctx = NULL;
+NX_CRYPTO_SHA256 *bt_sha2_ctx = NULL;
 
 /*
  * Function Name:
@@ -61,18 +59,19 @@ void cy_ota_ble_secure_signature_init(cy_ota_context_ptr ctx_ptr)
 {
     cy_ota_context_t        *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
+    /* Initialize secure signature checking info */
     if(bt_sha2_ctx == NULL)
     {
-        bt_sha2_ctx = (mbedtls_sha256_context *)malloc(sizeof(mbedtls_sha256_context));
+        bt_sha2_ctx = (NX_CRYPTO_SHA256 *)malloc(sizeof(NX_CRYPTO_SHA256));
     }
 
-    memset(bt_sha2_ctx, 0x00, sizeof(mbedtls_sha256_context));
+    memset(bt_sha2_ctx, 0x00, sizeof(NX_CRYPTO_SHA256));
 
     ota_ctx->ble.bt_sha2_ctx = (void *)bt_sha2_ctx;
 
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call _nx_crypto_sha256_initialize()\n", __func__);
     /* Initialize secure signature checking info */
-    mbedtls_sha256_init((mbedtls_sha256_context *)ota_ctx->ble.bt_sha2_ctx);
-    mbedtls_sha256_starts_ret((mbedtls_sha256_context *)ota_ctx->ble.bt_sha2_ctx, 0);
+    _nx_crypto_sha256_initialize((NX_CRYPTO_SHA256 *)ota_ctx->ble.bt_sha2_ctx, 0);
 }
 
 /*
@@ -140,8 +139,8 @@ void cy_ota_ble_secure_signature_update(cy_ota_context_ptr ctx_ptr, uint8_t *buf
 
     if (size > 0)
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call mbedtls_sha256_update_ret() 0x%lx\n", __func__, size );
-        mbedtls_sha256_update_ret(ota_ctx->ble.bt_sha2_ctx, buffer, size);
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call netxsecure sig update 0x%lx\n", __func__, size);
+        _nx_crypto_sha256_update(ota_ctx->ble.bt_sha2_ctx, buffer, size);
     }
 }
 
@@ -158,16 +157,21 @@ cy_rslt_t cy_ota_ble_secure_signature_verify(cy_ota_context_ptr ctx_ptr)
     uint8_t                     hash[32];
 
     /* Finalize the signature check */
-    mbedtls_sha256_finish_ret(ota_ctx->ble.bt_sha2_ctx, hash);
+    _nx_crypto_sha256_digest_calculate(ota_ctx->ble.bt_sha2_ctx, hash, 0);
 
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "VERIFY DATA\n");
-    /* keep for debugging        cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
+    /* cy_ota_print_data((const char *)ota_ctx->ble.signature, SIGNATURE_LEN); */
 
-    if (ota_ecdsa_verify(hash, ota_ctx->ble.signature, &ecdsa256_public_key) != 0)
+    if(ota_ecdsa_verify(hash, ota_ctx->ble.signature, &ecdsa256_public_key) != 0)
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "SECURE SIGNATURE CHECK FAILED\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "SECURE SIGNATURE CHECK FAILED!!!\n");
         return CY_RSLT_OTA_ERROR_BLE_VERIFY;
+    }
+    else
+    {
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "SECURE SIGNATURE CHECK PASS\n");
     }
     return CY_RSLT_SUCCESS;
 }
-#endif
+
+#endif /* COMPONENT_OTA_BLUETOOTH_SECURE*/

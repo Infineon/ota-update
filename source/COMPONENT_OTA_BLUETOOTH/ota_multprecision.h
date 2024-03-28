@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -38,6 +38,9 @@
 #ifndef MULTPRECISION_H
 #define MULTPRECISION_H
 
+/* Header file includes */
+#include "cy_result_mw.h"
+
 #ifndef TRUE
 #define    TRUE    1
 #endif
@@ -46,11 +49,29 @@
 #define    FALSE    0
 #endif
 
-typedef unsigned char       UINT8;
-typedef unsigned int        UINT32;
-typedef unsigned long long  UINT64;
-typedef unsigned int        DWORD;
-typedef UINT32              BOOL32;
+#ifndef _TYPEDEF_UINT8
+#define _TYPEDEF_UINT8
+typedef uint8_t                 UINT8;
+#endif
+
+#ifndef _TYPEDEF_UINT32
+#define _TYPEDEF_UINT32
+typedef uint32_t                UINT32;
+#endif
+
+#ifndef WIN32
+typedef uint32_t                DWORD;
+#endif
+
+#ifndef _TYPEDEF_UINT64
+#define _TYPEDEF_UINT64
+typedef uint64_t                UINT64;
+#endif
+
+#ifndef _TYPEDEF_BOOL32
+#define _TYPEDEF_BOOL32
+typedef unsigned int            BOOL32;
+#endif
 
 #define DWORD_BITS              32
 #define DWORD_BYTES             4

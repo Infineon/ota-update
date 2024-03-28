@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -51,9 +51,11 @@
 /* We have a callback that calls into the application, and we don't want to have a stack overflow */
 #define OTA_AGENT_THREAD_STACK_SIZE    (12 * 1024)
 
+#if defined(COMPONENT_OTA_HTTP) || defined(COMPONENT_OTA_MQTT)
 #ifdef COMPONENT_THREADX
 __attribute__((aligned(8)))
 static uint8_t ota_agent_thread_stack[OTA_AGENT_THREAD_STACK_SIZE] = {0};
+#endif
 #endif
 
 /***********************************************************************

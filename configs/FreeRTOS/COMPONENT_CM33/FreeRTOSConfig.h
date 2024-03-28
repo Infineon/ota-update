@@ -16,9 +16,9 @@
  */
 
 /*
- * FreeRTOS Kernel V10.4.3 LTS Patch 2
- * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (C) 2019-2022 Cypress Semiconductor Corporation, or a subsidiary of
+ * FreeRTOS Kernel V10.5.0
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2019-2021 Cypress Semiconductor Corporation, or a subsidiary of
  * Cypress Semiconductor Corporation.  All Rights Reserved.
  *
  * Updated configuration to support CM33.
@@ -70,6 +70,7 @@
  * CY_CFG_PWR_DEEPSLEEP_LATENCY - Deep Sleep Latency (ms)
  */
 #include "cycfg_system.h"
+#include "cy_device_headers.h"
 #endif
 
 #define configUSE_PREEMPTION                    1
@@ -80,7 +81,8 @@ extern uint32_t SystemCoreClock;
 #define configCPU_CLOCK_HZ                      SystemCoreClock
 #define configTICK_RATE_HZ                      ((TickType_t ) 1000)
 #define configMAX_PRIORITIES                    7
-#define configMINIMAL_STACK_SIZE                128
+/* Increase the stack size to 256 to support ds-ram feature */
+#define configMINIMAL_STACK_SIZE                256
 #define configMAX_TASK_NAME_LEN                 16
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1
@@ -95,7 +97,11 @@ extern uint32_t SystemCoreClock;
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 
 /* Compile-time macros to enable or disable TrustZone, Memory Protection Unit (MPU) and Floating Point Unit (FPU) support. */
+#if (defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U))
+#define configENABLE_FPU                        1
+#else
 #define configENABLE_FPU                        0
+#endif
 #define configENABLE_MPU                        0
 #define configENABLE_TRUSTZONE                  0
 #define configRUN_FREERTOS_SECURE_ONLY          0
@@ -103,7 +109,7 @@ extern uint32_t SystemCoreClock;
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   ((size_t )(10*1024))
+#define configTOTAL_HEAP_SIZE                   ((size_t )(50*1024))
 #define configAPPLICATION_ALLOCATED_HEAP        0
 
 /* Hook function related definitions. */
@@ -136,7 +142,11 @@ interrupt safe FreeRTOS API functions can be called.
 !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html
 */
+#if (__SAUREGION_PRESENT==1)
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY    0x40
+#else
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY    0x3F
+#endif
 
 /* configMAX_API_CALL_INTERRUPT_PRIORITY is a new name for configMAX_SYSCALL_INTERRUPT_PRIORITY
  that is used by newer ports only. The two are equivalent. */
@@ -193,14 +203,15 @@ standard names - or at least those used in the unmodified vector table. */
  */
 #if defined(CY_CFG_PWR_SYS_IDLE_MODE) && \
     ((CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_SLEEP) || \
-     (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP))
+    (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP) || \
+    (CY_CFG_PWR_SYS_IDLE_MODE == CY_CFG_PWR_MODE_DEEPSLEEP_RAM))
 
 /* Enable low power tickless functionality. The RTOS abstraction library
  * provides the compatible implementation of the vApplicationSleep hook:
- * https://github.com/Infineon/abstraction-rtos#freertos
+ * https://github.com/infineon/abstraction-rtos#freertos
  * The Low Power Assistant library provides additional portable configuration layer
  * for low-power features supported by the PSoC 6 devices:
- * https://github.com/Infineon/lpa
+ * https://github.com/infineon/lpa
  */
 extern void vApplicationSleep( uint32_t xExpectedIdleTime );
 #define portSUPPRESS_TICKS_AND_SLEEP( xIdleTime ) vApplicationSleep( xIdleTime )
@@ -221,7 +232,7 @@ extern void vApplicationSleep( uint32_t xExpectedIdleTime );
  * GCC toolchain: the application must provide the implementation for the required
  * newlib hook functions: __malloc_lock, __malloc_unlock, __env_lock, __env_unlock.
  * FreeRTOS-compatible implementation is provided by the clib-support library:
- * https://github.com/Infineon/clib-support
+ * https://github.com/infineon/clib-support
  *
  * ARM/IAR toolchains: the application must provide the reent.h header to adapt
  * FreeRTOS's configUSE_NEWLIB_REENTRANT to work with the toolchain-specific C library.

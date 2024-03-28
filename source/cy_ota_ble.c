@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -50,7 +50,6 @@
 #include "cyhal_gpio.h"
 
 
-
 /***********************************************************************
  *
  * defines & enums
@@ -62,6 +61,15 @@
  * Macros
  *
  **********************************************************************/
+#ifndef CY_DS_SIZE
+#define CY_DS_SIZE           0x3C0000
+#endif
+
+#ifndef FLASH_AREA_IMG_1_SECONDARY_SIZE
+#define UPGRADE_SLOT_SIZE    CY_DS_SIZE
+#else
+#define UPGRADE_SLOT_SIZE    FLASH_AREA_IMG_1_SECONDARY_SIZE
+#endif
 
 /***********************************************************************
  *
@@ -195,9 +203,9 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_STORAGE_WRITE);
 
 #ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    if(chunk_info.offset + chunk_info.size > FLASH_AREA_IMG_1_SECONDARY_SIZE)
+    if(chunk_info.offset + chunk_info.size > UPGRADE_SLOT_SIZE)
     {
-        chunk_info.size = FLASH_AREA_IMG_1_SECONDARY_SIZE - chunk_info.offset;
+        chunk_info.size = UPGRADE_SLOT_SIZE - chunk_info.offset;
     }
 #endif
 
@@ -237,7 +245,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
 #endif
     ota_ctx->ble.file_bytes_written += chunk_info.size;
 
-    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->ota_storage_context.total_bytes_written, ota_ctx->ota_storage_context.total_image_size, ota_ctx->ble.percent);
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->ota_storage_context.total_bytes_written, ota_ctx->ota_storage_context.total_image_size, ota_ctx->ble.percent);
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_DATA_DOWNLOAD);
     return CY_RSLT_SUCCESS;
 }
@@ -262,6 +270,7 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_
 #else
         /* non- secure here, check CRC */
         ota_ctx->ble.received_crc32 = final_crc32;
+        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Calculated CRC : 0x%lx\n", final_crc32);
         if(ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
         {
             cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);

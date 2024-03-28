@@ -1,0 +1,14 @@
+{
+  "Message":"Update Available",
+  "Manufacturer":"Express Widgits Corporation",
+  "ManufacturerId":"EWCO",
+  "Product":"Easy Widgit",
+  "SerialNumber":"ABC213450001",
+  "Board":"CY8CPROTO_062_4343W",
+  "Version":"2.0.0",
+  "Connection":"HTTPS",
+  "Server":"10.0.0.88",
+  "Port":"443",
+  "File":"/ota-update.bin",
+  "UniqueTopicName":"replace"
+}

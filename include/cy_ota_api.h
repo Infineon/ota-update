@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -229,13 +229,14 @@ extern "C" {
  * @brief Macro combo to add quotes around a define.
  * Used to define a string value for CY_TARGET_BOARD.
  * */
+#ifndef CY_TARGET_BOARD_STRING
 #define CY_TARGET_BOARD_STRING EXPAND_AND_ADD_QUOTES(CY_TARGET_BOARD)
+#endif
 
 /**
  * @brief Size for the HTTP filename to get the OTA image.
  */
 #define CY_OTA_MQTT_FILENAME_BUFF_SIZE          (256)
-
 
 /**
  * @brief Size for the unique MQTT topic to get the OTA image.

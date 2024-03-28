@@ -4,14 +4,12 @@
 
 See the [README.md](./README.md) for a complete description of the OTA library.
 
-## Known issues
-
-| Problem | Workaround |
-| ------- | ---------- |
-| OTA Middleware is currently not supported on IAR toolchain with CYW20829B0 kit. | No workaround. Support will be added in a future release. |
-
-
 ## Changelog
+
+### v4.1.0
+
+- Added support for CYW89829(CYW989829M2EVB-01) kits.
+- IAR support added for 20829 platform.
 
 ### v4.0.0
 
@@ -72,10 +70,11 @@ This version of the library was validated for compatibility with the following s
 
 | Software and Tools                                        | Version |
 | :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.1     |
-| - ModusToolbox&trade; Device Configurator                 | 4.10    |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.10.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.9.0   |
+| ModusToolbox&trade; Software Environment                  | 3.2     |
+| - ModusToolbox&trade; Device Configurator                 | 4.20    |
+| - ModusToolbox&trade; Bluetooth Configurator              | 2.90    |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.20.0  |
+| Peripheral Driver Library (PDL CAT1)                      | 3.10.0  |
 | GCC Compiler                                              | 11.3.1  |
-| IAR Compiler                                              | 9.30.1  |
+| IAR Compiler                                              | 9.40.2  |
 | Arm Compiler 6                                            | 6.16    |

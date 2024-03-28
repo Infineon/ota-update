@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="title">Over The Air(OTA) Library Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This library offers assistance for over-the-air (OTA) updates of the application code that is executed on a PSoC™ 6 Connectivity Device, a 20829(CYW920829M2EVK-02) Device, or an XMC7200(KIT_XMC72_EVK) Device, using Wi-Fi, Bluetooth® or Ethernet Connectivity.<br />
+<div class="textblock"><p>This library offers assistance for over-the-air (OTA) updates of the application code that is executed on a PSoC™ 6 Connectivity Device, a 20829(CYW920829M2EVK-02) Device, a 89829(CYW989829M2EVB-01) Device, or an XMC7200(KIT_XMC72_EVK) Device, using Wi-Fi, Bluetooth® or Ethernet Connectivity.<br />
 <br />
  For simplification, this document may refer to an MQTT Broker or an HTTP Server as "server".<br />
 <br />
@@ -156,7 +156,7 @@ Integration Notes</h1>
  directory to the top-level code example directory.<br />
 <br />
 </li>
-<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6), CM33 (CYW920829M2EVK-02) or CM7 (KIT_XMC72_EVK) device used.<br />
+<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6), CM33 (CYW920829M2EVK-02 and CYW989829M2EVB-01) or CM7 (KIT_XMC72_EVK) device used.<br />
  Copy the ota-update/&lt;version&gt;/configs/FreeRTOS directory to the top-level code example directory.<br />
 <br />
 </li>
@@ -387,7 +387,7 @@ Bootloader Support</h1>
  To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
  ota-bootloader-abstraction library has below support.<br />
 </p><ol type="1">
-<li>Template flashmaps for PSoC6, 20829, and XMC7200 platforms.<br />
+<li>Template flashmaps for PSoC6, 20829, 89829 and XMC7200 platforms.<br />
 </li>
 <li>Template linker files for GCC_ARM, ARM, and IAR toolchains.<br />
 </li>
@@ -1221,7 +1221,9 @@ Code Snippets</h1>
 <h1><a class="anchor" id="section_example"></a>
 ModusToolbox OTA Code Examples</h1>
 <p>ModusToolbox OTA Example using MQTT: <a href="https://github.com/infineon/mtb-example-ota-mqtt">https://github.com/infineon/mtb-example-ota-mqtt</a><br />
+ ModusToolbox OTA Example using HTTP: <a href="https://github.com/Infineon/mtb-example-ota-https">https://github.com/Infineon/mtb-example-ota-https</a><br />
  ModusToolbox OTA Update Bluetooth® example: <a href="https://github.com/infineon/mtb-example-btstack-freertos-cyw20829-keyboard">https://github.com/infineon/mtb-example-btstack-freertos-cyw20829-keyboard</a><br />
+ ModusToolbox OTA Update Bluetooth® example: <a href="https://github.com/Infineon/mtb-example-btstack-freertos-cyw20829-battery-server-ota">https://github.com/Infineon/mtb-example-btstack-freertos-cyw20829-battery-server-ota</a><br />
 </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->

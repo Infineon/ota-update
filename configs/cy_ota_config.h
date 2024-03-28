@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, Cypress Semiconductor Corporation (an Infineon company)
+ * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company)
  * SPDX-License-Identifier: Apache-2.0
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,13 +121,13 @@ extern "C" {
  * @brief HTTP timeout for sending messages
  *
  */
-#define CY_OTA_HTTP_TIMEOUT_SEND            (3000)         /* 3 second send timeout (ms). */
+#define CY_OTA_HTTP_TIMEOUT_SEND            (3000)         /* 3 seconds send timeout (ms). */
 
 /**
  * @brief HTTP timeout for receiving messages
  *
  */
-#define CY_OTA_HTTP_TIMEOUT_RECEIVE         (3000)         /* 3 second receive timeout. */
+#define CY_OTA_HTTP_TIMEOUT_RECEIVE         (3000)         /* 3 seconds receive timeout. */
 
 
 /**********************************************************************

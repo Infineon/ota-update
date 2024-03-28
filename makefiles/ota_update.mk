@@ -8,7 +8,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2022 Cypress Semiconductor Corporation
+# Copyright 2018-2024, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ endif
 # $(info setting RELATIVE_FILE1_FILE2 = $(RELATIVE_FILE1_FILE2))
 
 # Remove "APP_" from TARGET for this OTA internal Makefile
-ACTUAL_TARGET=$(subst APP_,,$(TARGET))
+ACTUAL_TARGET?=$(subst APP_,,$(TARGET))
 
 ################################################################################
 ################################################################################
