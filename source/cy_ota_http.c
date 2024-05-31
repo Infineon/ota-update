@@ -1153,6 +1153,7 @@ cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx)
             {
                 cy_http_client_disconnect(old_conn);
                 cy_http_client_delete(old_conn);
+                cy_http_client_deinit();
             }
         }
         ctx->http.connection_established = false;

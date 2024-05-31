@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.2.0
+
+- Added support for CYW955913EVK-01 kit.
+
 ### v4.1.0
 
 - Added support for CYW89829(CYW989829M2EVB-01) kits.

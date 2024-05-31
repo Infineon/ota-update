@@ -11,6 +11,7 @@ Supported devices:
 - CYBLE-416045-EVAL
 - KIT_XMC72_EVK
 - CYW989829M2EVB-01
+- CYW955913EVK-01
 
 For devices with both Wi-Fi and Bluetooth® Interfaces, the device can use Wi-Fi or Bluetooth® Interfaces.
 
@@ -20,12 +21,13 @@ For <b>Bluetooth®</b>, the OTA library works with an intermediate peer applicat
 
 To handle the downloaded upgrade image, the user must implement storage API callbacks based on the chosen bootloader.
 
-<b>NOTE:</b> The library 'ota-bootloader-abstraction' includes storage API callbacks implementation that handles downloaded MCUBootloader based upgrade images. To use these storage API callbacks implementation, user must register these callbacks during OTA agent initialization.
+<b>NOTE:</b> The library 'ota-bootloader-abstraction' includes storage API callbacks implementation that handles downloaded MCUBootloader/H1-CP based upgrade images. To use these storage API callbacks implementation, user must register these callbacks during OTA agent initialization.
 
 ## Library Versions
 
 | Library Version    | Supported MTB version    | Remarks                    |
 |--------------------| -------------------------|----------------------------|
+| ota-update v4.2.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.1.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.0.0  | ModusToolbox 3.1         | cysecuretools v5.0 or greater is required |
 | ota-update v3.0.1  | ModusToolbox 3.1         | cysecuretools v4.2 or greater is required |
@@ -47,6 +49,8 @@ To handle the downloaded upgrade image, the user must implement storage API call
 - It runs on CM4 CPU in case of multicore Psoc6 devices and on CM7 CPU in XMC7200 devices.
 
 - In case of 20829 and 89829 devices, it runs on CM33 CPU along with the bootloader application.
+
+- The CYW955913EVK-01 platform features a built-in bootloader. OTA Application runs on CM33 CPU along with the bootloader.
 
 On a virgin device, main application(BOOT image) is programmed / flashed to the device first time. Subsequent versions of the application (so called updates) are downloaded using OTA.
 
@@ -91,17 +95,24 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
     ```
+    **NOTE** : H1-CP platform support added in *ota-update* version *release-v4.2.0*.
 
 - For MCUBootloader-based OTA code examples on platforms like PSoC,20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
     ```
     https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
     ```
+    **NOTE** : H1-CP platform support added in *ota-bootloader-abstraction* version *release-v1.2.0*.
 
 - For WiFi-based OTA code examples on platforms like PSoC6, Users need to create an *wifi-core-freertos-lwip-mbedtls.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-freertos-lwip-mbedtls.mtb* should be as follows:
     ```
     https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v1.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v1.X
     ```
     **NOTE**: ota-update library currently supports *wifi-core-freertos-lwip-mbedtls/latest-v1.X* only.
+
+- For WiFi-based OTA code examples on platforms like CYW955913EVK-01, Users need to create an *wifi-core-threadx-cat5.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-threadx-cat5.mtb* should be as follows:
+    ```
+    https://github.com/Infineon/wifi-core-threadx-cat5#latest-v1.X#$$ASSET_REPO$$/wifi-core-threadx-cat5/latest-v1.X
+    ```
 
 - For Ethernet-based OTA code examples on platforms like XMC7200, Users need to create an *ethernet-core-freertos-lwip-mbedtls.mtb* file for the Ethernet bundle and place it in the application *deps* folder. The contents of *ethernet-core-freertos-lwip-mbedtls.mtb* should be as follows:
     ```
@@ -113,6 +124,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     https://github.com/Infineon/btstack-integration#latest-v4.X#$$ASSET_REPO$$/btstack-integration/latest-v4.X
     ```
+    **NOTE**: For BLE-based OTA code examples on platforms like CYW955913EVK-01, required BT libraries are available in ROM. So no need to explicitly pull these libraries.
 
 - For MQTT protocol based OTA code examples, Users need to create an *mqtt.mtb* file to pull the *mqtt* library and place it in the application *deps* folder. The contents of *mqtt.mtb* should be as follows:
     ```
@@ -134,6 +146,8 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
 - Create OTA Application Makefile by referring [OTA Application Makefile Readme](./OTA_MAKEFILE_INFO_README.md).
 
 - For MCUBootloader support, Update OTA Application Makefile by referring *ota-bootloader-abstraction* library [MCUBootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_MCUBOOT/MCUBOOT_OTA_MAKEFILE_INFO_README.md)
+
+- For platforms like CYW955913EVK-01 which has in-built bootloader(H1-CP Bootloader), Update OTA Application Makefile by referring *ota-bootloader-abstraction* library [H1-CP_Bootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_H1_CP/H1-CP_OTA_MAKEFILE_INFO_README.md)
 
 - The "cy_ota_config.h" file provides configuration options to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker/HTTP Server connection.
   Copy the configuration file "\<ota-update library\>configs/cy_ota_config.h" file to the directory where your application Makefile is, and adjust as needed.
@@ -183,7 +197,19 @@ To support MCUBootloader based OTA using ota-update library, User can implement 
 
 Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling MCUBootloader support.
 
-### 5.2 Other bootloader Support
+### 5.2 H1-CP bootloader Support
+
+H1-CP bootloader is programmed in ROM section of CYW955913EVK-01.
+
+To support H1-CP bootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
+
+*ota-bootloader-abstraction* library has below support for H1-CP bootloader based platforms like CYW955913EVK-01.
+- Storage operation callback APIs to handle MCUBootloader based upgrade image.
+- README for H1-CP bootloader based OTA.
+
+Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling H1-CP bootloader support.
+
+### 5.3 Other bootloader Support
 
 - Starting from the 4.0 version of the *ota-update*, library can function independently and work with any bootloader.
 - Library user needs to implement OTA update handling storage API callbacks defined in 'cy_ota_storage_interface_t'. Refer to "\<ota-update library\>include/cy_ota_api.h" for syntaxes and details.
@@ -470,6 +496,7 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 ## 14. Supported OS
 
 - FreeRTOS
+- ThreadX
 
 
 ## 15. Supported Kits
@@ -485,7 +512,7 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 - [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVK-02)
 - [XMC7200 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK)
 - [AIROC™ CYW989820M2EVB-01 Evaluation kit](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le/cyw20829/)(CYW989820M2EVB-01)
-
+- [CYW955913EVK-01 Wi-Fi Bluetooth&reg; Prototyping Kit (CYW955913EVK-01)](https://www.infineon.com/CYW955913EVK-01)
 
 ## 16. Hardware Setup
 
@@ -552,7 +579,7 @@ Also, a reminder to look at configuration files for other libraries.
 
 - [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.infineon.com/modustoolbox)
 
-- [ModusToolbox&trade; code examples](https://github.com/infineon?q=mtb-example-anycloud%20NOT%20Deprecated)
+- [ModusToolbox&trade; code examples](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software)
 
 Infineon also provides a wealth of data at www.infineon.com to help you select the right device, and quickly and effectively integrate it into your design.
 

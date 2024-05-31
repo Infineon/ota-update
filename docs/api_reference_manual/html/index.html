@@ -99,66 +99,74 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="title">Over The Air(OTA) Library Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>This library offers assistance for over-the-air (OTA) updates of the application code that is executed on a PSoC™ 6 Connectivity Device, a 20829(CYW920829M2EVK-02) Device, a 89829(CYW989829M2EVB-01) Device, or an XMC7200(KIT_XMC72_EVK) Device, using Wi-Fi, Bluetooth® or Ethernet Connectivity.<br />
-<br />
+<div class="textblock"><p>The library provides support for performing over-the-air (OTA) updates on the application code that runs on various devices, including PSoC™ 6 Connectivity Devices, 20829 (CYW920829M2EVK-02) Devices, 89829 (CYW989829M2EVB-01) Devices, XMC7200 (KIT_XMC72_EVK) Devices, and H1-CP (CYW955913EVK-01) Devices, which can be connected via Wi-Fi, Bluetooth®, or Ethernet.<br />
  For simplification, this document may refer to an MQTT Broker or an HTTP Server as "server".<br />
 <br />
- The library provides a number of combinations on how to get the OTA image:<br />
-<br />
-<b>Bluetooth®</b></p><ul>
-<li>We use a Push model with Bluetooth®. A Peer application running on a laptop or phone will connect and push an update to the Device.</li>
+ The library provides a number of combinations to get the OTA image:<br />
+ </p>
+<p><b>1. Over Bluetooth®</b></p><ul>
+<li>We use a Push model with Bluetooth®. A Peer application running on a laptop or phone will connect and push an update to the Device.<br />
+ </li>
 </ul>
-<p><b>MQTT and HTTP</b></p><ul>
-<li>MQTT and HTTP use a Pull model. One or two steps can be used to get the OTA image. The two steps are "get job" and "get data". The caller can skip the "get job" step and get the OTA image directly.</li>
+<p><b>2. Over Wi-Fi or Ethernet(MQTT/HTTP)</b></p><ul>
+<li>MQTT and HTTP use a Pull model. There are two flows for getting the OTA image(JOB flow and Direct flow).<br />
+ </li>
 </ul>
-<p><b> "Pull" Model using a Job file:</b></p>
-<p>Step 1 - Get Job:<br />
-</p><ul>
+<p><b>2.1 Pull Model using a JOB flow:</b></p><ul>
+<li>Step 1: Get Job:<br />
+<ol type="1">
 <li>The OTA Agent downloads a JSON "Job" document (default name "ota_update.json").<br />
 </li>
-<li>The Job document has information about an update that is available, including its location.</li>
+<li>The Job document has information about an update that is available, including its location.<br />
+</li>
+</ol>
+</li>
+<li>Step 2: Get Data:<br />
+<ol type="1">
+<li>The OTA Agent will download the OTA image and writes it to the configured upgrade slot using registered "upgrade image handling storage callback APIs".<br />
+ </li>
+</ol>
+</li>
 </ul>
-<p><br />
- Step 2: - Get Data:<br />
-</p><ul>
-<li>The OTA Agent will download the OTA image and writes it to the configured upgrade slot using registered "upgrade image handling storage callback APIs". <br />
- On the next reboot, Bootloader will take care of booting the new version of the application from the configured upgrade slot.</li>
+<p><b>2.2 Pull Model using a Direct flow:</b></p><ul>
+<li>Step 1: Get Data:<br />
+<ol type="1">
+<li>The OTA Agent will download the OTA image from predefined location and writes it to the configured upgrade slot using registered "upgrade image handling storage callback APIs".<br />
+</li>
+</ol>
+</li>
+<li>Choose direct flow by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.<br />
+ </li>
 </ul>
-<p>You can skip Step 1 by setting the use_get_job_flow field in <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> to CY_OTA_DIRECT_FLOW when calling <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p>On the next reboot, Bootloader will take care of booting the new version of the application from the configured upgrade slot.<br />
+ </p>
 <p>The ModusToolbox OTA code examples import this OTA library automatically.</p>
 <h1><a class="anchor" id="section_features"></a>
 Features and Functionality</h1>
-<p>This library utilizes MQTT or HTTPS and TLS, or Bluetooth® to securely connect to and download an update for the users application.</p>
-<p>Other features:</p>
-<p>Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
-<p>MQTT and HTTP</p><ul>
+<p>This library utilizes MQTT or HTTPS and TLS, or Bluetooth® to securely connect to and download an update for the users application. Server info, credentials, and other parameters are passed into <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</p>
+<p><b>Other features:</b></p><ol type="1">
+<li>MQTT and HTTP<ul>
 <li>Configuration to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker connection.</li>
 <li>Runs in a separate background thread, only connecting to the server based on the parameters passed to <a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>.</li>
 <li>Provides a callback mechanism to report stages of connect, download percentage, and errors.</li>
 <li>Once the application starts the OTA Agent, the OTA Agent will contact the server at the defined intervals to see if there is an update available.</li>
 <li>Upon receiving the upgrade image, OTA Agent gives a callback to the application for handling the upgrade image.</li>
 </ul>
-<p>Bluetooth®</p><ul>
+</li>
+<li>Bluetooth®<ul>
 <li>Runs in a separate thread with callbacks to the users application to handle the connection messages and download data.</li>
-<li>When Bluetooth® is enabled in the compile flags, the Bluetooth® server will start automatically. <br />
- </li>
+<li>When Bluetooth® is enabled in the compile flags, the Bluetooth® server will start automatically.</li>
 </ul>
+</li>
+</ol>
 <h1><a class="anchor" id="section_notes"></a>
 Integration Notes</h1>
-<p>Before enabling OTA in an application, the user must choose a suitable bootloader and program it on the chosen platform(s).<br />
- The required build environment for creating BOOT and UPGRADE images should be set up.</p>
-<p>To add the required bootloader support at the application level itself, the OTA update library implements a callback mechanism and offloads handling of upgrade images including flash operations to application.</p>
-<p>The application must implement these storage operation callbacks defined in ota-update/&lt;version&gt;/include/cy_ota_api.h to handle upgrade image based on bootloader choosen and must register callbacks during OTA agent start by giving a parameter of type '<a class="el" href="structcy__ota__storage__interface__t.html" title="OTA storage interface callback APIs structure. ">cy_ota_storage_interface_t</a>' in '<a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>'.</p>
-<p>A pre-defined configuration file has been bundled with this library.<br />
- The user is expected to:<br />
+<p>Before enabling OTA in an application, the user must choose a suitable bootloader and program it on the chosen platform(s). The required build environment for creating BOOT and UPGRADE images should be set up. To add the required bootloader support at the application level itself, the OTA update library implements a callback mechanism and offloads handling of upgrade images including flash operations to application. The application must implement these storage operation callbacks defined in ota-update/&lt;version&gt;/include/cy_ota_api.h to handle upgrade image based on bootloader choosen and must register callbacks during OTA agent start by giving a parameter of type '<a class="el" href="structcy__ota__storage__interface__t.html" title="OTA storage interface callback APIs structure. ">cy_ota_storage_interface_t</a>' in '<a class="el" href="group__group__ota__functions.html#ga05b1ce8823a81d534247afd43db4c536" title="Start the OTA Background Agent. ">cy_ota_agent_start()</a>'.</p>
+<p>A pre-defined configuration file has been bundled with this library and the user is expected to:<br />
 </p><ul>
-<li>Copy the cy_ota_config.h file from the ota-update/&lt;version&gt;/configs<br />
- directory to the top-level code example directory.<br />
-<br />
+<li>Copy the cy_ota_config.h file from the ota-update/&lt;version&gt;/configs directory to the top-level code example directory.<br />
 </li>
-<li>Copy FreeRTOSConfig.h configuration file for the CM4 (PSoC™ 6), CM33 (CYW920829M2EVK-02 and CYW989829M2EVB-01) or CM7 (KIT_XMC72_EVK) device used.<br />
- Copy the ota-update/&lt;version&gt;/configs/FreeRTOS directory to the top-level code example directory.<br />
-<br />
+<li>Copy FreeRTOSConfig.h configuration file for the CM4(PSoC™ 6), CM33(CYW920829M2EVK-02/CYW989829M2EVB-01)or CM7(KIT_XMC72_EVK) from ota-update/&lt;version&gt;/configs/FreeRTOS directory to the top-level code example directory.<br />
 </li>
 <li>Provide application version information in application makefile.<br />
 </li>
@@ -166,9 +174,9 @@ Integration Notes</h1>
 <div class="fragment"><div class="line">APP_VERSION_MAJOR=&lt;X&gt;</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">APP_VERSION_MINOR=&lt;Y&gt;</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">APP_VERSION_BUILD=&lt;Z&gt;</div>
-</div><!-- fragment --></li>
+</div><!-- fragment --> <br />
+</li>
 <li>Please refer to the ota-update/&lt;version&gt;/OTA_MAKEFILE_INFO_README.md file for more details on OTA application makefile.<br />
-<br />
 </li>
 <li>For <b>HTTP support</b>, add the following to the application Makefile:<br />
 <div class="fragment"><div class="line">OTA_HTTP_SUPPORT=1</div>
@@ -185,18 +193,24 @@ Integration Notes</h1>
 <li>For <b>Secure Bluetooth®</b> support, add the following to the application Makefile:<br />
 <div class="fragment"><div class="line">OTA_BT_SUPPORT=1 OTA_BT_SECURE=1</div>
 </div><!-- fragment --> <br />
- OTA_MQTT_SUPPORT, OTA_HTTP_SUPPORT and OTA_BT_SUPPORT can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
-<br />
- There are other COMPONENTS that may be needed based on support. Please refer to the various README.md files in the root ota-update library directory.<br />
- README.md<br />
- OTA_MAKEFILE_INFO_README.md<br />
+</li>
+<li>OTA_MQTT_SUPPORT, OTA_HTTP_SUPPORT and OTA_BT_SUPPORT can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
+</li>
+<li>There are other COMPONENTS that may be needed based on support. Please refer to the various README.md files in the root ota-update library directory.<br />
+<ol type="1">
+<li>README.md<br />
+</li>
+<li>OTA_MAKEFILE_INFO_README.md<br />
+</li>
+</ol>
 </li>
 </ul>
 <h1><a class="anchor" id="section_concept"></a>
 General Concept</h1>
-<p>The OTA Agent downloads upgrade version of OTA applications and stores the update to the upgrade slot using user registered storage callbacks. Once after completing the download, OTA library verifies update image(checksum) and reboots device. When device reboots, programmed bootloader boots upgrade image of application.<br />
-<br />
- <b>The basic device boot sequence is as follows:</b></p><ol type="1">
+<p>The OTA Agent downloads upgrade version of OTA applications and stores the update to the upgrade slot using user registered storage callbacks. Once after completing the download, OTA library verifies update image(checksum) and reboots device. When device reboots, programmed bootloader boots upgrade image of application. <br />
+ </p>
+<p><b> MCUBootloader - The basic device boot sequence is as follows:</b> <br />
+</p><ol type="1">
 <li>ROM boot will start Bootloader.</li>
 <li>Bootloader runs the current application in the BOOT slot.<br />
 </li>
@@ -204,7 +218,7 @@ General Concept</h1>
 </li>
 <li>The OTA Agent marks the upgrade as ready.<br />
 <br />
- <b>On the next system boot:</b></li>
+ <b> On the next system boot: </b></li>
 </ol>
 <ol type="1">
 <li>ROM boot will start Bootloader</li>
@@ -213,13 +227,28 @@ General Concept</h1>
 <li>If there is an update available:<br />
  a. Bootloader verifies the update.<br />
  b. Bootloader starts the new (updated) application.<br />
- c. The updated application must validate the update.<br />
-<br />
- For more general information, see the various README.md files in the ota-update/&lt;version&gt;/ directory: <br />
- README.md<br />
- OTA_MAKEFILE_INFO_README.md<br />
-</li>
+ c. The updated application must validate the update. <br />
+ </li>
 </ol>
+<p><b> H1-CP Bootloader - The basic device boot sequence is as follows:</b> <br />
+</p><ol type="1">
+<li>ROM boot will start H1-CP Bootloader.<br />
+</li>
+<li>H1-CP Bootloader starts the current application in Active DS.<br />
+</li>
+<li>If there is an update available in Non Active DS,<br />
+ a. H1-CP Bootloader verifies the update image headers and certificates.<br />
+ b. If a valid upgrade image is found, the H1-CP Bootloader will activate the non-active DS and deactivate the active DS.<br />
+ c. On reset, H1-CP Bootloader starts the application in Active DS. <br />
+ </li>
+</ol>
+<p>For more general information, see the various README.md files in the ota-update/&lt;version&gt;/ directory:  <br />
+</p><ul>
+<li>README.md<br />
+</li>
+<li>OTA_MAKEFILE_INFO_README.md<br />
+</li>
+</ul>
 <h1><a class="anchor" id="section_api_overview"></a>
 API Overview</h1>
 <h2>Start the OTA Agent </h2>
@@ -382,9 +411,9 @@ Override Default Settings</h1>
 Bootloader Support</h1>
 <p><br />
  Starting from the 4.0 version of the ota-update library, the library is now fully separated from the MCUBootloader. This means that it can function independently and work with any bootloader, as long as the required OTA update handling storage APIs are implemented and registered with OTA agent by the user. <br />
- <b>MCUBootloader Support:</b><br />
- MCUBootloader is a secure bootloader for 32-bits microcontrollers and users should build it outside of the user OTA application. It is programmed separately to the device before flashing the user OTA application and is not updated for the life of the device. <br />
- To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
+ </p>
+<p><b>1. MCUBootloader Support</b><br />
+ MCUBootloader is a secure bootloader for 32-bits microcontrollers and users should build it outside of the user OTA application. It is programmed separately to the device before flashing the user OTA application and is not updated for the life of the device. To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
  ota-bootloader-abstraction library has below support.<br />
 </p><ol type="1">
 <li>Template flashmaps for PSoC6, 20829, 89829 and XMC7200 platforms.<br />
@@ -394,14 +423,22 @@ Bootloader Support</h1>
 <li>Storage operation callback APIs to handle MCUBootloader based upgrade image.<br />
 </li>
 <li>Prebuild and Postbuild scripts for generating and signing MCUBootloader based BOOT and UPGRADE image of an OTA Application.<br />
- User needs to register storage operation callbacks available in ota-bootloader-abstraction during OTA agent start.<br />
- For more information, see the various README.md files in the ota-bootloader-abstraction/&lt;version&gt;/ directory.<br />
-</li>
+ </li>
 </ol>
+<p><b>2. H1-CP Bootloader Support</b><br />
+ Platforms like CYW955913EVK-01 which has in-built bootloader(H1-CP Bootloader). To support H1-CP bootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
+ ota-bootloader-abstraction library has below support for H1-CP bootloader based platforms like CYW955913EVK-01.<br />
+</p><ol type="1">
+<li>Storage operation callback APIs to handle MCUBootloader based upgrade image.<br />
+</li>
+<li>README for H1-CP bootloader based OTA.<br />
+ </li>
+</ol>
+<p>User needs to register storage operation callbacks available in ota-bootloader-abstraction during OTA agent start.<br />
+ For more information, see the various README.md files in the ota-bootloader-abstraction/&lt;version&gt;/ directory.</p>
 <h1><a class="anchor" id="section_snippets"></a>
 Code Snippets</h1>
-<p><br />
- <b>MQTT and HTTP initialization:</b><br />
+<p><b>MQTT and HTTP initialization:</b><br />
  The following code snippet demonstrates an example for initializing the <a class="el" href="structcy__ota__network__params__t.html" title="OTA Connection parameters structure. ">cy_ota_network_params_t</a> and ota_agent_params structures required to start the OTA Agent.<br />
  </p><div class="fragment"><div class="line"><span class="comment">/* Macro to enable/disable TLS. */</span></div>
 <div class="line"><span class="preprocessor">#define ENABLE_TLS          (false)</span></div>
@@ -1216,9 +1253,7 @@ Code Snippets</h1>
 <div class="line"></div>
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p> <br />
- </p>
-<h1><a class="anchor" id="section_example"></a>
+</div><!-- fragment --> <h1><a class="anchor" id="section_example"></a>
 ModusToolbox OTA Code Examples</h1>
 <p>ModusToolbox OTA Example using MQTT: <a href="https://github.com/infineon/mtb-example-ota-mqtt">https://github.com/infineon/mtb-example-ota-mqtt</a><br />
  ModusToolbox OTA Example using HTTP: <a href="https://github.com/Infineon/mtb-example-ota-https">https://github.com/Infineon/mtb-example-ota-https</a><br />
