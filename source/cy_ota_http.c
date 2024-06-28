@@ -606,7 +606,7 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
     if(result != CY_RSLT_SUCCESS)
     {
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_connect() failed %d.\n", __func__, result);
-        cy_http_client_delete(&ctx->http.connection);
+        cy_http_client_delete(ctx->http.connection);
         cy_http_client_deinit();
         return CY_RSLT_OTA_ERROR_CONNECT;
     }
