@@ -12,6 +12,7 @@ Supported devices:
 - KIT_XMC72_EVK
 - CYW989829M2EVB-01
 - CYW955913EVK-01
+- CY8CEVAL-062S2-CYW955513SDM2WLIPA
 
 For devices with both Wi-Fi and Bluetooth® Interfaces, the device can use Wi-Fi or Bluetooth® Interfaces.
 
@@ -27,6 +28,7 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 | Library Version    | Supported MTB version    | Remarks                    |
 |--------------------| -------------------------|----------------------------|
+| ota-update v4.3.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.2.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.1.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
 | ota-update v4.0.0  | ModusToolbox 3.1         | cysecuretools v5.0 or greater is required |
@@ -505,7 +507,7 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 - [PSoC™ 62S2 Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/) (CY8CKIT-062S2-43012)
 - [PSoC™ 62S3 Wi-Fi BT Prototyping Kit ](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062s3-4343w/)(CY8CPROTO-062S3-4343W)
 - [PSoC™ 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-064b0s2-4343w/) (CY8CKIT-064B0S2-4343W)
-- [CY8CEVAL-062S2 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ceval-062s2/)(CY8CEVAL-062S2-LAI-4373M2 and CY8CEVAL-062S2-MUR-43439M2)
+- [CY8CEVAL-062S2 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ceval-062s2/)(CY8CEVAL-062S2-LAI-4373M2, CY8CEVAL-062S2-MUR-43439M2 and CY8CEVAL-062S2-CYW955513SDM2WLIPA)
 - [PSoC™ 6-BLE Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062-ble/) (CY8CKIT-062-BLE)
 - [PSoC™ 6 BLE Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-063-ble/) (CY8CPROTO-063-BLE)
 - [EZ-BLE Arduino Evaluation Board](https://www.infineon.com/cms/en/product/evaluation-boards/cyble-416045-eval/) (CYBLE-416045-EVAL)

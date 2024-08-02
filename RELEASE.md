@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.3.0
+
+- Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA kit.
+
 ### v4.2.1
 
 - Minor Documentation updates.

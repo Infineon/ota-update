@@ -537,7 +537,7 @@ extern "C" {
 /**
  *  @brief The Max length of the "Board" field in a JSON Job document.
  */
-#define CY_OTA_JOB_BOARD_LEN                (32)
+#define CY_OTA_JOB_BOARD_LEN                (48)
 
 /**
  *  @brief The Max length of the "Broker" and "Server" fields in a JSON Job document.
