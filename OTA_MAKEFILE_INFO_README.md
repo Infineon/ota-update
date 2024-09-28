@@ -24,7 +24,6 @@ This guide shows Makefile variables and build DEFINES used when building an appl
 | OTA_HTTP_SUPPORT=<0,1> | No | 0 | Include OTA support for update transfers using HTTP directly to a server.<br>App can use Job or Direct update flow Pull Model. |
 | OTA_MQTT_SUPPORT=<0,1> | No | 0 | Include OTA support for MQTT Broker transfers over HTTP. Implies HTTP library support<br>App can use Job or Direct update flow Pull Model. |
 | OTA_BT_SUPPORT=<0,1> | No | 0 | Include BT Support for transfers over BT/BLE/BLESS<br>Push Model. |
-| OTA_BT_SECURE=<0,1> | No | 0 | Include BT TLS secure connection support.<br> Requires OTA_BT_SUPPORT=1 |
 | APP_VERSION_MAJOR=\<application_version\> | Yes | Error | Application Major version number  X.y.z|
 | APP_VERSION_MINOR=\<application_version\> | Yes | Error | Application Minor version number  x.Y.z|
 | APP_VERSION_BUILD=\<application_version\> | Yes | Error | Application Build version number x.y.Z |

@@ -22,7 +22,7 @@ For <b>Bluetooth®</b>, the OTA library works with an intermediate peer applicat
 
 To handle the downloaded upgrade image, the user must implement storage API callbacks based on the chosen bootloader.
 
-<b>NOTE:</b> The library 'ota-bootloader-abstraction' includes storage API callbacks implementation that handles downloaded MCUBootloader/H1-CP based upgrade images. To use these storage API callbacks implementation, user must register these callbacks during OTA agent initialization.
+<b>NOTE:</b> The library 'ota-bootloader-abstraction' includes storage API callbacks implementation that handles MCUBootloader based images and in-built bootloader based (CYW955913SDCM2WLIPA platform) images. To use these storage API callbacks implementation, user must register these callbacks during OTA agent initialization.
 
 ## Library Versions
 
@@ -97,13 +97,11 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
     ```
-    **NOTE** : H1-CP platform support added in *ota-update* version *release-v4.2.0*.
 
 - For MCUBootloader-based OTA code examples on platforms like PSoC,20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
     ```
     https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
     ```
-    **NOTE** : H1-CP platform support added in *ota-bootloader-abstraction* version *release-v1.2.0*.
 
 - For WiFi-based OTA code examples on platforms like PSoC6, Users need to create an *wifi-core-freertos-lwip-mbedtls.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-freertos-lwip-mbedtls.mtb* should be as follows:
     ```
@@ -116,11 +114,14 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     https://github.com/Infineon/wifi-core-threadx-cat5#latest-v1.X#$$ASSET_REPO$$/wifi-core-threadx-cat5/latest-v1.X
     ```
 
-- For Ethernet-based OTA code examples on platforms like XMC7200, Users need to create an *ethernet-core-freertos-lwip-mbedtls.mtb* file for the Ethernet bundle and place it in the application *deps* folder. The contents of *ethernet-core-freertos-lwip-mbedtls.mtb* should be as follows:
+- For Ethernet-based OTA code examples on platforms like XMC7200, Users need to create an *ethernet-core-freertos-lwip-mbedtls.mtb* file for the Ethernet bundle along with *ethernet-phy-driver.mtb* file for ethernet PHY drivers and place it in the application *deps* folder. The contents of *ethernet-core-freertos-lwip-mbedtls.mtb* and *ethernet-phy-driver.mtb* should be as follows:
     ```
-    https://github.com/Infineon/ethernet-core-freertos-lwip-mbedtls#latest-v1.X#$$ASSET_REPO$$/ethernet-core-freertos-lwip-mbedtls/latest-v1.X
+    https://github.com/Infineon/ethernet-core-freertos-lwip-mbedtls#latest-v2.X#$$ASSET_REPO$$/ethernet-core-freertos-lwip-mbedtls/latest-v2.X
     ```
-    **NOTE**: ota-update library currently supports *ethernet-core-freertos-lwip-mbedtls/latest-v1.X* only.
+	```
+    https://github.com/Infineon/ethernet-phy-driver#latest-v1.X#$$ASSET_REPO$$/ethernet-phy-driver/latest-v1.X
+    ```
+    **NOTE**: Applications using the *ethernet-core-freertos-lwip-mbedtls v1.X* library for OTA updates do not need to pull the *ethernet-phy-driver*.
 
 - For BLE-based OTA code examples on platforms like PSoC6, 20829 and 89829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
     ```
@@ -138,8 +139,6 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     https://github.com/Infineon/http-client#latest-v1.X#$$ASSET_REPO$$/http-client/latest-v1.X
     ```
 
-- For BLE-based secure OTA updates, the ota-update library uses *Mbed-TLS* crypto APIs to verify downloaded images in FreeRTOS-based OTA applications. Therefore, users need to pull the *Mbed-TLS* library along with other dependent libraries.
-
 - Once you have added the necessary *.mtb* files to the *deps* folder of your application, run the command 'make getlibs' to fetch these libraries and their dependencies.
     ```
     make getlibs
@@ -149,7 +148,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
 
 - For MCUBootloader support, Update OTA Application Makefile by referring *ota-bootloader-abstraction* library [MCUBootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_MCUBOOT/MCUBOOT_OTA_MAKEFILE_INFO_README.md)
 
-- For platforms like CYW955913EVK-01 which has in-built bootloader(H1-CP Bootloader), Update OTA Application Makefile by referring *ota-bootloader-abstraction* library [H1-CP_Bootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_H1_CP/H1-CP_OTA_MAKEFILE_INFO_README.md)
+- For platforms like CYW955913EVK-01 which has in-built bootloader, update OTA Application Makefile by referring *ota-bootloader-abstraction* library [CYW955913SDCM2WLIPA_Bootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_CYW955913SDCM2WLIPA/CYW955913SDCM2WLIPA_OTA_MAKEFILE_INFO_README.md)
 
 - The "cy_ota_config.h" file provides configuration options to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker/HTTP Server connection.
   Copy the configuration file "\<ota-update library\>configs/cy_ota_config.h" file to the directory where your application Makefile is, and adjust as needed.
@@ -199,17 +198,16 @@ To support MCUBootloader based OTA using ota-update library, User can implement 
 
 Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling MCUBootloader support.
 
-### 5.2 H1-CP bootloader Support
+### 5.2 CYW955913EVK-01 in-built bootloader Support
 
-H1-CP bootloader is programmed in ROM section of CYW955913EVK-01.
+An in-built bootloader is programmed in ROM section of CYW955913EVK-01.
 
-To support H1-CP bootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
+To support OTA using ota-update library on CYW955913EVK-01 kit, user can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
 
-*ota-bootloader-abstraction* library has below support for H1-CP bootloader based platforms like CYW955913EVK-01.
+*ota-bootloader-abstraction* library has below support for in-built bootloader based platforms like CYW955913EVK-01.
 - Storage operation callback APIs to handle MCUBootloader based upgrade image.
-- README for H1-CP bootloader based OTA.
 
-Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling H1-CP bootloader support.
+Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling in-built CYW955913EVK-01 bootloader support.
 
 ### 5.3 Other bootloader Support
 

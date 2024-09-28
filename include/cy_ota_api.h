@@ -1270,8 +1270,8 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
  * @brief Bluetooth® OTA Verify download
  *
  * @param[in]   ctx_ptr                   Pointer to OTA agent context @ref cy_ota_context_ptr
- * @param[in]   update_file_crc           32 Bit CRC sent from the Host. For SECURE_BT(OTA_BT_SECURE=1) CRC is 0.
- * @param[in]   verify_crc_or_signature   OTA library need to verify CRC(For SECURE_BT=0) or Signature(For SECURE_BT=1)?
+ * @param[in]   update_file_crc           32 Bit CRC sent from the Host.
+ * @param[in]   verify_crc_or_signature   OTA library need to verify CRC.
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_VERIFY

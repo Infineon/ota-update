@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.3.1
+
+- Minor Documentation updates.
+
 ### v4.3.0
 
 - Added support for CY8CEVAL-062S2-CYW955513SDM2WLIPA kit.
@@ -86,7 +90,7 @@ This version of the library was validated for compatibility with the following s
 | - ModusToolbox&trade; Device Configurator                 | 4.20    |
 | - ModusToolbox&trade; Bluetooth Configurator              | 2.90    |
 | - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.20.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.11.0  |
+| Peripheral Driver Library (PDL CAT1)                      | 3.12.0  |
 | GCC Compiler                                              | 11.3.1  |
 | IAR Compiler                                              | 9.40.2  |
 | Arm Compiler 6                                            | 6.16    |

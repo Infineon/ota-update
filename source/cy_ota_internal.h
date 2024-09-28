@@ -256,11 +256,6 @@ typedef struct cy_ota_mqtt_context_s {
 
 #ifdef COMPONENT_OTA_BLUETOOTH
 
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-#include "ota_ecc_pp.h"
-#endif
-
-
 /**
  * @brief standard signature length for Bluetooth® key
  */
@@ -280,11 +275,6 @@ typedef struct {
     uint32_t                    crc32;                      /**< Bluetooth® CRC calculated during download                     */
     uint32_t                    file_bytes_written;         /**< Bluetooth® File bytes written                                 */
     uint8_t                     percent;                    /**< Bluetooth® percentage downloaded                              */
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    void                        *bt_sha2_ctx;               /**< Bluetooth® For calculating the signature as we download chunks */
-    uint8_t                     signature[SIGNATURE_LEN];   /**< Bluetooth® Downloaded signature for the file                   */
-    uint32_t                    sig_offset;                 /**< Bluetooth® Signature offset for downloading in pieces          */
-#endif
 } cy_ota_ble_context_t;
 
 #endif  /* COMPONENT_OTA_BLUETOOTH */

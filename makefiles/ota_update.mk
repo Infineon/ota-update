@@ -105,8 +105,6 @@ OTA_HTTP_USE_CUSTOM_CONFIG?=0
 
 ###################################################
 # Enable BT support
-# Enable for BT Secure Support
-OTA_BT_SECURE?=0
 
 # Default is "Do not test the APP_VERSION when downloading a TAR archive for updating"
 # Enable to test APP_VERSION in TAR archive
@@ -179,18 +177,13 @@ endif # OTA_MQTT_SUPPORT
 
 ifeq ($(OTA_BT_SUPPORT),1)
     COMPONENTS+=OTA_BLUETOOTH
-    ifeq ($(OTA_BT_SECURE),1)
-        COMPONENTS+=OTA_BLUETOOTH_SECURE
-    else
-        COMPONENTS+=OTA_BLUETOOTH_NON_SECURE
-    endif # OTA_BT_SECURE
-
+    COMPONENTS+=OTA_BLUETOOTH_NON_SECURE
     ifeq ($(OTA_BT_ONLY),1)
         DEFINES+=OTA_BT_ONLY
     endif
 
     ifeq ($(OTA_BUILD_VERBOSE),1)
-        $(info Makefile: OTA_BT_SUPPORT  =1  OTA_BT_ONLY=$(OTA_BT_ONLY)  OTA_BT_SECURE=$(OTA_BT_SECURE))
+        $(info Makefile: OTA_BT_SUPPORT  =1  OTA_BT_ONLY=$(OTA_BT_ONLY))
     endif
 endif # OTA_BT_SUPPORT
 
@@ -216,14 +209,6 @@ ifneq ($(MAKECMDGOALS),getlibs)
         CY_IGNORE+=$(SEARCH_mbedtls)/tests
         CY_IGNORE+=$(SEARCH_mbedtls)/doxygen
         CY_IGNORE+=$(SEARCH_mbedtls)/library/net_sockets.c
-    endif # OTA_BT_ONLY
-
-    ifeq ($(OTA_BT_ONLY),1)
-        ifneq ($(OTA_BT_SECURE),1)
-            ifeq ($(OTA_BUILD_VERBOSE),1)
-                $(info Makefile: OTA_BT_SUPPORT=1 OTA_BT_SECURE=0     IGNORE secure libraries)
-            endif
-        endif # OTA_BT_SECURE
     endif # OTA_BT_ONLY
 
     CY_IGNORE+=$(SEARCH_aws-iot-device-sdk-port)/source/ota

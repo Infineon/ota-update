@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="title">Over The Air(OTA) Library Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>The library provides support for performing over-the-air (OTA) updates on the application code that runs on various devices, including PSoC™ 6 Connectivity Devices, 20829 (CYW920829M2EVK-02) Devices, 89829 (CYW989829M2EVB-01) Devices, XMC7200 (KIT_XMC72_EVK) Devices, and H1-CP (CYW955913EVK-01) Devices, which can be connected via Wi-Fi, Bluetooth®, or Ethernet.<br />
+<div class="textblock"><p>The library provides support for performing over-the-air (OTA) updates on the application code that runs on various devices, including PSoC™ 6 Connectivity Devices, 20829 (CYW920829M2EVK-02) Devices, 89829 (CYW989829M2EVB-01) Devices, XMC7000 (KIT_XMC72_EVK) Devices, and CYW955913SDCM2WLIPA (CYW955913EVK-01) Devices, which can be connected via Wi-Fi, Bluetooth®, or Ethernet.<br />
  For simplification, this document may refer to an MQTT Broker or an HTTP Server as "server".<br />
 <br />
  The library provides a number of combinations to get the OTA image:<br />
@@ -186,12 +186,8 @@ Integration Notes</h1>
 <div class="fragment"><div class="line">OTA_MQTT_SUPPORT=1</div>
 </div><!-- fragment --> <br />
 </li>
-<li>For <b>Non-Secure Bluetooth®</b> support, add the following to the application Makefile:<br />
-<div class="fragment"><div class="line">OTA_BT_SUPPORT=1 OTA_BT_SECURE=0</div>
-</div><!-- fragment --> <br />
-</li>
-<li>For <b>Secure Bluetooth®</b> support, add the following to the application Makefile:<br />
-<div class="fragment"><div class="line">OTA_BT_SUPPORT=1 OTA_BT_SECURE=1</div>
+<li>For <b>Bluetooth®</b> support, add the following to the application Makefile:<br />
+<div class="fragment"><div class="line">OTA_BT_SUPPORT=1</div>
 </div><!-- fragment --> <br />
 </li>
 <li>OTA_MQTT_SUPPORT, OTA_HTTP_SUPPORT and OTA_BT_SUPPORT can be used simultaneously, but will possibly be too large to fit in the FLASH slot available.<br />
@@ -230,16 +226,16 @@ General Concept</h1>
  c. The updated application must validate the update. <br />
  </li>
 </ol>
-<p><b> H1-CP Bootloader - The basic device boot sequence is as follows:</b> <br />
+<p><b> CYW955913EVK-01 kit's in-built Bootloader - The basic device boot sequence is as follows:</b> <br />
 </p><ol type="1">
-<li>ROM boot will start H1-CP Bootloader.<br />
+<li>ROM boot will start CYW955913EVK-01 kit's in-built Bootloader.<br />
 </li>
-<li>H1-CP Bootloader starts the current application in Active DS.<br />
+<li>In-built Bootloader starts the current application in Active DS.<br />
 </li>
 <li>If there is an update available in Non Active DS,<br />
- a. H1-CP Bootloader verifies the update image headers and certificates.<br />
- b. If a valid upgrade image is found, the H1-CP Bootloader will activate the non-active DS and deactivate the active DS.<br />
- c. On reset, H1-CP Bootloader starts the application in Active DS. <br />
+ a. In-built Bootloader verifies the update image headers and certificates.<br />
+ b. If a valid upgrade image is found, the in-built Bootloader will activate the non-active DS and deactivate the active DS.<br />
+ c. On reset, in-built Bootloader starts the application in Active DS. <br />
  </li>
 </ol>
 <p>For more general information, see the various README.md files in the ota-update/&lt;version&gt;/ directory:  <br />
@@ -416,7 +412,7 @@ Bootloader Support</h1>
  MCUBootloader is a secure bootloader for 32-bits microcontrollers and users should build it outside of the user OTA application. It is programmed separately to the device before flashing the user OTA application and is not updated for the life of the device. To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
  ota-bootloader-abstraction library has below support.<br />
 </p><ol type="1">
-<li>Template flashmaps for PSoC6, 20829, 89829 and XMC7200 platforms.<br />
+<li>Template flashmaps for PSoC6, 20829, 89829 and XMC7000 platforms.<br />
 </li>
 <li>Template linker files for GCC_ARM, ARM, and IAR toolchains.<br />
 </li>
@@ -425,13 +421,11 @@ Bootloader Support</h1>
 <li>Prebuild and Postbuild scripts for generating and signing MCUBootloader based BOOT and UPGRADE image of an OTA Application.<br />
  </li>
 </ol>
-<p><b>2. H1-CP Bootloader Support</b><br />
- Platforms like CYW955913EVK-01 which has in-built bootloader(H1-CP Bootloader). To support H1-CP bootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of <em>ota-bootloader-abstraction</em> library.<br />
- ota-bootloader-abstraction library has below support for H1-CP bootloader based platforms like CYW955913EVK-01.<br />
+<p><b>2. In-built Bootloader Support on CYW955913EVK-01 kit</b><br />
+ Platforms like CYW955913EVK-01 have in-built bootloader. To support OTA using ota-update library on CYW955913EVK-01 kit, user can implement his own storage operation callbacks to handle upgrade image or can make use of ota-bootloader-abstraction library.<br />
+ ota-bootloader-abstraction library has below support for in-built bootloader based platforms like CYW955913EVK-01.<br />
 </p><ol type="1">
-<li>Storage operation callback APIs to handle MCUBootloader based upgrade image.<br />
-</li>
-<li>README for H1-CP bootloader based OTA.<br />
+<li>Storage operation callback APIs to handle CYW955913EVK-01 in-built Bootloader based upgrade image.<br />
  </li>
 </ol>
 <p>User needs to register storage operation callbacks available in ota-bootloader-abstraction during OTA agent start.<br />

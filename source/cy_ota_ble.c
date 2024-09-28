@@ -46,9 +46,7 @@
 #ifdef COMPONENT_OTA_BLUETOOTH
 
 #include "cy_ota_internal.h"
-#include "cy_ota_ble_secure.h"
 #include "cyhal_gpio.h"
-
 
 /***********************************************************************
  *
@@ -89,7 +87,6 @@
  *
  **********************************************************************/
 
-#ifndef COMPONENT_OTA_BLUETOOTH_SECURE
 static uint32_t cy_ota_ble_crc32_update(uint32_t prev_crc32, const uint8_t* buffer, uint16_t buffer_length)
 {
     uint32_t crc32 = ~prev_crc32;
@@ -117,7 +114,6 @@ static uint32_t cy_ota_ble_crc32_update(uint32_t prev_crc32, const uint8_t* buff
 
     return ~crc32;
 }
-#endif
 
 cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *network_params)
 {
@@ -137,9 +133,6 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr)
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s()\n", __func__);
 
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    cy_ota_ble_secure_signature_init(ctx_ptr);
-#endif
     ota_ctx->ble.file_bytes_written = 0;
 
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_STORAGE_OPEN);
@@ -202,13 +195,6 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
 
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_STORAGE_WRITE);
 
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    if(chunk_info.offset + chunk_info.size > UPGRADE_SLOT_SIZE)
-    {
-        chunk_info.size = UPGRADE_SLOT_SIZE - chunk_info.offset;
-    }
-#endif
-
     if(chunk_info.size > 0)
     {
         result = ota_ctx->storage_iface.ota_file_write(&(ota_ctx->ota_storage_context), &chunk_info);
@@ -238,11 +224,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
     }
 
     /* update crc or secure signature as we pull in the data */
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-    cy_ota_ble_secure_signature_update(ctx_ptr, data_buf, offset, len);
-#else
     ota_ctx->ble.crc32 = cy_ota_ble_crc32_update(ota_ctx->ble.crc32, (const uint8_t*)((uint32_t)data_buf + offset), len);
-#endif
     ota_ctx->ble.file_bytes_written += chunk_info.size;
 
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->ota_storage_context.total_bytes_written, ota_ctx->ota_storage_context.total_image_size, ota_ctx->ble.percent);
@@ -254,34 +236,24 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
     cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
+    (void)verify_crc_or_signature;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
 
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_VERIFY);
 
-    if(verify_crc_or_signature)
+    /* non- secure here, check CRC */
+    ota_ctx->ble.received_crc32 = final_crc32;
+    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Calculated CRC : 0x%lx\n", final_crc32);
+    if(ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
     {
-#ifdef  COMPONENT_OTA_BLUETOOTH_SECURE
-        result = cy_ota_ble_secure_signature_verify(ctx_ptr);
-        if(result == CY_RSLT_SUCCESS)
-        {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) Secure Signature Verification Succeeded!\n");
-        }
-#else
-        /* non- secure here, check CRC */
-        ota_ctx->ble.received_crc32 = final_crc32;
-        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Calculated CRC : 0x%lx\n", final_crc32);
-        if(ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
-        {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
-            result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
-        }
-        else
-        {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
-            result = CY_RSLT_SUCCESS;
-        }
-#endif
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
+        result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
+    }
+    else
+    {
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
+        result = CY_RSLT_SUCCESS;
     }
 
     if(result != CY_RSLT_SUCCESS)
