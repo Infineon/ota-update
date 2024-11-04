@@ -6,6 +6,11 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.3.2
+
+- Bug fixes.
+- Minor Documentation updates.
+
 ### v4.3.1
 
 - Minor Documentation updates.

@@ -9,11 +9,12 @@ import threading
 import time
 import traceback
 import re
+import ssl
 
 random.seed()
 
 #
-#   This is the MQTT Publisher for OTA Update device updating.
+#   This is the MQTT Publisher for performing OTA firmware update.
 #   It is intended to be used with an MQTT Broker that does NOT
 #   have the ability to save OTA Images. This allows Devices
 #   to connect at any time and request an update.
@@ -192,7 +193,15 @@ DEBUG_LOG_STRING = "0"
 # Defines
 #==============================================================================
 
-KIT = "CY8CPROTO_062_4343W"
+# Board or Target name
+BOARD = "APP_CY8CPROTO_062_4343W"
+BUILD_CONFIG = "Debug"
+
+print("BOARD:",BOARD)
+print("BUILD_CONFIG:",BUILD_CONFIG)
+
+# Kit or Device name
+KIT = BOARD.replace("APP_","")
 
 SEND_IMAGE_MQTT_CLIENT_ID = "OTASend"
 
@@ -207,7 +216,7 @@ PUBLISHER_DIRECT_REQUEST_TOPIC = ""
 
 
 BAD_JSON_DOC = "MALFORMED JSON DOCUMENT"            # Bad incoming message
-UPDATE_AVAILABLE_REQUEST = "Update Availability"    # Device requests if there is an Update avaialble
+UPDATE_AVAILABLE_REQUEST = "Update Availability"    # Device requests if there is an Update available
 SEND_UPDATE_REQUEST = "Request Update"              # Device requests Publisher send the OTA Image
 SEND_DIRECT_UPDATE = "Send Direct Update"           # Device sent Update Direct request
 SEND_CHUNK = "Request Data Chunk"                   # Device sent Request for a chunk of the data file
@@ -235,16 +244,19 @@ JSON_JOB_MESSAGE_FILE = "ota_update.json"
 # Mosquitto works sometimes - it is a test server for the Mosquitto project
 #
 # Set the Broker using command line arguments "-b amazon"
-# AMAZON_BROKER_ADDRESS = "a33jl9z28enc1q-ats.iot.us-west-1.amazonaws.com"
-AMAZON_BROKER_ADDRESS = "a33jl9z28enc1q-ats.iot.us-east-1.amazonaws.com"
+AMAZON_BROKER_ADDRESS = "xxxxxxxxx-ats.iot.us-west-2.amazonaws.com"
 
 # Set the Broker using command line arguments "-b eclipse"
-ECLIPSE_BROKER_ADDRESS = "mqtt.eclipseprojects.io"
+ECLIPSE_BROKER_ADDRESS = "mqtt.eclipse.org"
 
 # Set the Broker using command line arguments "-b mosquitto"
 MOSQUITTO_BROKER_ADDRESS = "test.mosquitto.org"
-# default is mosquitto
-BROKER_ADDRESS = MOSQUITTO_BROKER_ADDRESS
+
+# Set the Broker using command line arguments "-b mosquitto_local"
+MOSQUITTO_BROKER_LOCAL_ADDRESS = "192.168.0.10"
+
+# default is local Mosquitto
+BROKER_ADDRESS = MOSQUITTO_BROKER_LOCAL_ADDRESS
 
 TLS_ENABLED = False         # turn on with "tls" argument on command line when invoking this script
 
@@ -253,8 +265,7 @@ PUBLISHER_PUBLISH_QOS = 1     # AWS broker does not support QOS of 2
 PUBLISHER_SUBSCRIBE_QOS = 1   # AWS broker does not support QOS of 2
 
 # Path to the firmware image
-#OTA_IMAGE_FILE = "../bld/ota-update/CY8CPROTO-062-4343W/Debug/ota-update.bin"
-OTA_IMAGE_FILE = "ota-update.bin"
+OTA_IMAGE_FILE = ""
 
 # Paho MQTT client settings
 MQTT_KEEP_ALIVE = 60 # in seconds
@@ -313,8 +324,10 @@ def signal_handling(signum,frame):
    terminate = True
 
 # take over the signals (SIGINT - MAC & Linux, SIGBREAK - Windows
-signal.signal(signal.SIGINT,signal_handling)
-signal.signal(signal.SIGBREAK,signal_handling)
+if sys.platform == 'win32':
+    signal.signal(signal.SIGBREAK,signal_handling)
+else:
+    signal.signal(signal.SIGINT,signal_handling)
 
 #==============================================================================
 # Logging functions
@@ -424,7 +437,7 @@ def do_chunking(image_file, whole_file, file_offset, send_size):
                     print(" CHUNK Queued " + str(payload_index) + " chunks")
                 return pub_mqtt_msgs,pub_total_payloads
 
-        return pub_mqtt_msgs,pub_total_payloads
+    return pub_mqtt_msgs,pub_total_payloads
 
 # -----------------------------------------------------------
 #   parse_incoming_request()
@@ -540,7 +553,11 @@ def send_image_chunk_thread(message_string, unique_topic):
     send_client.on_connect = on_send_connect
     send_client.on_publish = on_send_publish
     if TLS_ENABLED:
-        send_client.tls_set(ca_certs, certfile, keyfile)
+        if BROKER_ADDRESS == MOSQUITTO_BROKER_LOCAL_ADDRESS:
+            send_client.tls_set(ca_certs, certfile, keyfile, cert_reqs=ssl.CERT_NONE)
+            send_client.tls_insecure_set(True)
+        else:
+            send_client.tls_set(ca_certs, certfile, keyfile)
     send_client.connect(BROKER_ADDRESS, BROKER_PORT, MQTT_KEEP_ALIVE)
     while send_client.connected_flag == False:
         send_client.loop(0.1)
@@ -563,7 +580,7 @@ def send_image_chunk_thread(message_string, unique_topic):
         result,messageID = send_client.publish(unique_topic, pub_mqtt_msgs[0], PUBLISHER_PUBLISH_QOS)
         while send_client.publish_mid != messageID:
             send_client.loop(0.1)
-            time.sleep(1)
+            time.sleep(0.1)
             if terminate:
                 exit(0)
 
@@ -606,7 +623,11 @@ def send_image_thread(message_string, unique_topic):
     send_client.on_connect = on_send_connect
     send_client.on_publish = on_send_publish
     if TLS_ENABLED:
-        send_client.tls_set(ca_certs, certfile, keyfile)
+        if BROKER_ADDRESS == MOSQUITTO_BROKER_LOCAL_ADDRESS:
+            send_client.tls_set(ca_certs, certfile, keyfile, cert_reqs=ssl.CERT_NONE)
+            send_client.tls_insecure_set(True)
+        else:
+            send_client.tls_set(ca_certs, certfile, keyfile)
     send_client.connect(BROKER_ADDRESS, BROKER_PORT, MQTT_KEEP_ALIVE)
     while send_client.connected_flag == False:
         send_client.loop(0.1)
@@ -807,7 +828,11 @@ def publisher_loop():
     pub_client.on_connect = on_connect
     pub_client.on_subscribe = on_subscribe
     if TLS_ENABLED:
-        pub_client.tls_set(ca_certs, certfile, keyfile)
+        if BROKER_ADDRESS == MOSQUITTO_BROKER_LOCAL_ADDRESS:
+            pub_client.tls_set(ca_certs, certfile, keyfile, cert_reqs=ssl.CERT_NONE)
+            pub_client.tls_insecure_set(True)
+        else:
+            pub_client.tls_set(ca_certs, certfile, keyfile)
 
     pub_client.connect(BROKER_ADDRESS, BROKER_PORT, MQTT_KEEP_ALIVE)
     while pub_client.connected_flag == False:
@@ -846,31 +871,31 @@ def publisher_loop():
 # =====================================================================
 
 if __name__ == "__main__":
+    print("################################################################################################################################")
     print("Infineon Test MQTT Publisher.")
-    print("   Usage: 'python publisher.py [tls] [-l] [-b <broker>] [-k <kit>] [-f <filepath>] [-c <company_topic>]'")
-    print("[tls]              Use TLS for connection")
-    print("-l                 Turn on extra logging")
-    print("-b <broker>        '[a] | [amazon] | [e] | [eclipse] | [m] | [mosquitto]'")
-    print("-k <kit>           '[CY8CKIT_062S2_43012] | [CY8CKIT_064B0S2_4343W] | [CY8CPROTO_062_4343W] | [KIT_XMC72_EVK]'")
-    print("-f <filepath>      The location of the OTA Image file to server to the device")
-    print("-c <company_topic> This will be the beginning of the topic: <company_topic>/")
-    print("Defaults: non-TLS")
+    print("Usage: 'python publisher.py [tls] [-l] [-b <broker>] [-k <kit>] [-f <filepath>]'")
+    print("<broker>       | [a] or [amazon] | [e] or [eclipse] | [m] or [mosquitto] | [ml] or [mosquitto_local] |")
+    print("<kit>          CY8CPROTO_062S2_43439 | CY8CPROTO_062_4343W | CY8CKIT_062S2_43012 | CY8CEVAL_062S2_LAI_4373M2 | CY8CEVAL_062S2_MUR_43439M2 | CY8CPROTO_062S3_4343W | KIT_XMC72_EVK_MUR_43439M2 |")
+    print("<filepath>     The location of the OTA Image file to server to the device")
+    print("Defaults: <non-TLS>")
     print("        : -f " + OTA_IMAGE_FILE)
-    print("        : -b mosquitto ")
+    print("        : -b mosquitto_local ")
     print("        : -k " + KIT)
-    print("        : -c " + COMPANY_TOPIC_PREPEND)
+    print("        : -l turn on extra logging")
+    print("################################################################################################################################")
     last_arg = ""
+    OTA_IMAGE_FILE_NEW = None
+
     for i, arg in enumerate(sys.argv):
-        # print(f"Argument {i:>4}: {arg}")
+        if arg == "-h" or arg == "--help":
+            sys.exit()
         if arg == "TLS" or arg == "tls":
             TLS_ENABLED = True
         if arg == "-l":
             DEBUG_LOG = 1
             DEBUG_LOG_STRING = "1"
         if last_arg == "-f":
-            OTA_IMAGE_FILE = arg
-        if last_arg == "-c":
-            COMPANY_TOPIC_PREPEND = arg
+            OTA_IMAGE_FILE_NEW = arg
         if last_arg == "-b":
             if ((arg == "amazon") | (arg == "a")):
                 BROKER_ADDRESS = AMAZON_BROKER_ADDRESS
@@ -878,12 +903,23 @@ if __name__ == "__main__":
                 BROKER_ADDRESS = ECLIPSE_BROKER_ADDRESS
             if ((arg == "mosquitto") | (arg == "m")):
                 BROKER_ADDRESS = MOSQUITTO_BROKER_ADDRESS
+            if ((arg == "mosquitto_local") | (arg == "ml")):
+                BROKER_ADDRESS = MOSQUITTO_BROKER_LOCAL_ADDRESS
         if last_arg == "-k":
             KIT = arg
         last_arg = arg
 
+    if OTA_IMAGE_FILE_NEW == None:
+        OTA_IMAGE_FILE = "/" + BUILD_CONFIG + "/ota-update.bin"
+        if KIT.startswith("KIT_XMC7"):
+            OTA_IMAGE_FILE = "../build/APP_" + KIT + OTA_IMAGE_FILE
+        else:
+            OTA_IMAGE_FILE = "../build/APP_" + KIT.replace("_","-") + OTA_IMAGE_FILE
+    else:
+        OTA_IMAGE_FILE = OTA_IMAGE_FILE_NEW
+
 print("\n")
-print("Values for this run:\n")
+
 if TLS_ENABLED:
     print("   Using TLS")
 else:
@@ -894,10 +930,10 @@ print("   Using   File: " + OTA_IMAGE_FILE)
 print("   extra debug : " + DEBUG_LOG_STRING)
 print(" company topic : " + COMPANY_TOPIC_PREPEND)
 
-PUBLISHER_JOB_REQUEST_TOPIC = COMPANY_TOPIC_PREPEND + "/" + KIT + "/" + PUBLISHER_LISTEN_TOPIC
+PUBLISHER_JOB_REQUEST_TOPIC = COMPANY_TOPIC_PREPEND + "/APP_" + KIT + "/" + PUBLISHER_LISTEN_TOPIC
 print("PUBLISHER_JOB_REQUEST_TOPIC   : " + PUBLISHER_JOB_REQUEST_TOPIC)
 
-PUBLISHER_DIRECT_REQUEST_TOPIC = COMPANY_TOPIC_PREPEND + "/" + KIT + "/" + PUBLISHER_DIRECT_TOPIC
+PUBLISHER_DIRECT_REQUEST_TOPIC = COMPANY_TOPIC_PREPEND + "/APP_" + KIT + "/" + PUBLISHER_DIRECT_TOPIC
 print("PUBLISHER_DIRECT_REQUEST_TOPIC: " + PUBLISHER_DIRECT_REQUEST_TOPIC)
 print("\n")
 
@@ -908,7 +944,12 @@ print("\n")
 #
 if TLS_ENABLED:
     BROKER_PORT = 8883
-    if BROKER_ADDRESS == MOSQUITTO_BROKER_ADDRESS:
+    if BROKER_ADDRESS == MOSQUITTO_BROKER_LOCAL_ADDRESS:
+        BROKER_PORT = 8884
+        ca_certs = "mosquitto_ca.crt"
+        certfile = "mosquitto_client.crt"
+        keyfile  = "mosquitto_client.key"
+    elif BROKER_ADDRESS == MOSQUITTO_BROKER_ADDRESS:
         BROKER_PORT = 8884
         ca_certs = "mosquitto.org.crt"
         certfile = "mosquitto_client.crt"

@@ -1424,7 +1424,6 @@ static cy_rslt_t cy_ota_open_filesystem(cy_ota_context_t *ctx)
         ctx->storage_open = 1;
     }
 
-
     return result;
 }
 
@@ -2063,6 +2062,13 @@ static void cy_ota_agent( cy_thread_arg_t arg )
                             new_state = CY_OTA_STATE_STORAGE_OPEN;
                             cy_ota_set_last_error(ctx, CY_RSLT_SUCCESS);
                             result = CY_RSLT_SUCCESS;
+                        }
+                        else
+                        {
+                            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "OTA Agent state :%s, Data download retry count exceeded CY_OTA_MAX_DOWNLOAD_TRIES(%d) !!!",
+                                                                    cy_ota_get_state_string(ctx->curr_state), CY_OTA_MAX_DOWNLOAD_TRIES);
+                            /* If Retry exceeds CY_OTA_MAX_DOWNLOAD_TRIES close the file system. */
+                            cy_ota_close_filesystem(ctx);
                         }
                     }
                     else if ( ( (ctx->curr_state == CY_OTA_STATE_JOB_CONNECT) ||
