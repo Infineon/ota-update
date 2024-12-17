@@ -488,19 +488,20 @@ static cy_rslt_t cy_ota_http_write_chunk_to_flash(cy_ota_context_t *ctx, cy_ota_
  */
 static void cy_ota_http_disconnect_callback(cy_http_client_t handle, cy_http_client_disconn_type_t type, void *user_data)
 {
+    cy_ota_context_t *ctx = (cy_ota_context_t *)user_data;
+
     /* for compiler warnings */
     (void)handle;
     (void)type;
-    (void)user_data;
-    /* HTTP is now Synchronous.
-     * The get_data loop does not check events anymore.
-     * The cy_ota_http_send_get_response() will return an error
-     * on a disconnect, so we do not need to do anything here.
-     * Keep this callback to give extra debug.
-     */
-    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, " HTTP disconnect callback");
-}
 
+    if(ctx != NULL)
+    {
+        /* HTTP Client library Deinit is not required as we are retrying connection. */
+        cy_ota_http_disconnect(ctx, false);
+    }
+
+    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "HTTP disconnect callback \n");
+}
 
 /**
  * @brief Connect to OTA Update server
@@ -512,11 +513,12 @@ static void cy_ota_http_disconnect_callback(cy_http_client_t handle, cy_http_cli
  *          - connect
  *
  * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   client_init - If true, Call HTTP Client init before connect.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
+cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx, bool client_init)
 {
     cy_rslt_t                    result;
     cy_awsport_ssl_credentials_t *security = NULL;
@@ -579,12 +581,19 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
         security = NULL;
     }
 
-    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "call cy_http_client_init()\n");
-    result = cy_http_client_init();
-    if(result != CY_RSLT_SUCCESS)
+    if(client_init == true)
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_init() failed %d.\n", __func__, result);
-        return CY_RSLT_OTA_ERROR_CONNECT;
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call cy_http_client_init()\n", __func__);
+        result = cy_http_client_init();
+        if(result != CY_RSLT_SUCCESS)
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() cy_http_client_init() failed %d.\n", __func__, result);
+            return CY_RSLT_OTA_ERROR_CONNECT;
+        }
+    }
+    else
+    {
+         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() Its retry so skip cy_http_client_init() this time \n", __func__);
     }
 
     /* create the client connection */
@@ -617,6 +626,7 @@ cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx)
                (server_info->host_name == NULL) ? "None" : server_info->host_name, server_info->port,
                (security == NULL) ? "No" : "Yes");
 
+    ctx->contact_server_retry_count = 0;
     return CY_RSLT_SUCCESS;
 }
 
@@ -1020,6 +1030,26 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
               (ctx->ota_storage_context.total_bytes_written < ctx->ota_storage_context.total_image_size) ) &&
             (range_end > range_start) )
     {
+        if(result == CY_RSLT_OTA_ERROR_GET_DATA)
+        {
+            /* HTTP Client library Deinit is not required as we are retrying connection. */
+            cy_ota_http_disconnect(ctx, false);
+        }
+
+        while((ctx->http.connection_established == false) && (ctx->contact_server_retry_count < CY_OTA_CONNECT_RETRIES))
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() Connection Not active Re-establishing connection. \n", __func__);
+            /* HTTP Client library Init is not required as its connection retry. */
+            result = cy_ota_http_connect(ctx, false);
+            ctx->contact_server_retry_count++;
+        }
+
+        if(result != CY_RSLT_SUCCESS)
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "%s() %d Connection Not active exiting Download... \n", __func__, __LINE__);
+            goto cleanup_and_exit;
+        }
+
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "while(ctx->ota_storage_context.total_bytes_written (%ld) < (%ld) ctx->total_image_size)\n", ctx->ota_storage_context.total_bytes_written, ctx->ota_storage_context.total_image_size);
         /* Send a request and wait for a response
          * The response call has a timeout value, so when we call waitbits_event below
@@ -1055,6 +1085,8 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
 
         if(result == CY_RSLT_SUCCESS)
         {
+            ctx->contact_server_retry_count = 0;
+
             /* set parameters for writing */
             http_chunk_info.offset     = ctx->ota_storage_context.total_bytes_written;
             http_chunk_info.buffer     = (uint8_t *)response.body;
@@ -1082,41 +1114,42 @@ cy_rslt_t cy_ota_http_get_data(cy_ota_context_t *ctx)
         {
             cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "cy_ota_http_send_get_response() ret:0x%lx start:0x%lx =  0x%lx\n", result, request.range_start, range_start);
             result = CY_RSLT_OTA_ERROR_GET_DATA;
-            break;  // drop out of while loop
         }
 
-
-        range_start = range_end + 1;
-        range_end += CY_OTA_CHUNK_SIZE;     /* end, not length */
-        if(range_end > ctx->ota_storage_context.total_image_size)
+        if(result == CY_RSLT_SUCCESS)
         {
-            range_end = ctx->ota_storage_context.total_image_size - 1;
-        }
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "After :: range_start: 0x%lx  end: 0x%lx total_image_size:0x%lx\n", range_start, range_end, ctx->ota_storage_context.total_image_size);
+            range_start = range_end + 1;
+            range_end += CY_OTA_CHUNK_SIZE;     /* end, not length */
+            if(range_end > ctx->ota_storage_context.total_image_size)
+            {
+                range_end = ctx->ota_storage_context.total_image_size - 1;
+            }
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "After :: range_start: 0x%lx  end: 0x%lx total_image_size:0x%lx\n", range_start, range_end, ctx->ota_storage_context.total_image_size);
 
-        /* Check the timing between packets */
-        if(ctx->packet_timeout_sec > 0 )
-        {
-            /* got some data - restart the download interval timer */
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() RESTART PACKET TIMER %ld secs\n", __func__, ctx->packet_timeout_sec);
-            cy_ota_start_http_timer(ctx, ctx->packet_timeout_sec, CY_OTA_EVENT_PACKET_TIMEOUT);
-        }
+            /* Check the timing between packets */
+            if(ctx->packet_timeout_sec > 0 )
+            {
+                /* got some data - restart the download interval timer */
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG2, "%s() RESTART PACKET TIMER %ld secs\n", __func__, ctx->packet_timeout_sec);
+                cy_ota_start_http_timer(ctx, ctx->packet_timeout_sec, CY_OTA_EVENT_PACKET_TIMEOUT);
+            }
 
-        /* Check for finished getting data */
-        if( (ctx->ota_storage_context.total_bytes_written > 0) &&
-             (ctx->ota_storage_context.total_bytes_written >= ctx->ota_storage_context.total_image_size) )
-        {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Done writing all data! %ld of %ld\n", ctx->ota_storage_context.total_bytes_written, ctx->ota_storage_context.total_image_size);
-            cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_DONE, 0);
-            /* stop timer asap */
-            cy_ota_stop_http_timer(ctx);
+            /* Check for finished getting data */
+            if( (ctx->ota_storage_context.total_bytes_written > 0) &&
+                 (ctx->ota_storage_context.total_bytes_written >= ctx->ota_storage_context.total_image_size) )
+            {
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Done writing all data! %ld of %ld\n", ctx->ota_storage_context.total_bytes_written, ctx->ota_storage_context.total_image_size);
+                cy_rtos_setbits_event(&ctx->ota_event, (uint32_t)CY_OTA_EVENT_DATA_DONE, 0);
+                /* stop timer asap */
+                cy_ota_stop_http_timer(ctx);
+            }
         }
-
     }   /* While not done loading */
 
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "%s() HTTP GET DATA DONE result: 0x%lx\n", __func__, result);
 
 cleanup_and_exit:
+    ctx->contact_server_retry_count = 0;
     ctx->sub_callback_mutex_inited = 0;
     cy_rtos_deinit_mutex(&ctx->sub_callback_mutex);
 
@@ -1131,11 +1164,12 @@ cleanup_and_exit:
  * @brief Disconnect from HTTP server
  *
  * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   client_deinit - If true Call HTTP Client deinit after disconnect.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx)
+cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx, bool client_deinit)
 {
     CY_OTA_CONTEXT_ASSERT(ctx);
 
@@ -1153,7 +1187,15 @@ cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx)
             {
                 cy_http_client_disconnect(old_conn);
                 cy_http_client_delete(old_conn);
-                cy_http_client_deinit();
+                if(client_deinit == true)
+                {
+                    cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() call cy_http_client_deinit() \n", __func__);
+                    cy_http_client_deinit();
+                }
+                else
+                {
+                     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_DEBUG, "%s() Its retry so skip cy_http_client_deinit() this time \n", __func__);
+                }
             }
         }
         ctx->http.connection_established = false;

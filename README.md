@@ -10,6 +10,7 @@ Supported devices:
 - CY8CPROTO-063-BLE
 - CYBLE-416045-EVAL
 - KIT_XMC72_EVK
+- KIT_XMC72_EVK_MUR_43439M2
 - CYW989829M2EVB-01
 - CYW955913EVK-01
 - CY8CEVAL-062S2-CYW955513SDM2WLIPA
@@ -26,17 +27,13 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 ## Library Versions
 
-| Library Version    | Supported MTB version    | Remarks                    |
-|--------------------| -------------------------|----------------------------|
-| ota-update v4.3.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
-| ota-update v4.2.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
-| ota-update v4.1.0  | ModusToolbox 3.2         | cysecuretools v5.1 or greater is required |
-| ota-update v4.0.0  | ModusToolbox 3.1         | cysecuretools v5.0 or greater is required |
-| ota-update v3.0.1  | ModusToolbox 3.1         | cysecuretools v4.2 or greater is required |
-| ota-update v3.0.0  | ModusToolbox 3.0         | cysecuretools v4.2 or greater is required |
-| ota-update v2.0.0  | ModusToolbox 3.0         | <b>NOT</b> backwards compatible with ModusToolbox 2.4 |
-| ota-update v1.0.0  | ModusToolbox 2.4         | Replaces anycloud-ota (all versions) |
-| anycloud-ota       | NA                       | Depricated                 |
+| Library Version  | Supported MTB version  | Remarks                    |
+|------------------| -----------------------|----------------------------|
+| ota-update v4.X  | ModusToolbox 3.3       | cysecuretools v5.1 or greater is required |
+| ota-update v3.X  | ModusToolbox 3.0       | cysecuretools v4.2 or greater is required |
+| ota-update v2.X  | ModusToolbox 3.0       | <b>NOT</b> backwards compatible with ModusToolbox 2.4 |
+| ota-update v1.X  | ModusToolbox 2.4       | Replaces anycloud-ota (all versions) |
+| anycloud-ota     | NA                     | Depricated                 |
 
 ## 1. Enabling OTA in an Application
 
@@ -98,16 +95,16 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
     ```
 
-- For MCUBootloader-based OTA code examples on platforms like PSoC,20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
+- For MCUBootloader-based OTA code examples on platforms like PSoC6, 20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
     ```
     https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
     ```
 
 - For WiFi-based OTA code examples on platforms like PSoC6, Users need to create an *wifi-core-freertos-lwip-mbedtls.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-freertos-lwip-mbedtls.mtb* should be as follows:
     ```
-    https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v1.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v1.X
+    https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v2.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v2.X
     ```
-    **NOTE**: ota-update library currently supports *wifi-core-freertos-lwip-mbedtls/latest-v1.X* only.
+    **NOTE**: For the PSoC64 platform, the ota-update library is currently only supported with *wifi-core-freertos-lwip-mbedtls/latest-v1.X*.
 
 - For WiFi-based OTA code examples on platforms like CYW955913EVK-01, Users need to create an *wifi-core-threadx-cat5.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-threadx-cat5.mtb* should be as follows:
     ```
@@ -125,7 +122,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
 
 - For BLE-based OTA code examples on platforms like PSoC6, 20829 and 89829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
     ```
-    https://github.com/Infineon/btstack-integration#latest-v4.X#$$ASSET_REPO$$/btstack-integration/latest-v4.X
+    https://github.com/Infineon/btstack-integration#latest-v5.X#$$ASSET_REPO$$/btstack-integration/latest-v5.X
     ```
     **NOTE**: For BLE-based OTA code examples on platforms like CYW955913EVK-01, required BT libraries are available in ROM. So no need to explicitly pull these libraries.
 
@@ -511,6 +508,7 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 - [EZ-BLE Arduino Evaluation Board](https://www.infineon.com/cms/en/product/evaluation-boards/cyble-416045-eval/) (CYBLE-416045-EVAL)
 - [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVK-02)
 - [XMC7200 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK)
+- [XMC7200 Evaluation Kit with 43439M2](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK_MUR_43439M2)
 - [AIROC™ CYW989820M2EVB-01 Evaluation kit](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le/cyw20829/)(CYW989820M2EVB-01)
 - [CYW955913EVK-01 Wi-Fi Bluetooth&reg; Prototyping Kit (CYW955913EVK-01)](https://www.infineon.com/CYW955913EVK-01)
 

@@ -129,10 +129,12 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#ga4c493ffd9af7da17c2551699bd0b1275">CY_OTA_JSON_DOC_BUFF_SIZE</a>&#160;&#160;&#160;(1024)</td></tr>
 <tr class="memdesc:ga4c493ffd9af7da17c2551699bd0b1275"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of buffer for JSON update document. <br /></td></tr>
 <tr class="separator:ga4c493ffd9af7da17c2551699bd0b1275"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad8e421e4ebd8c8880843b63c1bf6c6f1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gad8e421e4ebd8c8880843b63c1bf6c6f1"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#gad8e421e4ebd8c8880843b63c1bf6c6f1">CY_OTA_CHUNK_SIZE</a>&#160;&#160;&#160;(4096)</td></tr>
-<tr class="memdesc:gad8e421e4ebd8c8880843b63c1bf6c6f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of data chunks for each transfer. <br /></td></tr>
+<tr class="memitem:gad8e421e4ebd8c8880843b63c1bf6c6f1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#gad8e421e4ebd8c8880843b63c1bf6c6f1">CY_OTA_CHUNK_SIZE</a>&#160;&#160;&#160;(4096)</td></tr>
+<tr class="memdesc:gad8e421e4ebd8c8880843b63c1bf6c6f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of data chunks for each transfer.  <a href="#gad8e421e4ebd8c8880843b63c1bf6c6f1">More...</a><br /></td></tr>
 <tr class="separator:gad8e421e4ebd8c8880843b63c1bf6c6f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0cd77637ad39eff0d6e86c42709b680a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#ga0cd77637ad39eff0d6e86c42709b680a">CY_OTA_CHUNK_HEADER_SIZE</a>&#160;&#160;&#160;(1024)</td></tr>
+<tr class="memdesc:ga0cd77637ad39eff0d6e86c42709b680a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of data chunks header for each transfer.  <a href="#ga0cd77637ad39eff0d6e86c42709b680a">More...</a><br /></td></tr>
+<tr class="separator:ga0cd77637ad39eff0d6e86c42709b680a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad528bd1c223ff089ca1416f3530c6cd1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gad528bd1c223ff089ca1416f3530c6cd1"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__ota__typedefs.html#gad528bd1c223ff089ca1416f3530c6cd1">CY_OTA_HTTP_FILENAME_SIZE</a>&#160;&#160;&#160;(256)</td></tr>
 <tr class="memdesc:gad528bd1c223ff089ca1416f3530c6cd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the string for the HTTP file name. <br /></td></tr>
@@ -535,6 +537,36 @@ Enumerations</h2></td></tr>
 
 <p>Macro combo to add quotes around a define. </p>
 <p>Used to define a string value for CY_TARGET_BOARD. </p>
+
+</div>
+</div>
+<a class="anchor" id="gad8e421e4ebd8c8880843b63c1bf6c6f1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CY_OTA_CHUNK_SIZE&#160;&#160;&#160;(4096)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Size of data chunks for each transfer. </p>
+<p>Override in cy_ota_config.h. </p>
+
+</div>
+</div>
+<a class="anchor" id="ga0cd77637ad39eff0d6e86c42709b680a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CY_OTA_CHUNK_HEADER_SIZE&#160;&#160;&#160;(1024)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Size of data chunks header for each transfer. </p>
+<p>Override in cy_ota_config.h. </p>
 
 </div>
 </div>

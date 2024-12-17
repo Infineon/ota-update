@@ -118,6 +118,16 @@ extern "C" {
 #define CY_OTA_MAX_DOWNLOAD_TRIES           (3)             /* 3 download OTA Image retries */
 
 /**
+ * @brief Size of data chunks for each transfer.
+ */
+#define CY_OTA_CHUNK_SIZE                   (4096)
+
+/**
+ * @brief Size of data chunks header for each transfer.
+ */
+#define CY_OTA_CHUNK_HEADER_SIZE            (1024)
+
+/**
  * @brief HTTP timeout for sending messages
  *
  */

@@ -174,9 +174,8 @@ typedef enum
  * @brief HTTP context data
  */
 typedef struct cy_ota_http_context_s {
-    bool                connection_from_app;                        /**< true if HTTP connection passed in from App */
-    bool                connection_established;                     /**< true if HTTP connection established        */
-
+    bool                connection_from_app;                    /**< true if HTTP connection passed in from App */
+    bool                connection_established;                 /**< true if HTTP connection established        */
     cy_http_client_t    connection;                             /**< HTTP connection instance                   */
 
     cy_timer_t          http_timer;                             /**< For detecting early end of download        */
@@ -377,7 +376,7 @@ typedef struct cy_ota_context_s
     char                        job_doc[CY_OTA_JSON_DOC_BUFF_SIZE];         /**< Message to parse                               */
     cy_ota_job_parsed_info_t    parsed_job;                                 /**< Parsed Job JSON info                           */
 
-    uint8_t                     chunk_buffer[CY_OTA_CHUNK_SIZE + 512];    /**< Store Chunked data here */
+    uint8_t                     chunk_buffer[CY_OTA_CHUNK_SIZE + CY_OTA_CHUNK_HEADER_SIZE];    /**< Store Chunked data here     */
 #endif
     cy_ota_cb_struct_t          callback_data;              /**< For passing data to callback function                          */
 
@@ -445,11 +444,12 @@ cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *netw
  * @brief Connect to OTA Update server
  *
  * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   client_init - If true, Call HTTP Client init before connect. This parameter is only for OTA over HTTP.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx);
+cy_rslt_t cy_ota_http_connect(cy_ota_context_t *ctx, bool client_init);
 cy_rslt_t cy_ota_mqtt_connect(cy_ota_context_t *ctx);
 
 /**
@@ -482,11 +482,12 @@ cy_rslt_t cy_ota_mqtt_get_data(cy_ota_context_t *ctx);
  * @brief Disconnect from Broker/Server
  *
  * @param[in]   ctx - pointer to OTA agent context @ref cy_ota_context_t
+ * @param[in]   client_deinit - If true Call HTTP Client deinit after disconnect. This parameter is only for OTA over HTTP.
  *
  * @return  CY_RSLT_SUCCESS
  *          CY_RSLT_OTA_ERROR_GENERAL
  */
-cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx);
+cy_rslt_t cy_ota_http_disconnect(cy_ota_context_t *ctx, bool client_deinit);
 cy_rslt_t cy_ota_mqtt_disconnect(cy_ota_context_t *ctx);
 
 /**

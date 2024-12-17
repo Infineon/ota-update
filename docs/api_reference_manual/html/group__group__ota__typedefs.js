@@ -7,6 +7,7 @@ var group__group__ota__typedefs =
     [ "CY_OTA_MQTT_UNIQUE_TOPIC_BUFF_SIZE", "group__group__ota__typedefs.html#ga3cd431c05dec3136ee112edb90cce01f", null ],
     [ "CY_OTA_JSON_DOC_BUFF_SIZE", "group__group__ota__typedefs.html#ga4c493ffd9af7da17c2551699bd0b1275", null ],
     [ "CY_OTA_CHUNK_SIZE", "group__group__ota__typedefs.html#gad8e421e4ebd8c8880843b63c1bf6c6f1", null ],
+    [ "CY_OTA_CHUNK_HEADER_SIZE", "group__group__ota__typedefs.html#ga0cd77637ad39eff0d6e86c42709b680a", null ],
     [ "CY_OTA_HTTP_FILENAME_SIZE", "group__group__ota__typedefs.html#gad528bd1c223ff089ca1416f3530c6cd1", null ],
     [ "CY_OTA_MQTT_MAGIC", "group__group__ota__typedefs.html#ga1c07f2e527b6ee3653960f93cd90092d", null ],
     [ "NOTIFICATION_RESPONSE_NO_UPDATES", "group__group__ota__typedefs.html#ga679088099bc7020dd2e19df18c507fc0", null ],

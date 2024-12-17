@@ -26,6 +26,7 @@ var searchData=
   ['cy_5fota_5fcb_5frslt_5fota_5fstop',['CY_OTA_CB_RSLT_OTA_STOP',['../group__group__ota__typedefs.html#gga83280df2ca46db528cc12901d949fd63ab33edc4fae91e1c99f93933fc3a06bd5',1,'cy_ota_api.h']]],
   ['cy_5fota_5fcb_5fstruct_5ft',['cy_ota_cb_struct_t',['../structcy__ota__cb__struct__t.html',1,'']]],
   ['cy_5fota_5fcheck_5ftime_5fsecs',['CY_OTA_CHECK_TIME_SECS',['../group__group__ota__typedefs.html#ga857fb18dbbc8e462f9eefa30d57afefb',1,'cy_ota_defaults.h']]],
+  ['cy_5fota_5fchunk_5fheader_5fsize',['CY_OTA_CHUNK_HEADER_SIZE',['../group__group__ota__typedefs.html#ga0cd77637ad39eff0d6e86c42709b680a',1,'cy_ota_api.h']]],
   ['cy_5fota_5fchunk_5fsize',['CY_OTA_CHUNK_SIZE',['../group__group__ota__typedefs.html#gad8e421e4ebd8c8880843b63c1bf6c6f1',1,'cy_ota_api.h']]],
   ['cy_5fota_5fconnect_5fretries',['CY_OTA_CONNECT_RETRIES',['../group__group__ota__typedefs.html#gaf05c3cff9a4bcdf5d63e5f5d0962f25a',1,'cy_ota_defaults.h']]],
   ['cy_5fota_5fconnection_5fble',['CY_OTA_CONNECTION_BLE',['../group__group__ota__typedefs.html#ggabc03646427dec963bef37cb5dbb550faaa6e2c528481c3eb950755dd86dfb272f',1,'cy_ota_api.h']]],

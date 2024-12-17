@@ -1498,7 +1498,9 @@ static cy_rslt_t cy_ota_connect(cy_ota_context_t *ctx)
             cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "%s() HTTP Already connected.\n", __func__);
             return CY_RSLT_OTA_ALREADY_CONNECTED;
         }
-        result = cy_ota_http_connect(ctx);
+
+        /* HTTP Client library Init required during connect.  */
+        result = cy_ota_http_connect(ctx, true);
     }
     else
 #endif
@@ -1555,7 +1557,8 @@ static cy_rslt_t cy_ota_disconnect(cy_ota_context_t *ctx)
             if ( (ctx->curr_connect_type == CY_OTA_CONNECTION_HTTP) ||
                   (ctx->curr_connect_type == CY_OTA_CONNECTION_HTTPS) )
         {
-            result = cy_ota_http_disconnect(ctx);
+            /* HTTP Client library De-Init required. */
+            result = cy_ota_http_disconnect(ctx, true);
         }
 #endif
         cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "%s %s Disconnected.\n",

@@ -6,6 +6,11 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.3.3
+
+- Bug fixes.
+- Minor Documentation updates.
+
 ### v4.3.2
 
 - Bug fixes.
@@ -91,11 +96,11 @@ This version of the library was validated for compatibility with the following s
 
 | Software and Tools                                        | Version |
 | :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.2     |
-| - ModusToolbox&trade; Device Configurator                 | 4.20    |
-| - ModusToolbox&trade; Bluetooth Configurator              | 2.90    |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.20.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.12.0  |
+| ModusToolbox&trade; Software Environment                  | 3.3     |
+| - ModusToolbox&trade; Device Configurator                 | 5.10    |
+| - ModusToolbox&trade; Bluetooth Configurator              | 3.00    |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.30.0  |
+| Peripheral Driver Library (PDL CAT1)                      | 3.14    |
 | GCC Compiler                                              | 11.3.1  |
-| IAR Compiler                                              | 9.40.2  |
-| Arm Compiler 6                                            | 6.16    |
+| IAR Compiler                                              | 9.50.2  |
+| Arm Compiler 6                                            | 6.22    |

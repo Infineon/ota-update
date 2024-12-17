@@ -250,8 +250,21 @@ extern "C" {
 
 /**
  * @brief Size of data chunks for each transfer.
+ *
+ * Override in cy_ota_config.h.
  */
+#ifndef CY_OTA_CHUNK_SIZE
 #define CY_OTA_CHUNK_SIZE                       (4096)
+#endif
+
+/**
+ * @brief Size of data chunks header for each transfer.
+ *
+ * Override in cy_ota_config.h.
+ */
+#ifndef CY_OTA_CHUNK_HEADER_SIZE
+#define CY_OTA_CHUNK_HEADER_SIZE                (1024)
+#endif
 
 /**
  * @brief Size of the string for the HTTP file name.
