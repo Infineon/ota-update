@@ -29,7 +29,7 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 | Library Version  | Supported MTB version  | Remarks                    |
 |------------------| -----------------------|----------------------------|
-| ota-update v4.X  | ModusToolbox 3.3       | cysecuretools v5.1 or greater is required |
+| ota-update v4.X  | ModusToolbox 3.5       | cysecuretools v5.1 or greater is required |
 | ota-update v3.X  | ModusToolbox 3.0       | cysecuretools v4.2 or greater is required |
 | ota-update v2.X  | ModusToolbox 3.0       | <b>NOT</b> backwards compatible with ModusToolbox 2.4 |
 | ota-update v1.X  | ModusToolbox 2.4       | Replaces anycloud-ota (all versions) |
@@ -122,7 +122,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
 
 - For BLE-based OTA code examples on platforms like PSoC6, 20829 and 89829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
     ```
-    https://github.com/Infineon/btstack-integration#latest-v5.X#$$ASSET_REPO$$/btstack-integration/latest-v5.X
+    https://github.com/Infineon/btstack-integration#latest-v6.X#$$ASSET_REPO$$/btstack-integration/latest-v6.X
     ```
     **NOTE**: For BLE-based OTA code examples on platforms like CYW955913EVK-01, required BT libraries are available in ROM. So no need to explicitly pull these libraries.
 
@@ -157,16 +157,16 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     typedef struct cy_ota_storage_interface_s
     {
-        cy_ota_file_open           ota_file_open;         /**< Creates and open new receive file for the data chunks as they come in. */
-        cy_ota_file_read           ota_file_read;         /**< Reads the flash data starting from the given offset.                   */
-        cy_ota_file_write          ota_file_write;        /**< Write a data to the flash at the given offset.                         */
-        cy_ota_file_close          ota_file_close;        /**< Close the underlying receive file in the specified OTA context.        */
-        cy_ota_file_verify         ota_file_verify;       /**< Authenticate received OTA update file specified in the OTA context.    */
-        cy_ota_file_validate       ota_file_validate;     /**< The application has validated the new OTA image.                       */
-        cy_ota_file_get_app_info   ota_file_get_app_info; /**< Get Application info like Application version and Application ID.      */
+        cy_ota_file_open           ota_file_open;             /**< Creates and open new receive file for the data chunks as they come in. */
+        cy_ota_file_read           ota_file_read;             /**< Reads the flash data starting from the given offset.                   */
+        cy_ota_file_write          ota_file_write;            /**< Write a data to the flash at the given offset.                         */
+        cy_ota_file_close          ota_file_close;            /**< Close the underlying receive file in the specified OTA context.        */
+        cy_ota_file_verify         ota_file_verify;           /**< Authenticate received OTA update file specified in the OTA context.    */
+        cy_ota_file_set_pending    ota_file_set_boot_pending; /**< To Mark the image in the inactive slot as pending.                     */
+        cy_ota_file_validate       ota_file_validate;         /**< The application has validated the new OTA image.                       */
+        cy_ota_file_get_app_info   ota_file_get_app_info;     /**< Get Application info like Application version and Application ID.      */
     } cy_ota_storage_interface_t;
     ```
-
 - For more details like storage operation callbacks syntaxes, refer to "\<ota-update library\>include/cy_ota_api.h" .
 
 - Parameters such as MQTT Broker/HTTP server and credentials along with memory operation callbacks are passed into `cy_ota_agent_start()`.

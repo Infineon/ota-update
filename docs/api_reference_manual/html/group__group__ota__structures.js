@@ -37,7 +37,11 @@ var group__group__ota__structures =
       [ "app_id", "structcy__ota__app__info__t.html#a0c596f42b8fa1736cf1cbd7787793635", null ],
       [ "major", "structcy__ota__app__info__t.html#a7a3f1a14f143dbd2845b9fe4ff43e09e", null ],
       [ "minor", "structcy__ota__app__info__t.html#a9bc84ecaa893000ce8fd308c4807e058", null ],
-      [ "build", "structcy__ota__app__info__t.html#a54e129e6fa9ae27551ce645c42a3918c", null ]
+      [ "build", "structcy__ota__app__info__t.html#a54e129e6fa9ae27551ce645c42a3918c", null ],
+      [ "revision", "structcy__ota__app__info__t.html#a8d074972dcf1d154031b23debedf7a4e", null ],
+      [ "slot", "structcy__ota__app__info__t.html#a91fb04da05781a33dc84936ed5f2f961", null ],
+      [ "company_id", "structcy__ota__app__info__t.html#ae8ff214c12deb6e4ca4d2a150e107caa", null ],
+      [ "product_id", "structcy__ota__app__info__t.html#af1a5cd63989e3ff89fdba351a443b425", null ]
     ] ],
     [ "cy_ota_network_params_t", "structcy__ota__network__params__t.html", [
       [ "initial_connection", "structcy__ota__network__params__t.html#abcc290be8049d49f332165ac7aafb3e0", null ],
@@ -56,6 +60,7 @@ var group__group__ota__structures =
       [ "ota_file_write", "structcy__ota__storage__interface__t.html#a5c08e41b17f429a60b9fd8c2a82a088d", null ],
       [ "ota_file_close", "structcy__ota__storage__interface__t.html#a9124edbf47744ce84391554385b98fdd", null ],
       [ "ota_file_verify", "structcy__ota__storage__interface__t.html#abdb82923db46358df26c79864b54fa4c", null ],
+      [ "ota_file_set_boot_pending", "structcy__ota__storage__interface__t.html#a4083fc1b8933549753c0e955a158b555", null ],
       [ "ota_file_validate", "structcy__ota__storage__interface__t.html#a32abdb8e1dc250268e41a78552042315", null ],
       [ "ota_file_get_app_info", "structcy__ota__storage__interface__t.html#a28c36929f2dd4b3649dabf0cb74ffb05", null ]
     ] ],

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2025, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -186,6 +186,7 @@ extern "C" {
 #define CY_RSLT_OTA_ERROR_APP_RETURNED_STOP     ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 26) ) /**< Callback returned Stop OTA download.  */
 #define CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES  ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 27) ) /**< Number of retries exceeded.           */
 #define CY_RSLT_OTA_ERROR_TRANSPORT_UNSUPPORTED ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 28) ) /**< HTTP, MQTT or Bluetooth® not supported in this build. */
+#define CY_RSLT_OTA_ERROR_NO_IMAGE_INFO         ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 29) ) /**< No OTA image information.             */
 
 #if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
 #define CY_RSLT_OTA_ERROR_BLE_GENERAL           ( (cy_rslt_t)(CY_RSLT_OTA_ERROR_BASE + 32) ) /**< General Bluetooth® error.                     */
@@ -925,10 +926,14 @@ typedef struct cy_ota_cb_struct_s
  */
 typedef struct cy_ota_app_info_s
 {
-    uint16_t app_id;    /**< Application ID.            */
-    uint8_t  major;     /**< Application major version. */
-    uint8_t  minor;     /**< Application major version. */
-    uint8_t  build;     /**< Application build number.  */
+    uint16_t app_id;     /**< Application ID.             */
+    uint8_t  major;      /**< Application major version.  */
+    uint8_t  minor;      /**< Application major version.  */
+    uint8_t  build;      /**< Application build number.   */
+    uint8_t  revision;   /**< Application revision number.*/
+    uint8_t  slot;       /**< Application slot number.    */
+    uint16_t company_id; /**< Company ID.                 */
+    uint16_t product_id; /**< Product ID.                 */
 } cy_ota_app_info_t;
 
 /** \} group_ota_structures */
@@ -1023,6 +1028,19 @@ typedef cy_rslt_t ( * cy_ota_file_close ) ( cy_ota_storage_context_t *storage_pt
 typedef cy_rslt_t ( * cy_ota_file_verify ) ( cy_ota_storage_context_t *storage_ptr );
 
 /**
+ * @brief Marks the image in the secondary/inactive slot as pending.
+ * On the next reboot, the bootloader expected to perform a one-time boot of the the secondary slot image.
+ *
+ * @note ota-update library expects user to implement this callback function.
+ *
+ * @param[in]   storage_ptr     Pointer to the OTA Agent storage context @ref cy_ota_storage_context_t
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_VERIFY
+ */
+typedef cy_rslt_t ( * cy_ota_file_set_pending ) ( cy_ota_storage_context_t *storage_ptr );
+
+/**
  * @brief The application has validated the new OTA image.
  *
  * @note This call must be after reboot and updated image is booted.
@@ -1048,7 +1066,7 @@ typedef cy_rslt_t ( * cy_ota_file_validate ) ( uint16_t app_id );
  * @return           CY_RSLT_SUCCESS
  *                   CY_RSLT_OTA_ERROR_GENERAL
  */
-typedef cy_rslt_t ( * cy_ota_file_get_app_info ) ( void* file_des, cy_ota_app_info_t *app_info );
+typedef cy_rslt_t ( * cy_ota_file_get_app_info ) ( uint16_t slot_id, uint16_t image_num, cy_ota_app_info_t *app_info );
 
 /** \} group_ota_callback */
 
@@ -1101,13 +1119,14 @@ typedef struct cy_ota_agent_params_s
  */
 typedef struct cy_ota_storage_interface_s
 {
-    cy_ota_file_open           ota_file_open;          /**< To open OTA application image file.          */
-    cy_ota_file_read           ota_file_read;          /**< To read OTA application image from storage.  */
-    cy_ota_file_write          ota_file_write;         /**< To write OTA application image to storage.   */
-    cy_ota_file_close          ota_file_close;         /**< To close OTA application image file.         */
-    cy_ota_file_verify         ota_file_verify;        /**< To verify downloaded OTA application image.  */
-    cy_ota_file_validate       ota_file_validate;      /**< To validate current application.             */
-    cy_ota_file_get_app_info   ota_file_get_app_info;  /**< To get application information.              */
+    cy_ota_file_open           ota_file_open;             /**< To open OTA application image file.          */
+    cy_ota_file_read           ota_file_read;             /**< To read OTA application image from storage.  */
+    cy_ota_file_write          ota_file_write;            /**< To write OTA application image to storage.   */
+    cy_ota_file_close          ota_file_close;            /**< To close OTA application image file.         */
+    cy_ota_file_verify         ota_file_verify;           /**< To verify downloaded OTA application image.  */
+    cy_ota_file_set_pending    ota_file_set_boot_pending; /**< To Mark the image in the inactive slot as pending. */
+    cy_ota_file_validate       ota_file_validate;         /**< To validate current application.             */
+    cy_ota_file_get_app_info   ota_file_get_app_info;     /**< To get application information.              */
 } cy_ota_storage_interface_t;
 
 /** \} group_ota_structures */
@@ -1243,20 +1262,18 @@ const char *cy_ota_get_state_string(cy_ota_agent_state_t state_value);
  */
 const char *cy_ota_get_callback_reason_string(cy_ota_cb_reason_t reason);
 
-#if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
-
 /**
- * @brief Prepare for Bluetooth® OTA Download
+ * @brief Prepare for OTA Download
  *
  * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  *
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_STORAGE
  */
-cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr);
+cy_rslt_t cy_ota_update_prepare(cy_ota_context_ptr ctx_ptr);
 
 /**
- * @brief Bluetooth® OTA Download starting
+ * @brief OTA Download starting
  *
  * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   update_file_size        OTA update file size.
@@ -1264,10 +1281,10 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr);
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_STORAGE
  */
-cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, uint32_t update_file_size);
+cy_rslt_t cy_ota_update_download_start(cy_ota_context_ptr ctx_ptr, uint32_t update_file_size);
 
 /**
- * @brief Bluetooth® OTA data write
+ * @brief OTA data write
  *
  * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   data_buf                Pointer to data buffer.
@@ -1277,10 +1294,10 @@ cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, uint32_t update_file_s
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_STORAGE
  */
-cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_buf, uint16_t len, uint16_t offset);
+cy_rslt_t cy_ota_update_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_buf, uint16_t len, uint16_t offset);
 
 /**
- * @brief Bluetooth® OTA Verify download
+ * @brief OTA Verify download
  *
  * @param[in]   ctx_ptr                   Pointer to OTA agent context @ref cy_ota_context_ptr
  * @param[in]   update_file_crc           32 Bit CRC sent from the Host.
@@ -1289,17 +1306,82 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
  * @return      CY_RSLT_SUCCESS
  *              CY_RSLT_OTA_ERROR_BLE_VERIFY
  */
-cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t update_file_crc, bool verify_crc_or_signature);
+cy_rslt_t cy_ota_update_verify(cy_ota_context_ptr ctx_ptr, uint32_t update_file_crc, bool verify_crc_or_signature);
 
 /**
- * @brief Abort Bluetooth® OTA download
+ * @brief OTA Set boot pending
+ *
+ * @param[in]   ctx_ptr                   Pointer to OTA agent context @ref cy_ota_context_ptr
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+cy_rslt_t cy_ota_update_image_set_pending(cy_ota_context_ptr ctx_ptr);
+
+/**
+ * @brief Abort OTA download
  *
  * @param[in]   ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
  *
  * @return      CY_RSLT_SUCCESS
  */
-cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr);
+cy_rslt_t cy_ota_update_abort(cy_ota_context_ptr ctx_ptr);
 
+#if defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN)
+/**
+ * @brief Prepare for OTA Download
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+#define cy_ota_ble_download_prepare    cy_ota_update_prepare
+
+/**
+ * @brief OTA Download starting
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   update_file_size        OTA update file size.
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+#define cy_ota_ble_download            cy_ota_update_download_start
+
+/**
+ * @brief OTA data write
+ *
+ * @param[in]   ctx_ptr                 Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   data_buf                Pointer to data buffer.
+ * @param[in]   len                     Data length.
+ * @param[in]   offset                  Data buffer offset.
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_STORAGE
+ */
+#define cy_ota_ble_download_write      cy_ota_update_write
+
+/**
+ * @brief OTA Verify download
+ *
+ * @param[in]   ctx_ptr                   Pointer to OTA agent context @ref cy_ota_context_ptr
+ * @param[in]   update_file_crc           32 Bit CRC sent from the Host.
+ * @param[in]   verify_crc_or_signature   OTA library need to verify CRC.
+ *
+ * @return      CY_RSLT_SUCCESS
+ *              CY_RSLT_OTA_ERROR_BLE_VERIFY
+ */
+#define cy_ota_ble_download_verify     cy_ota_update_verify
+
+/**
+ * @brief Abort OTA download
+ *
+ * @param[in]   ctx_ptr     Pointer to OTA agent context @ref cy_ota_context_ptr
+ *
+ * @return      CY_RSLT_SUCCESS
+ */
+#define cy_ota_ble_download_abort      cy_ota_update_abort
 #endif  /* defined(COMPONENT_OTA_BLUETOOTH) || defined(CY_DOXYGEN) */
 
 /** \} group_ota_functions */

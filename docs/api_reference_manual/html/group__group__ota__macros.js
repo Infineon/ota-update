@@ -29,6 +29,7 @@ var group__group__ota__macros =
     [ "CY_RSLT_OTA_ERROR_APP_RETURNED_STOP", "group__group__ota__macros.html#gabca120598cf31481bf9024330d4a26a6", null ],
     [ "CY_RSLT_OTA_ERROR_APP_EXCEEDED_RETRIES", "group__group__ota__macros.html#ga3f432649d0f4a00f60138d4b8401c380", null ],
     [ "CY_RSLT_OTA_ERROR_TRANSPORT_UNSUPPORTED", "group__group__ota__macros.html#gaaeddb7ad91ae3202b50a8adcf4d2ff02", null ],
+    [ "CY_RSLT_OTA_ERROR_NO_IMAGE_INFO", "group__group__ota__macros.html#ga5b1815cd81c137b4f0f238ef707e2b06", null ],
     [ "CY_RSLT_OTA_ERROR_BLE_GENERAL", "group__group__ota__macros.html#gab1865224e6f8786ef834d8222b1d80f4", null ],
     [ "CY_RSLT_OTA_ERROR_BLE_VERIFY", "group__group__ota__macros.html#ga4fb4289e114ccd9c3a11bb8602544ce8", null ],
     [ "CY_RSLT_OTA_ERROR_BLE_STORAGE", "group__group__ota__macros.html#ga4ddc0b5f9c10214461f61c06aae98beb", null ],

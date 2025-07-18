@@ -1,5 +1,5 @@
 /*
- * Copyright 2024, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2025, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -87,7 +87,7 @@
  *
  **********************************************************************/
 
-static uint32_t cy_ota_ble_crc32_update(uint32_t prev_crc32, const uint8_t* buffer, uint16_t buffer_length)
+static uint32_t cy_ota_update_get_calculated_crc32(uint32_t prev_crc32, const uint8_t* buffer, uint16_t buffer_length)
 {
     uint32_t crc32 = ~prev_crc32;
     uint16_t i;
@@ -125,7 +125,7 @@ cy_rslt_t cy_ota_ble_validate_network_params(const cy_ota_network_params_t *netw
 }
 
 
-cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr)
+cy_rslt_t cy_ota_update_prepare(cy_ota_context_ptr ctx_ptr)
 {
     cy_rslt_t               result;
     cy_ota_context_t        *ota_ctx = (cy_ota_context_t *)ctx_ptr;
@@ -149,7 +149,7 @@ cy_rslt_t cy_ota_ble_download_prepare(cy_ota_context_ptr ctx_ptr)
     return result;
 }
 
-cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, uint32_t update_file_size)
+cy_rslt_t cy_ota_update_download_start(cy_ota_context_ptr ctx_ptr, uint32_t update_file_size)
 {
     cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
@@ -167,7 +167,7 @@ cy_rslt_t cy_ota_ble_download(cy_ota_context_ptr ctx_ptr, uint32_t update_file_s
     return CY_RSLT_SUCCESS;
 }
 
-cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_buf, uint16_t len, uint16_t offset)
+cy_rslt_t cy_ota_update_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_buf, uint16_t len, uint16_t offset)
 {
     cy_ota_storage_write_info_t     chunk_info;
     cy_rslt_t                       result;
@@ -224,7 +224,7 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
     }
 
     /* update crc or secure signature as we pull in the data */
-    ota_ctx->ble.crc32 = cy_ota_ble_crc32_update(ota_ctx->ble.crc32, (const uint8_t*)((uint32_t)data_buf + offset), len);
+    ota_ctx->ble.crc32 = cy_ota_update_get_calculated_crc32(ota_ctx->ble.crc32, (const uint8_t*)((uint32_t)data_buf + offset), len);
     ota_ctx->ble.file_bytes_written += chunk_info.size;
 
     cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "   Downloaded 0x%lx of 0x%lx (%d%%)\n", ota_ctx->ota_storage_context.total_bytes_written, ota_ctx->ota_storage_context.total_image_size, ota_ctx->ble.percent);
@@ -232,27 +232,34 @@ cy_rslt_t cy_ota_ble_download_write(cy_ota_context_ptr ctx_ptr, uint8_t *data_bu
     return CY_RSLT_SUCCESS;
 }
 
-cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_crc32, bool verify_crc_or_signature)
+cy_rslt_t cy_ota_update_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_crc32, bool verify_crc_or_signature)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
     cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
-    (void)verify_crc_or_signature;
 
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
 
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_VERIFY);
 
-    /* non- secure here, check CRC */
-    ota_ctx->ble.received_crc32 = final_crc32;
-    cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Calculated CRC : 0x%lx\n", final_crc32);
-    if(ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
+    if(verify_crc_or_signature)
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
-        result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
+        /* non- secure here, check CRC */
+        ota_ctx->ble.received_crc32 = final_crc32;
+        cy_log_msg(CYLF_MIDDLEWARE, CY_LOG_INFO, "Calculated CRC : 0x%lx\n", ota_ctx->ble.crc32);
+        if(ota_ctx->ble.crc32 != ota_ctx->ble.received_crc32)
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "     check CRC FAILED 0x%lx != 0x%lx\n", ota_ctx->ble.crc32, ota_ctx->ble.received_crc32);
+            result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
+        }
+        else
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
+            result = CY_RSLT_SUCCESS;
+        }
     }
     else
     {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "     Bluetooth(r) CRC Verification Succeeded!\n");
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_NOTICE, "Skip CRC/Signature verification\n");
         result = CY_RSLT_SUCCESS;
     }
 
@@ -277,7 +284,35 @@ cy_rslt_t cy_ota_ble_download_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_
     return result;
 }
 
-cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr)
+cy_rslt_t cy_ota_update_image_set_pending(cy_ota_context_ptr ctx_ptr)
+{
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+    cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
+
+    CY_OTA_CONTEXT_ASSERT(ota_ctx);
+
+    /* Call user image verify callback API. */
+    if(ota_ctx->storage_iface.ota_file_set_boot_pending != NULL)
+    {
+        result = ota_ctx->storage_iface.ota_file_set_boot_pending(&(ota_ctx->ota_storage_context));
+        if(result != CY_RSLT_SUCCESS)
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "\nStorage verify API failed: 0x%lx", result);
+            result = CY_RSLT_OTA_ERROR_BLE_STORAGE;
+            cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
+        }
+    }
+    else
+    {
+        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "ota_file_set_boot_pending not initialized!\n", result);
+    }
+
+    cy_ota_set_state(ota_ctx, CY_OTA_STATE_OTA_COMPLETE);
+
+    return result;
+}
+
+cy_rslt_t cy_ota_update_abort(cy_ota_context_ptr ctx_ptr)
 {
     cy_ota_context_t *ota_ctx = (cy_ota_context_t *)ctx_ptr;
 
@@ -288,4 +323,4 @@ cy_rslt_t cy_ota_ble_download_abort(cy_ota_context_ptr ctx_ptr)
     return CY_RSLT_SUCCESS;
 }
 
-#endif 	/* COMPONENT_OTA_BLUETOOTH */
+#endif    /* COMPONENT_OTA_BLUETOOTH */

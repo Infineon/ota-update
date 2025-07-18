@@ -1,5 +1,18 @@
 var NAVTREEINDEX1 =
 {
+"structcy__ota__storage__context__t.html#affd4770ac434c4a78707f1182af30f09":[1,0,3,1,2],
+"structcy__ota__storage__interface__t.html":[1,0,3,6],
+"structcy__ota__storage__interface__t.html#a2254932ffb585514fb9f47a861641e38":[1,0,3,6,1],
+"structcy__ota__storage__interface__t.html#a28c36929f2dd4b3649dabf0cb74ffb05":[1,0,3,6,7],
+"structcy__ota__storage__interface__t.html#a32abdb8e1dc250268e41a78552042315":[1,0,3,6,6],
+"structcy__ota__storage__interface__t.html#a4083fc1b8933549753c0e955a158b555":[1,0,3,6,5],
+"structcy__ota__storage__interface__t.html#a5c08e41b17f429a60b9fd8c2a82a088d":[1,0,3,6,2],
+"structcy__ota__storage__interface__t.html#a82221089aeadb8fafc41b2b296bf5b8f":[1,0,3,6,0],
+"structcy__ota__storage__interface__t.html#a9124edbf47744ce84391554385b98fdd":[1,0,3,6,3],
+"structcy__ota__storage__interface__t.html#abdb82923db46358df26c79864b54fa4c":[1,0,3,6,4],
+"structcy__ota__storage__write__info__t.html":[1,0,3,0],
+"structcy__ota__storage__write__info__t.html#a0405b3806c0de934f5f5f55ac693c184":[1,0,3,0,1],
+"structcy__ota__storage__write__info__t.html#a20c92fe4a9bba891efd3319efbd05060":[1,0,3,0,3],
 "structcy__ota__storage__write__info__t.html#a23215e611d8933d75fc52e902d3f4502":[1,0,3,0,0],
 "structcy__ota__storage__write__info__t.html#a3d5cf26f262a52569a71a8948df60b56":[1,0,3,0,5],
 "structcy__ota__storage__write__info__t.html#abe05546ecff7e5985d268248c0ebb3e5":[1,0,3,0,4],

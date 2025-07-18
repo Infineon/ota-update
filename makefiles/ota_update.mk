@@ -8,7 +8,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024, Cypress Semiconductor Corporation (an Infineon company)
+# Copyright 2018-2025, Cypress Semiconductor Corporation (an Infineon company)
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,8 +62,20 @@ OTA_MQTT_SUPPORT?=0
 OTA_BT_SUPPORT?=0
 
 # Define App version
-APP_BUILD_VERSION=$(APP_VERSION_MAJOR).$(APP_VERSION_MINOR).$(APP_VERSION_BUILD)
-DEFINES+=APP_BUILD_VERSION=$(APP_BUILD_VERSION)
+
+CY_COMPANY_ID?=0x1234
+CY_PRODUCT_ID?=0x5678
+
+APP_VERSION_REVISION?=0
+APP_VERSION_SLOT?=0
+
+ifeq ($(CY_MCUBOOT_OTA_IMAGE_VERIFICATION),0)
+    # Define App version
+    APP_BUILD_VERSION=$(APP_VERSION_MAJOR).$(APP_VERSION_MINOR).$(APP_VERSION_BUILD)
+    DEFINES+=APP_BUILD_VERSION=$(APP_BUILD_VERSION)
+else
+    APP_BUILD_VERSION=0
+endif
 
 ################################################################################
 #

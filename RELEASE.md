@@ -6,6 +6,12 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.4.0
+
+- Enhanced data structure to support Direct XIP OTA and WBMS OTA.
+- A new API has been introduced to mark the downloaded upgrade image as pending.
+- Minor updates to the documentation have been made.
+
 ### v4.3.3
 
 - Bug fixes.
@@ -96,11 +102,11 @@ This version of the library was validated for compatibility with the following s
 
 | Software and Tools                                        | Version |
 | :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.3     |
-| - ModusToolbox&trade; Device Configurator                 | 5.10    |
-| - ModusToolbox&trade; Bluetooth Configurator              | 3.00    |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.30.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.14    |
-| GCC Compiler                                              | 11.3.1  |
+| ModusToolbox&trade; Software Environment                  | 3.5     |
+| - ModusToolbox&trade; Device Configurator                 | 5.30    |
+| - ModusToolbox&trade; Bluetooth Configurator              | 3.30    |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.40.0  |
+| Peripheral Driver Library (PDL CAT1)                      | 3.16    |
+| GCC Compiler                                              | 14.2.1  |
 | IAR Compiler                                              | 9.50.2  |
 | Arm Compiler 6                                            | 6.22    |
