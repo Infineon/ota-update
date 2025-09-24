@@ -73,7 +73,11 @@ extern "C" {
 
 #include "cy_ota_config.h"          /* Customer OTA overrides.   */
 #include "cy_ota_defaults.h"        /* Defaults for OTA.         */
+#if defined(COMPONENT_MTB_HAL)
+#include "mtb_hal.h"
+#else
 #include "cyhal.h"
+#endif
 #include "cybsp.h"
 #include "cy_result_mw.h"
 #include "cy_log.h"
@@ -815,6 +819,7 @@ typedef cy_ota_storage_write_info_t cy_ota_storage_read_info_t;
 typedef struct cy_ota_storage_context_s
 {
     void        *storage_loc;               /**< can be cast as flash_area or FILE as needed                    */
+    uint8_t     imgID;                      /**< Application ID or Image ID in case of Multi-App Updates        */
     uint32_t    total_image_size;           /**< Total size of OTA Image                                        */
     uint32_t    total_bytes_written;        /**< Number of bytes written to FLASH                               */
     uint32_t    last_offset;                /**< Last offset written to from cy_ota_storage_write()             */

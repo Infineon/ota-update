@@ -1721,7 +1721,11 @@ static cy_rslt_t cy_ota_verify_data(cy_ota_context_t *ctx)
 {
     cy_rslt_t                   result = CY_RSLT_SUCCESS;
 
-    result = ctx->storage_iface.ota_file_verify(&(ctx->ota_storage_context));
+    for(int i = 1; i <= CY_OTA_IMAGE_NUMBER; i++)
+    {
+        ctx->ota_storage_context.imgID = i;
+        result = ctx->storage_iface.ota_file_verify(&(ctx->ota_storage_context));
+    }
     if (result == CY_RSLT_SUCCESS)
     {
         /* set to reboot after sending result */

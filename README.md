@@ -14,6 +14,8 @@ Supported devices:
 - CYW989829M2EVB-01
 - CYW955913EVK-01
 - CY8CEVAL-062S2-CYW955513SDM2WLIPA
+- KIT_PSE84_EVAL_EPC2
+- KIT_PSE84_EVAL_EPC4
 
 For devices with both Wi-Fi and Bluetooth® Interfaces, the device can use Wi-Fi or Bluetooth® Interfaces.
 
@@ -29,7 +31,8 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 | Library Version  | Supported MTB version  | Remarks                    |
 |------------------| -----------------------|----------------------------|
-| ota-update v4.X  | ModusToolbox 3.5       | cysecuretools v5.1 or greater is required |
+| ota-update v4.5  | ModusToolbox 3.6       | EdgeProtectTools v1.4 or greater is required |
+| ota-update v4.4  | ModusToolbox 3.5       | cysecuretools v5.1 or greater is required |
 | ota-update v3.X  | ModusToolbox 3.0       | cysecuretools v4.2 or greater is required |
 | ota-update v2.X  | ModusToolbox 3.0       | <b>NOT</b> backwards compatible with ModusToolbox 2.4 |
 | ota-update v1.X  | ModusToolbox 2.4       | Replaces anycloud-ota (all versions) |
@@ -51,9 +54,11 @@ To handle the downloaded upgrade image, the user must implement storage API call
 
 - The CYW955913EVK-01 platform features a built-in bootloader. OTA Application runs on CM33 CPU along with the bootloader.
 
+- In case of PSOC™ Edge E84 (PSE84) devices, OTA can be run either on CM33 Non-Secure CPU or on CM55 CPU.
+
 On a virgin device, main application(BOOT image) is programmed / flashed to the device first time. Subsequent versions of the application (so called updates) are downloaded using OTA.
 
-On some devices such as PSoC™ 64 kits, there will be multiple images such as main application and the TFM images that are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images.
+On some devices such as PSoC™ 64 and PSOC™ Edge E84 (PSE84) kits, there will be multiple images such as main application and the TFM images that are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images. For example, PSoC™ 64 device may have a main application and the TFM images that are OTA updatable and PSE84 device may have a CM33 Secure image, a CM33 Non-Secure image and a CM55 image which are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images.
 
 The ModusToolbox OTA code examples import the ota-update library automatically.
 
@@ -95,16 +100,17 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
     ```
 
-- For MCUBootloader-based OTA code examples on platforms like PSoC6, 20829, 89829 and XMC7200, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
+- For MCUBootloader-based OTA code examples on platforms like PSoC6, 20829, 89829, XMC7200 and PSE84, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
     ```
     https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
     ```
 
 - For WiFi-based OTA code examples on platforms like PSoC6, Users need to create an *wifi-core-freertos-lwip-mbedtls.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-freertos-lwip-mbedtls.mtb* should be as follows:
     ```
-    https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v2.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v2.X
+    https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v3.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v3.X
     ```
     **NOTE**: For the PSoC64 platform, the ota-update library is currently only supported with *wifi-core-freertos-lwip-mbedtls/latest-v1.X*.
+    **NOTE**: For the PSoC6 and XMC7200 platforms, the ota-update library is currently only supported with *wifi-core-freertos-lwip-mbedtls/latest-v2.X*.
 
 - For WiFi-based OTA code examples on platforms like CYW955913EVK-01, Users need to create an *wifi-core-threadx-cat5.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-threadx-cat5.mtb* should be as follows:
     ```
@@ -120,7 +126,7 @@ With a "Job" flow approach, the device downloads a JSON formatted job document t
     ```
     **NOTE**: Applications using the *ethernet-core-freertos-lwip-mbedtls v1.X* library for OTA updates do not need to pull the *ethernet-phy-driver*.
 
-- For BLE-based OTA code examples on platforms like PSoC6, 20829 and 89829, Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
+- For BLE-based OTA code examples on platforms like PSoC6, 20829, 89829 and PSE84,  Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
     ```
     https://github.com/Infineon/btstack-integration#latest-v6.X#$$ASSET_REPO$$/btstack-integration/latest-v6.X
     ```
@@ -188,7 +194,7 @@ MCUBootloader is a secure bootloader for 32-bits microcontrollers and users shou
 To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
 
 *ota-bootloader-abstraction* library has below support.
-- Template flashmaps for PSoC6, 20829, 89829 and XMC7200 platforms.
+- Template flashmaps for PSoC6, 20829, 89829, XMC7200 and PSE84 platforms.
 - Template linker files for GCC_ARM, ARM, and IAR toolchains.
 - Storage operation callback APIs to handle MCUBootloader based upgrade image.
 - Prebuild and Postbuild scripts for generating and signing MCUBootloader based BOOT and UPGRADE image of an OTA Application.
@@ -472,8 +478,25 @@ Usage:
 
   This must also be mirrored in the application for the topic name. This allows for multiple devices being tested to simultaneously connect to different instances of the Publisher running on different systems so that they do not interfere with each other.
 
+## 12. Creating BLE based OTA Application on CYW20829B0 and CYW89829B0
 
-## 12. Note on Using Windows 10
+For the CYW920829M2EVK-02 and CYW989820M2EVB-01 kits, the default BSP version being utilized is 3.X, which is compatible with the 20829B1 and 89829B1 silicon versions. Users with the CYW920829M2EVK-02 and CYW989820M2EVB-01 kits that contain the 20829B0 and 89829B0 silicon versions should follow these steps to create a workspace for OTA applications:
+
+- Create a workspace for OTA applications using the BSPs for CYW920829M2EVK-02 and CYW989820M2EVB-01.
+
+- Open the BSP Assistant from the left terminal within the ModusToolbox Quick Panel.
+
+- Select the "Devices" option and configure the MPN CYW20829B0LKML for the CYW920829B0 and the MPN CYW89829B01MKSBG for the CYW989829B0 in the MCU/SOC/SIP column.
+
+- Save the configured options.
+
+- Update the libraries by executing the make getlibs command or by using the Library Manager option within the ModusToolbox Quick Panel.
+
+- Ensure that the library fw-cyw20829b1 is removed from the workspace (libs/mtb.mk) and the library fw-cyw20829b0 is added for the CYW920829M2EVK-02. Similarly, the library fw-cyw89829b1 should be removed and fw-cyw89829b0 should be added for the CYW989820M2EVB-01.
+
+- Perform a clean build and then program the connected CYW920829M2EVK-02 (CYW920829B0) and CYW989820M2EVB-01 (CYW989829B0).
+
+## 13. Note on Using Windows 10
 
 When using ModusToolbox, you will need to install the pip requirements to Python in the ModusToolbox installation.
 
@@ -481,8 +504,7 @@ When using ModusToolbox, you will need to install the pip requirements to Python
 \<ModusToolbox\>/tools_3.*/python/python -m pip install -r \<ota-update-library\>scripts/requirements.txt
 ```
 
-
-## 13. Supported Toolchains
+## 14. Supported Toolchains
 
 - GCC
 - IAR
@@ -490,13 +512,13 @@ When using ModusToolbox, you will need to install the pip requirements to Python
 
 For the toolchain version information, please refer to [OTA Release.md](./RELEASE.md).
 
-## 14. Supported OS
+## 15. Supported OS
 
 - FreeRTOS
 - ThreadX
 
 
-## 15. Supported Kits
+## 16. Supported Kits
 
 - [PSoC™ 6 Wi-Fi BT Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062-4343w/) (CY8CPROTO-062-4343W)
 - [PSoC™ 62S2 Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/) (CY8CKIT-062S2-43012)
@@ -511,22 +533,23 @@ For the toolchain version information, please refer to [OTA Release.md](./RELEAS
 - [XMC7200 Evaluation Kit with 43439M2](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK_MUR_43439M2)
 - [AIROC™ CYW989820M2EVB-01 Evaluation kit](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le/cyw20829/)(CYW989820M2EVB-01)
 - [CYW955913EVK-01 Wi-Fi Bluetooth&reg; Prototyping Kit (CYW955913EVK-01)](https://www.infineon.com/CYW955913EVK-01)
+- PSOC&trade; Edge E84 Evaluation Kit
 
-## 16. Hardware Setup
+## 17. Hardware Setup
 
 This example uses the board's default configuration. See the kit user guide to ensure the board is configured correctly.
 
 **Note:** Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
 
 
-## 17. Software Setup
+## 18. Software Setup
 
 1. Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://ttssh2.osdn.jp/index.html.en).
 
 2. Python Interpreter. The supplied *publisher.py* script is tested with [Python 3.8.1](https://www.python.org/downloads/release/python-381/).
 
 
-## 18. Enabling Debug Output
+## 19. Enabling Debug Output
 
 The 'ota-update' library disables all debug log messages by default. Do the following to enable log messages:
 
@@ -537,7 +560,8 @@ The 'ota-update' library disables all debug log messages by default. Do the foll
 
 2. Call the `cy_log_init()` function provided by the *cy-log* module. cy-log is part of the *connectivity-utilities* library. See [connectivity-utilities library API documentation](https://infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html) for cy-log details.
 
-## 19. Prepare for Building Your OTA Application
+
+## 20. Prepare for Building Your OTA Application
 
 Copy [OTA's cy_ota_config.h](./configs/cy_ota_config.h) to your application's top-level directory, and adjust for your application needs.
 
@@ -548,7 +572,7 @@ Copy [OTA's cy_ota_config.h](./configs/cy_ota_config.h) to your application's to
 Also, a reminder to look at configuration files for other libraries.
 
 
-## 20. Limitations
+## 21. Limitations
 
 1. If not using a Job document with MQTT, and the device is not subscribed to the topic on the MQTT Broker when the Publisher sends the update, it will miss the update.
 
@@ -561,7 +585,7 @@ Also, a reminder to look at configuration files for other libraries.
 4. When using the ARM compiler with the CYW20829 or BLE platforms, ensure that MBEDTLS_ENTROPY_HARDWARE_ALT is not defined in mbedtls_user_config.h. When MBEDTLS_ENTROPY_HARDWARE_ALT is defined it is possible to encounter an unresolved symbol error during the link phase when using the ARM compiler.
 
 
-## 21. Additional Information
+## 22. Additional Information
 
 - [ota-update RELEASE.md](./RELEASE.md)
 

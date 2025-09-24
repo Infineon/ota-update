@@ -1,6 +1,7 @@
 var NAVTREEINDEX1 =
 {
-"structcy__ota__storage__context__t.html#affd4770ac434c4a78707f1182af30f09":[1,0,3,1,2],
+"structcy__ota__storage__context__t.html#aff1ac4aa0f0ac68c35d958366d9d7b29":[1,0,3,1,12],
+"structcy__ota__storage__context__t.html#affd4770ac434c4a78707f1182af30f09":[1,0,3,1,3],
 "structcy__ota__storage__interface__t.html":[1,0,3,6],
 "structcy__ota__storage__interface__t.html#a2254932ffb585514fb9f47a861641e38":[1,0,3,6,1],
 "structcy__ota__storage__interface__t.html#a28c36929f2dd4b3649dabf0cb74ffb05":[1,0,3,6,7],

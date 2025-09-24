@@ -6,6 +6,11 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.5.0
+
+- Added support for PSOC&trade; Edge E84 (PSE84) platform.
+- Updated to use MTB_HAL apis.
+
 ### v4.4.0
 
 - Enhanced data structure to support Direct XIP OTA and WBMS OTA.
@@ -102,11 +107,10 @@ This version of the library was validated for compatibility with the following s
 
 | Software and Tools                                        | Version |
 | :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.5     |
-| - ModusToolbox&trade; Device Configurator                 | 5.30    |
-| - ModusToolbox&trade; Bluetooth Configurator              | 3.30    |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 6.40.0  |
-| Peripheral Driver Library (PDL CAT1)                      | 3.16    |
+| ModusToolbox&trade; Software Environment                  | 3.6     |
+| - ModusToolbox&trade; Device Configurator                 | 5.50    |
+| - ModusToolbox&trade; Bluetooth Configurator              | 3.40    |
+| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 8.10.0  |
 | GCC Compiler                                              | 14.2.1  |
 | IAR Compiler                                              | 9.50.2  |
 | Arm Compiler 6                                            | 6.22    |

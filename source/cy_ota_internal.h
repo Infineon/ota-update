@@ -71,6 +71,17 @@ extern "C" {
  */
 #define CY_OTA_MAX_SIGN_LENGTH                  (32)
 
+/**
+ * @brief Number of images in the current application.
+ *
+ *  When IFX-MCUBoot is used, this will be set to the number of images defined in the MCUBoot configuration.
+ */
+#if defined(COMPONENT_IFX_MCUBOOT)
+#define CY_OTA_IMAGE_NUMBER CY_IFX_MCUBOOT_IMAGE_NUMBER
+#else
+#define CY_OTA_IMAGE_NUMBER 1
+#endif
+
 /* Although the events are stored in a 32-bit integer, there are only 24 flags available */
 typedef enum
 {

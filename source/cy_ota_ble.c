@@ -46,7 +46,6 @@
 #ifdef COMPONENT_OTA_BLUETOOTH
 
 #include "cy_ota_internal.h"
-#include "cyhal_gpio.h"
 
 /***********************************************************************
  *
@@ -269,16 +268,20 @@ cy_rslt_t cy_ota_update_verify(cy_ota_context_ptr ctx_ptr, uint32_t final_crc32,
     }
     else
     {
-        /* Call user image verify callback API. */
-        result = ota_ctx->storage_iface.ota_file_verify(&(ota_ctx->ota_storage_context));
-        if(result != CY_RSLT_SUCCESS)
+        for(uint8_t i = 1; i <= CY_OTA_IMAGE_NUMBER; i++)
         {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "\nStorage verify API failed: 0x%lx", result);
-            result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
-            cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
+            ota_ctx->ota_storage_context.imgID = i;
+
+            /* Call user image verify callback API. */
+            result = ota_ctx->storage_iface.ota_file_verify(&(ota_ctx->ota_storage_context));
+            if(result != CY_RSLT_SUCCESS)
+            {
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "\nStorage verify API failed: 0x%lx", result);
+                result = CY_RSLT_OTA_ERROR_BLE_VERIFY;
+                cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
+            }
         }
     }
-
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_OTA_COMPLETE);
 
     return result;
@@ -292,21 +295,24 @@ cy_rslt_t cy_ota_update_image_set_pending(cy_ota_context_ptr ctx_ptr)
     CY_OTA_CONTEXT_ASSERT(ota_ctx);
 
     /* Call user image verify callback API. */
-    if(ota_ctx->storage_iface.ota_file_set_boot_pending != NULL)
+    for(uint8_t i = 1; i <= CY_OTA_IMAGE_NUMBER; i++)
     {
-        result = ota_ctx->storage_iface.ota_file_set_boot_pending(&(ota_ctx->ota_storage_context));
-        if(result != CY_RSLT_SUCCESS)
+        ota_ctx->ota_storage_context.imgID = i;
+        if(ota_ctx->storage_iface.ota_file_set_boot_pending != NULL)
         {
-            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "\nStorage verify API failed: 0x%lx", result);
-            result = CY_RSLT_OTA_ERROR_BLE_STORAGE;
-            cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
+            result = ota_ctx->storage_iface.ota_file_set_boot_pending(&(ota_ctx->ota_storage_context));
+            if(result != CY_RSLT_SUCCESS)
+            {
+                cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_ERR, "\nStorage verify API failed: 0x%lx", result);
+                result = CY_RSLT_OTA_ERROR_BLE_STORAGE;
+                cy_ota_set_state(ota_ctx, CY_OTA_STATE_EXITING);
+            }
+        }
+        else
+        {
+            cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "ota_file_set_boot_pending not initialized!\n", result);
         }
     }
-    else
-    {
-        cy_ota_log_msg(CYLF_MIDDLEWARE, CY_LOG_WARNING, "ota_file_set_boot_pending not initialized!\n", result);
-    }
-
     cy_ota_set_state(ota_ctx, CY_OTA_STATE_OTA_COMPLETE);
 
     return result;

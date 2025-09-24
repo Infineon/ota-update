@@ -42,6 +42,7 @@ This guide shows Makefile variables and build DEFINES used when building an appl
 | OTA_BUILD_IGNORE_VERBOSE=<0,1> | No | 0 | Enable to output info about CY_IGNORE. |
 | OTA_BUILD_POST_VERBOSE=<0,1> | No | 0 | Enable to output info about POSTBUILD values. |
 | CY_OTA_APP_HEAP_SIZE=\<Heap size required for the Application\> | No | 256KB | This Makefile entry is only specific to XMC7200 platform on IAR Toolchain. <br>Users can use this makefile entry to define Application Heap size as required. <br>If this makefile entry is empty, the OTA library uses the default Heap Size value(256KB).|
+| APP_\<ID\>_NAME=\<application_name\> | Yes | Error | Specify each Application's Name in case of **Multi-App Projects**. Currently it is only supported on PSE84 platform. |
 
 <b>Notes:</b>
 - ota-update library provides makefiles/ota_update.mk file for simplifying the OTA integration with the applications.

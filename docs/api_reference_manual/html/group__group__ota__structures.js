@@ -10,6 +10,7 @@ var group__group__ota__structures =
     ] ],
     [ "cy_ota_storage_context_t", "structcy__ota__storage__context__t.html", [
       [ "storage_loc", "structcy__ota__storage__context__t.html#a259e6237fba59942fda5722f40a91b04", null ],
+      [ "imgID", "structcy__ota__storage__context__t.html#ae60f251ef3a2366f90c377beb50fcffa", null ],
       [ "total_image_size", "structcy__ota__storage__context__t.html#a42cb555a74471636ac7e08bfabfc7386", null ],
       [ "total_bytes_written", "structcy__ota__storage__context__t.html#affd4770ac434c4a78707f1182af30f09", null ],
       [ "last_offset", "structcy__ota__storage__context__t.html#a719130f57cf7b026d9dab27bf0e70e9f", null ],
