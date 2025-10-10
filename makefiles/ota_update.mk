@@ -185,6 +185,16 @@ ifeq ($(OTA_HTTP_SUPPORT),1)
     ifeq ($(OTA_HTTP_USE_CUSTOM_CONFIG),0)
         DEFINES += HTTP_DO_NOT_USE_CUSTOM_CONFIG
     endif
+
+    ifeq ($(OTA_HTTP_DISABABLE_SMART_BUFFERING),1)
+        $(info Makefile: HTTP Client smart buffering is disabled)
+    else
+        # Enable smart HTTP response buffering to prevent timeouts.
+        CY_HTTP_RESPONSE_FIRST_CHUNK_SIZE?=512
+        DEFINES+=CY_HTTP_RESPONSE_FIRST_CHUNK_SIZE=$(CY_HTTP_RESPONSE_FIRST_CHUNK_SIZE)
+        DEFINES+=CY_HTTP_CLIENT_ENABLE_SMART_BUFFERING
+    endif
+
     ifeq ($(OTA_BUILD_VERBOSE),1)
         $(info Makefile: OTA_HTTP_SUPPORT=1  OTA_HTTP_ONLY=$(OTA_HTTP_ONLY))
     endif

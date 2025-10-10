@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.5.1
+
+- Enabled 'Smart HTTP response buffering' logic to minimize the overall OTA upgrade time for HTTP-based updates.
+
 ### v4.5.0
 
 - Added support for PSOC&trade; Edge E84 (PSE84) platform.
