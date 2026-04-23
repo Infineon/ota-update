@@ -1,6 +1,6 @@
 /*
- * Copyright 2025, Cypress Semiconductor Corporation (an Infineon company)
- * SPDX-License-Identifier: Apache-2.0
+ * (c) 2026, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG.  SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,6 +139,10 @@ extern "C" {
  */
 #define CY_OTA_HTTP_TIMEOUT_RECEIVE         (3000)         /* 3 seconds receive timeout. */
 
+/**
+ * @brief max number of packets to check for missing & duplicate packets
+ */
+#define CY_OTA_MAX_PACKETS                  (2048)
 
 /**********************************************************************
  * Message Defines

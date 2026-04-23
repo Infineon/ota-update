@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.5.2
+
+- Added 'CY_OTA_MAX_PACKETS' user config to enable OTA download of bigger sized files over MQTT-based updates.
+
 ### v4.5.1
 
 - Enabled 'Smart HTTP response buffering' logic to minimize the overall OTA upgrade time for HTTP-based updates.

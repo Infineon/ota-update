@@ -63,4 +63,15 @@ This guide shows Makefile variables and build DEFINES used when building an appl
     - Used in messaging with MQTT Broker, and testing MQTT chunks.
 
 - Transfer Protocol:
-    - OTA Application Makefile must enable atleast one of the supported Protocols.
+    - OTA Application Makefile must enable at least one of the supported protocols.
+
+    - [cy_ota_config.h](./configs/cy_ota_config.h) provides multiple OTA user configurations that can be adjusted for the use case, network conditions, and platform support.
+
+    - On platforms such as Explorer (PSE84), configurations like Octal SPI (OSPI) with up to 64 MB external flash can increase flash write/erase latency. In such cases, update OTA and transport configuration values so that OTA Update operations can complete reliably.
+
+    - Example (MQTT transport): if OTA update fails with `MQTTRecvFailed`, it could be due to network latency issues. Increasing `MQTT_RECV_POLLING_TIMEOUT_MS` based on measured network and system timing could resolve the issue.
+
+    - To use custom MQTT settings:
+        1. Copy `core_mqtt_config.h` from [mqtt/include](https://github.com/Infineon/mqtt/tree/master/include) to the top-level user application directory.
+        2. Modify the required macros to match your use case and network conditions.
+        3. Refer to the [MQTT Library Quick Start guidelines](https://github.com/Infineon/mqtt?tab=readme-ov-file#quick-start) for additional details.
