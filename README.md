@@ -1,280 +1,266 @@
-# Over-the-Air (OTA) Update Middleware Library
+# Over-the-Air (OTA) Update Middleware Library - Secure firmware updates for Infineon connectivity devices over Wi-Fi, Ethernet, and Bluetooth&reg;
 
-The OTA library provides support for downloading Over-The-Air update of the application code running on an Infineon device.
-Supported devices:
-- PSoC™ 6 MCU with
-  - AIROC™ CYW4343W
-  - CYW43012 Wi-Fi & Bluetooth® combo chip
-- CYW920829M2EVK-02 evaluation board.
-- CY8CKIT-062-BLE
-- CY8CPROTO-063-BLE
-- CYBLE-416045-EVAL
-- KIT_XMC72_EVK
-- KIT_XMC72_EVK_MUR_43439M2
-- CYW989829M2EVB-01
-- CYW955913EVK-01
-- CY8CEVAL-062S2-CYW955513SDM2WLIPA
-- KIT_PSE84_EVAL_EPC2
-- KIT_PSE84_EVAL_EPC4
+# Overview
 
-For devices with both Wi-Fi and Bluetooth® Interfaces, the device can use Wi-Fi or Bluetooth® Interfaces.
+The Over-the-Air (OTA) Update middleware library provides support for downloading and applying over-the-air updates to the application code running on an Infineon device. It lets connected products receive new firmware in the field over Wi-Fi, Ethernet, or Bluetooth&reg;, without a physical connection.
 
-For <b>WiFi</b> and <b>Ethernet</b>, the OTA library utilizes MQTT or HTTP and TLS to securely connect to an MQTT Broker/HTTP server to download the user application.
+For **Wi-Fi** and **Ethernet**, the OTA library uses MQTT or HTTP with TLS to securely connect to an MQTT Broker or HTTP server and download the user application. For **Bluetooth&reg;**, the OTA library works with an intermediate peer application on a laptop or phone that pushes the image to the device. On devices that support both Wi-Fi and Bluetooth&reg;, either interface can be used.
 
-For <b>Bluetooth®</b>, the OTA library works with an intermediate peer application on a laptop (or phone) to push the image to the device.
+Starting with v4.0, the OTA library is fully separated from the bootloader. It downloads the upgrade image and hands each chunk to application-implemented storage callbacks (`cy_ota_storage_interface_t`), so it can work with any bootloader. The companion `ota-bootloader-abstraction` library provides ready-made storage callback implementations for MCUboot-based images and for the built-in bootloader on the CYW955913SDCM2WLIPA platform. To use those implementations, register the callbacks during OTA agent initialization.
 
-To handle the downloaded upgrade image, the user must implement storage API callbacks based on the chosen bootloader.
+The library supports two update models:
+- **Push model (Bluetooth&reg;):** on reset, the device advertises that it can accept an update, and a host (laptop or phone) connects and pushes the image.
+- **Pull model (MQTT/HTTP over Wi-Fi or Ethernet):** the device pulls the image using either a **Direct flow** (download a known file) or a **Job flow** (download a JSON job document describing the update, then download the image).
 
-<b>NOTE:</b> The library 'ota-bootloader-abstraction' includes storage API callbacks implementation that handles MCUBootloader based images and in-built bootloader based (CYW955913SDCM2WLIPA platform) images. To use these storage API callbacks implementation, user must register these callbacks during OTA agent initialization.
+On a virgin device, the main application (BOOT image) is flashed once; subsequent versions (updates) are delivered through OTA. On multi-image platforms such as PSOC&trade; 64 and PSOC&trade; Edge E84 (PSE84), the OTA solution supports TAR-format packages to update a single image or multiple images (for example, a main application and its TFM images, or a CM33 Secure image, a CM33 Non-Secure image, and a CM55 image).
 
-## Library Versions
+The ModusToolbox&trade; OTA code examples import the `ota-update` library automatically.
 
-| Library Version  | Supported MTB version  | Remarks                    |
-|------------------| -----------------------|----------------------------|
-| ota-update v4.5  | ModusToolbox 3.6       | EdgeProtectTools v1.4 or greater is required |
-| ota-update v4.4  | ModusToolbox 3.5       | cysecuretools v5.1 or greater is required |
-| ota-update v3.X  | ModusToolbox 3.0       | cysecuretools v4.2 or greater is required |
-| ota-update v2.X  | ModusToolbox 3.0       | <b>NOT</b> backwards compatible with ModusToolbox 2.4 |
-| ota-update v1.X  | ModusToolbox 2.4       | Replaces anycloud-ota (all versions) |
-| anycloud-ota     | NA                     | Depricated                 |
+For the complete API description, see the [OTA Update Reference Manual](https://infineon.github.io/ota-update/api_reference_manual/html/index.html).
 
-## 1. Enabling OTA in an Application
+# Features
 
-- Before enabling OTA in an application, the user must choose a suitable bootloader and program it on the chosen platform(s).
+- Secure download over Wi-Fi or Ethernet using MQTT or HTTP with TLS.
+- Bluetooth&reg; push updates using an intermediate host/peer application.
+- Job flow and Direct flow for pull-model (MQTT/HTTP) updates.
+- Bootloader-agnostic design: upgrade-image handling is offloaded to application storage callbacks (`cy_ota_storage_interface_t`), with ready-made callbacks available in `ota-bootloader-abstraction`.
+- OTA agent runs in a separate background thread and provides callbacks for connection stage, download progress, and error reporting.
+- TAR-format packages for single-image or multi-image (for example, TFM) updates.
+- Configurable timing and connection parameters through `cy_ota_config.h`.
+- FreeRTOS and ThreadX support.
 
-- The required build environment for creating BOOT and UPGRADE images should be set up.
+# When to Use
 
-- Storage callback APIs for handling upgrade images defined in *ota-update* library should be implemented.
+Use the OTA Update library when you need to update the firmware of a deployed Infineon connectivity device in the field, including:
+- Remote firmware updates for PSOC&trade; 6, PSOC&trade; 64, CYW20829, CYW89829, XMC7200, CYW955913, and PSOC&trade; Edge E84 (PSE84) applications.
+- Updates delivered over Wi-Fi or Ethernet from an MQTT Broker or HTTP server (pull model).
+- Updates pushed over Bluetooth&reg; from a laptop or phone (push model).
+- Single-image or multi-image (for example, main application plus TFM images) updates using TAR packages.
+
+OTA runs on the CM4 CPU on multi-core PSOC&trade; 6 devices, the CM7 CPU on XMC7200 devices, the CM33 CPU (alongside the bootloader) on CYW20829, CYW89829, and CYW955913 devices, and either the CM33 Non-Secure CPU or the CM55 CPU on PSOC&trade; Edge E84 (PSE84) devices.
 
-- OTA Enabled application is built using ModusToolbox, Incorporating the OTA library and making initialization calls to start the OTA process.
+
+# Prerequisites
+
+## Hardware Requirements
+
+The OTA Update library supports the following Infineon device families and their connectivity capabilities:
+- PSOC&trade; 6 MCU with AIROC&trade; CYW4343W, CYW43012, or CYW43439 Wi-Fi & Bluetooth&reg; combo connectivity
+- PSOC&trade; 6 Bluetooth&reg; LE devices (for example, CY8CKIT-062-BLE, CY8CPROTO-063-BLE, CYBLE-416045-EVAL)
+- PSOC&trade; 64 Secure Boot MCU
+- AIROC&trade; CYW20829 and CYW89829 Bluetooth&reg; LE SoCs
+- XMC7200 (with optional CYW43439 Wi-Fi connectivity)
+- CYW955913 (with built-in bootloader)
+- PSOC&trade; Edge E84 (PSE84)
+
+For the specific kits validated with this release, see [RELEASE.md](./RELEASE.md).
+
+**Note:** Before using the library, make sure the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. Otherwise you may see an error such as "unable to find CMSIS-DAP device" or "KitProg firmware is out of date". This example uses the board's default configuration; see the kit user guide to ensure the board is configured correctly.
+
+## Software Requirements
+
+This version of the library was validated for compatibility with the following software and tools:
+
+| Software and Tools                                        | Version |
+| :---                                                      | :---    |
+| ModusToolbox&trade; Software Environment                  | 3.9     |
+| ModusToolbox&trade; Device Configurator                   | 5.90    |
+| ModusToolbox&trade; Bluetooth Configurator                | 3.60    |
+| GCC Compiler                                              | 14.2.1  |
+| IAR Compiler                                              | 9.50.2  |
+| Arm Compiler 6                                            | 6.22    |
+| LLVM Compiler                                             | 22.1.0  |
+
+Supported toolchains: GCC, IAR, and Arm C. Supported operating systems: FreeRTOS and ThreadX. For the authoritative, up-to-date version list, see [RELEASE.md](./RELEASE.md).
+
+The supplied Publisher and Subscriber Python scripts require Python (tested with Python 3.8.1) and the `paho-mqtt` module version 1.6.1:
+```
+pip install paho-mqtt==1.6.1
+```
+**Note:** The Publisher and Subscriber scripts are compatible only with paho-mqtt version 1.6.1.
+
+A terminal emulator (for example, Tera Term) is recommended for viewing log output.
+
+## Read Documentation First
+
+- [OTA Update Reference Manual](https://infineon.github.io/ota-update/api_reference_manual/html/index.html) - Complete OTA API reference
+- [OTA Makefile settings for a user application](./OTA_MAKEFILE_INFO_README.md) - Makefile variables and build DEFINES
+- [OTA Bootloader Abstraction Reference Manual](https://infineon.github.io/ota-bootloader-abstraction/api_reference_manual/html/index.html) - Ready-made storage callbacks and bootloader support
+- [ModusToolbox&trade; Software Environment, Quick Start Guide, Documentation, and Videos](https://www.infineon.com/modustoolbox)
+
+## Choose Starting Template
 
-- It runs on CM4 CPU in case of multicore Psoc6 devices and on CM7 CPU in XMC7200 devices.
+Start from a ModusToolbox&trade; OTA code example (recommended), which imports the `ota-update` library and its dependencies automatically. Alternatively, start from an Empty application and add the required libraries as described below.
 
-- In case of 20829 and 89829 devices, it runs on CM33 CPU along with the bootloader application.
+## Add Required Libraries
 
-- The CYW955913EVK-01 platform features a built-in bootloader. OTA Application runs on CM33 CPU along with the bootloader.
+Add the required middleware using the ModusToolbox&trade; **Library Manager** (available in the ModusToolbox&trade; for VS Code extension and the Eclipse IDE), or by creating the corresponding `.mtb` files in the application's `deps` folder and running `make getlibs`.
 
-- In case of PSOC™ Edge E84 (PSE84) devices, OTA can be run either on CM33 Non-Secure CPU or on CM55 CPU.
-
-On a virgin device, main application(BOOT image) is programmed / flashed to the device first time. Subsequent versions of the application (so called updates) are downloaded using OTA.
-
-On some devices such as PSoC™ 64 and PSOC™ Edge E84 (PSE84) kits, there will be multiple images such as main application and the TFM images that are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images. For example, PSoC™ 64 device may have a main application and the TFM images that are OTA updatable and PSE84 device may have a CM33 Secure image, a CM33 Non-Secure image and a CM55 image which are OTA updatable. This OTA solution allows using TAR format package for updating a single, or multiple images.
-
-The ModusToolbox OTA code examples import the ota-update library automatically.
-
-
-## 2. Push Model Updates
-
-<b>Bluetooth®</b> updates use a "Push" model. On reset / boot, the device advertises that it can handle an update, and a Host (laptop, phone, etc.) is used to connect and "Push" the update to the device.
-
-
-## 3. Pull Model Updates
-
-<b>WiFi</b> and <b>Ethernet</b> based protocols(MQTT/HTTP) use a "Pull" model. There are two "Update Flows" that a user can designate. HTTP and MQTT transports can be used for this type of update.<br>
-
-<b>4.1. Direct Flow</b><br>
-With "Direct" flow approach, device downloads a known file from the server/broker.
-
-1. HTTP: The device connects to the known HTTP Server and downloads the OTA update image using HTTP `GET` requests, asking for a range of data sequentially until all data is transferred.
-
-2. MQTT: The device connects to the known MQTT Broker topic and publishes a "Request Download" message with a "Unique Topic Name" to the Publisher. The Publisher python application then splits the OTA update image into chunks and publishes them on the unique topic.<br>
-
-<b>4.2. Job Flow</b><br>
-With a "Job" flow approach, the device downloads a JSON formatted job document that provides information about where the update file is, its version, and other information concerning the update.
-
-1. The device connects to the server/broker to obtain the Job document.
-- HTTP: The device connects to the known HTTP server and uses an HTTP `GET` request to obtain the Job document.
-- MQTT: The device subscribes to the known MQTT Broker topic and publishes a request for the Job document.
-
-2. The device uses the Job document to determine if the OTA update image is an appropriate update.
-
-3. The device connects to the data server/broker and downloads the OTA image.
-- HTTP: The image is downloaded using HTTP `GET` requests, asking for a range of data sequentially until all data is transferred.
-- MQTT: The device sends a "Request Download" message with the "Unique Topic Name" on the known topic. The puthon Publisher application then splits the OTA image into chunks and publishes them on the unique topic.
-
-
-## 4. Quick start
-
-- To create an OTA application, the user needs to include the ota-update library by creating an *ota-update.mtb* file and placing it in the application's *deps* folder. The contents of the *ota-update.mtb* file should be as follows:
-    ```
-    https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
-    ```
-
-- For MCUBootloader-based OTA code examples on platforms like PSoC6, 20829, 89829, XMC7200 and PSE84, Users need to create an *ota-bootloader-abstraction.mtb* file to pull *ota-bootloader-abstraction* library which has storage APIs to handle the MCUBootloader based OTA upgrade files and place it in the application *deps* folder. The contents of *ota-bootloader-abstraction.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
-    ```
-
-- For WiFi-based OTA code examples on platforms like PSoC6, Users need to create an *wifi-core-freertos-lwip-mbedtls.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-freertos-lwip-mbedtls.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v3.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v3.X
-    ```
-    **NOTE**: For the PSoC64 platform, the ota-update library is currently only supported with *wifi-core-freertos-lwip-mbedtls/latest-v1.X*.
-    **NOTE**: For the PSoC6 and XMC7200 platforms, the ota-update library is currently only supported with *wifi-core-freertos-lwip-mbedtls/latest-v2.X*.
-
-- For WiFi-based OTA code examples on platforms like CYW955913EVK-01, Users need to create an *wifi-core-threadx-cat5.mtb* file for the WiFi bundle and place it in the application *deps* folder. The contents of *wifi-core-threadx-cat5.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/wifi-core-threadx-cat5#latest-v1.X#$$ASSET_REPO$$/wifi-core-threadx-cat5/latest-v1.X
-    ```
-
-- For Ethernet-based OTA code examples on platforms like XMC7200, Users need to create an *ethernet-core-freertos-lwip-mbedtls.mtb* file for the Ethernet bundle along with *ethernet-phy-driver.mtb* file for ethernet PHY drivers and place it in the application *deps* folder. The contents of *ethernet-core-freertos-lwip-mbedtls.mtb* and *ethernet-phy-driver.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/ethernet-core-freertos-lwip-mbedtls#latest-v2.X#$$ASSET_REPO$$/ethernet-core-freertos-lwip-mbedtls/latest-v2.X
-    ```
-	```
-    https://github.com/Infineon/ethernet-phy-driver#latest-v1.X#$$ASSET_REPO$$/ethernet-phy-driver/latest-v1.X
-    ```
-    **NOTE**: Applications using the *ethernet-core-freertos-lwip-mbedtls v1.X* library for OTA updates do not need to pull the *ethernet-phy-driver*.
-
-- For BLE-based OTA code examples on platforms like PSoC6, 20829, 89829 and PSE84,  Users need to create an *btstack-integration.mtb* file for the btstack and place it in the application *deps* folder. The contents of *btstack-integration.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/btstack-integration#latest-v6.X#$$ASSET_REPO$$/btstack-integration/latest-v6.X
-    ```
-    **NOTE**: For BLE-based OTA code examples on platforms like CYW955913EVK-01, required BT libraries are available in ROM. So no need to explicitly pull these libraries.
-
-- For MQTT protocol based OTA code examples, Users need to create an *mqtt.mtb* file to pull the *mqtt* library and place it in the application *deps* folder. The contents of *mqtt.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/mqtt#latest-v4.X#$$ASSET_REPO$$/mqtt/latest-v4.X
-    ```
-
-- For HTTP protocol based OTA code examples, Users need to create an *http-client.mtb* file to pull the *http-client* library and place it in the application *deps* folder. The contents of *http-client.mtb* should be as follows:
-    ```
-    https://github.com/Infineon/http-client#latest-v1.X#$$ASSET_REPO$$/http-client/latest-v1.X
-    ```
-
-- Once you have added the necessary *.mtb* files to the *deps* folder of your application, run the command 'make getlibs' to fetch these libraries and their dependencies.
-    ```
-    make getlibs
-    ```
-
-- Create OTA Application Makefile by referring [OTA Application Makefile Readme](./OTA_MAKEFILE_INFO_README.md).
-
-- For MCUBootloader support, Update OTA Application Makefile by referring *ota-bootloader-abstraction* library [MCUBootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_MCUBOOT/MCUBOOT_OTA_MAKEFILE_INFO_README.md)
-
-- For platforms like CYW955913EVK-01 which has in-built bootloader, update OTA Application Makefile by referring *ota-bootloader-abstraction* library [CYW955913SDCM2WLIPA_Bootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_CYW955913SDCM2WLIPA/CYW955913SDCM2WLIPA_OTA_MAKEFILE_INFO_README.md)
-
-- The "cy_ota_config.h" file provides configuration options to adjust multiple timing values to customize how often to check for updates, and other parameters for the MQTT Broker/HTTP Server connection.
-  Copy the configuration file "\<ota-update library\>configs/cy_ota_config.h" file to the directory where your application Makefile is, and adjust as needed.
-
-- To add the required bootloader support at the application level itself, the OTA update library implements a callback mechanism and offloads handling of upgrade images including flash operations to application.
-
-- The application must implement these storage operation callbacks to handle upgrade image based on bootloader choosen and must register callbacks during OTA agent start by giving a parameter of type 'cy_ota_storage_interface_t' in 'cy_ota_agent_start()'.
-
-    ```
-    typedef struct cy_ota_storage_interface_s
-    {
-        cy_ota_file_open           ota_file_open;             /**< Creates and open new receive file for the data chunks as they come in. */
-        cy_ota_file_read           ota_file_read;             /**< Reads the flash data starting from the given offset.                   */
-        cy_ota_file_write          ota_file_write;            /**< Write a data to the flash at the given offset.                         */
-        cy_ota_file_close          ota_file_close;            /**< Close the underlying receive file in the specified OTA context.        */
-        cy_ota_file_verify         ota_file_verify;           /**< Authenticate received OTA update file specified in the OTA context.    */
-        cy_ota_file_set_pending    ota_file_set_boot_pending; /**< To Mark the image in the inactive slot as pending.                     */
-        cy_ota_file_validate       ota_file_validate;         /**< The application has validated the new OTA image.                       */
-        cy_ota_file_get_app_info   ota_file_get_app_info;     /**< Get Application info like Application version and Application ID.      */
-    } cy_ota_storage_interface_t;
-    ```
-- For more details like storage operation callbacks syntaxes, refer to "\<ota-update library\>include/cy_ota_api.h" .
-
-- Parameters such as MQTT Broker/HTTP server and credentials along with memory operation callbacks are passed into `cy_ota_agent_start()`.
-
-- The OTA Agent runs in a separate background thread, only connecting to MQTT Broker/HTTP server based on the timing configuration.
-  For Bluetooth® operation, the OTA library starts the Bluetooth® module and starts advertising.
-
-- The OTA Agent provides a callback mechanism to report stages of connect, download percentage, and errors. The application can override the default OTA Agent behavior for each step, or stop the current download during the callback.
-
-Once the application starts the OTA agent, the OTA agent will contact the MQTT Broker/HTTP server at the defined intervals to check whether an update is available. If available, the update will be downloaded. If the `reset_after_complete` flag was set in the agent parameters, the OTA Agent will automatically reset the device. On the next system reset, Bootloader will perform the update.
-
-## 5. Bootloader Support
-Starting from the 4.0 version of the ota-update library, the library is now fully separated from the MCUBootloader. This means that it can function independently and work with any bootloader, as long as the required OTA update handling storage APIs are implemented and registered with OTA agent by the user.
-
-### 5.1 MCUBootloader Support
-
-MCUBootloader is a secure bootloader for 32-bits microcontrollers and users should build it outside of the user OTA application. It is programmed separately to the device before flashing the user OTA application and is not updated for the life of the device.
-
-To support MCUBootloader based OTA using ota-update library, User can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
-
-*ota-bootloader-abstraction* library has below support.
-- Template flashmaps for PSoC6, 20829, 89829, XMC7200 and PSE84 platforms.
-- Template linker files for GCC_ARM, ARM, and IAR toolchains.
-- Storage operation callback APIs to handle MCUBootloader based upgrade image.
-- Prebuild and Postbuild scripts for generating and signing MCUBootloader based BOOT and UPGRADE image of an OTA Application.
-
-Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling MCUBootloader support.
-
-### 5.2 CYW955913EVK-01 in-built bootloader Support
-
-An in-built bootloader is programmed in ROM section of CYW955913EVK-01.
-
-To support OTA using ota-update library on CYW955913EVK-01 kit, user can implement his own storage operation callbacks to handle upgrade image or can make use of *ota-bootloader-abstraction* library.
-
-*ota-bootloader-abstraction* library has below support for in-built bootloader based platforms like CYW955913EVK-01.
-- Storage operation callback APIs to handle MCUBootloader based upgrade image.
-
-Refer *ota-bootloader-abstraction* library [Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling in-built CYW955913EVK-01 bootloader support.
-
-### 5.3 Other bootloader Support
-
-- Starting from the 4.0 version of the *ota-update*, library can function independently and work with any bootloader.
-- Library user needs to implement OTA update handling storage API callbacks defined in 'cy_ota_storage_interface_t'. Refer to "\<ota-update library\>include/cy_ota_api.h" for syntaxes and details.
-- Register these storage API callbacks with OTA agent while starting OTA agent.
-- OTA agent of *ota-update* library downloads upgrade image of OTA application and calls registered storage API callbacks for handling downloaded upgrade image.
-- User can make use of sample scripts for hosting UPGRADE image. These scripts are available in "\<ota-update library\>scripts/".
-- Once required bootloader support is added, User can choose PUSH/PULL model to upgrade image on device.
-
-## 6. Example Update Sequence Using BLE (PUSH Model)
-
-- The Host(laptop, phone, etc) downloads the upgrade OTA Image from the server using LAN/WLAN/BT.
-
-- BLE devices running OTA application on reset advertises that they can handle OTA updates.
-
-- A peer app is used to push an updated image to the device. User can use peer app which is available in *\<ota-update library\>scripts/Bluetooth/* or It can be downloaded from the [OTA Peer Application Page](https://github.com/Infineon/btsdk-peer-apps-ota). User can use Windows/iOS/Android version of app for pushing an OTA update image.
-    ```
-    ./WsOtaUpgrade.exe /file <OTA App Upgrade.bin>
-    ```
-
-- From the scanned device list, Select the appropriate BLE OTA-supported device.
-
-- Click on the start button to initiate the upgrade image transfer from host to device.
-
-- Host application pushes the update to the device sequentially.
-
-- BLE OTA device stores the received chunks of upgrade image into its upgrade slot using registered storage API callbacks.
-
-- After transfer completion, On the next reboot bootloader boots upgrade image of application.
-
-## 7. Example Job Flow Update Sequence Using HTTP
-
-1. The device connects to the HTTP server and uses the HTTP `GET` request to obtain the Job document (for example: *ota_update.json*).
-
-2. The device determines whether the OTA update image version is newer than the currently executing application, and the board name is the same, etc.
-
-   - If the OTA update image is accessible through an MQTT Broker, the device creates and subscribes to a unique topic name and sends a "Request Download" message with the "Unique Topic Name" to the Publisher on the known topic `OTAUpdate/CY8CPROTO_062_4343W/notify_publisher`. The Publisher then splits the OTA update image into chunks and publishes them on the unique topic.
-
-   - If the OTA update image is accessible on an HTTP Server, the device connects to the HTTP Server and downloads the OTA update image using an HTTP `GET` request, asking for a range of data sequentially until all data is transferred.
-
-For Job document information, please see Job Document section below.
-
-
-## 8. Example Job Flow Update Sequence Using MQTT
-
-1. The Publisher Python script (*ota-update/scripts/WiFi_Ethernet/publisher.py*) subscribes to a known topic (for example: *OTAUpdate/CY8CPROTO_062_4343W/publish_notify*) on the specified MQTT Broker.
-
-2. The device publishes the message "Update Availability" to the known topic. The message includes information about the device (manufacturer, product, serial number, application version, etc.), and a "Unique Topic Name" for the Publisher to send messages to the device.
-
-3. The Publisher receives the "Update Availability" message and publishes the appropriate Job document on the "Unique Topic Name". The Publisher can make a decision if there is an appropriate update available for the device. The Publisher sends an "Update Available" (or "No Update Available") message, which repeats the device-specific information.
-
-4. The device receives the Job document and connects to the Broker/server given in the Job document to obtain the OTA update image.
-
-    - If the OTA update image is located on an MQTT Broker, the device connects and sends a "Request Update" message to the Publisher, which includes the device information again. The Publisher then splits the OTA update image into 4-kB chunks, adds a header to each chunk, and sends it to the device on the "Unique Topic Name".
-
-    - If the OTA update image is located on an HTTP server, the device will connect to the HTTP server and download the OTA update image using an HTTP `GET` request, for a range of data sequentially until all data is transferred.
-
-For Job document information, please see Job Document section below.
-
-
-## 9. The Pull Model Job Document
-
-The Job document is a JSON-formatted file that contains fields used to communicate between the Publisher script and the OTA Agent running on the device.
+Add the OTA library itself by creating `ota-update.mtb`:
+```
+https://github.com/Infineon/ota-update#latest-v4.X#$$ASSET_REPO$$/ota-update/latest-v4.X
+```
+
+Depending on your bootloader, transport, and platform, add the following libraries:
+
+- **Bootloader (MCUboot-based platforms: PSOC&trade; 6, CYW20829, CYW89829, XMC7200, PSE84)** - `ota-bootloader-abstraction.mtb`:
+  ```
+  https://github.com/Infineon/ota-bootloader-abstraction#latest-v1.X#$$ASSET_REPO$$/ota-bootloader-abstraction/latest-v1.X
+  ```
+- **Wi-Fi transport (PSOC&trade; 6)** - `wifi-core-freertos-lwip-mbedtls.mtb`:
+  ```
+  https://github.com/Infineon/wifi-core-freertos-lwip-mbedtls#latest-v4.X#$$ASSET_REPO$$/wifi-core-freertos-lwip-mbedtls/latest-v4.X
+  ```
+  **Note:** For the PSOC&trade; 64 platform, the ota-update library is currently only supported with `wifi-core-freertos-lwip-mbedtls/latest-v1.X`. For the PSOC&trade; 6 and XMC7200 platforms, it is currently only supported with `wifi-core-freertos-lwip-mbedtls/latest-v2.X`.
+- **Wi-Fi transport (CYW955913EVK-01)** - `wifi-core-threadx-cat5.mtb`:
+  ```
+  https://github.com/Infineon/wifi-core-threadx-cat5#latest-v1.X#$$ASSET_REPO$$/wifi-core-threadx-cat5/latest-v1.X
+  ```
+- **Ethernet transport (XMC7200)** - `ethernet-core-freertos-lwip-mbedtls.mtb` and `ethernet-phy-driver.mtb`:
+  ```
+  https://github.com/Infineon/ethernet-core-freertos-lwip-mbedtls#latest-v2.X#$$ASSET_REPO$$/ethernet-core-freertos-lwip-mbedtls/latest-v2.X
+  ```
+  ```
+  https://github.com/Infineon/ethernet-phy-driver#latest-v1.X#$$ASSET_REPO$$/ethernet-phy-driver/latest-v1.X
+  ```
+  **Note:** Applications using `ethernet-core-freertos-lwip-mbedtls v1.X` for OTA updates do not need to pull `ethernet-phy-driver`.
+- **Bluetooth&reg; transport (PSOC&trade; 6, CYW20829, CYW89829, PSE84)** - `btstack-integration.mtb`:
+  ```
+  https://github.com/Infineon/btstack-integration#latest-v7.X#$$ASSET_REPO$$/btstack-integration/latest-v7.X
+  ```
+  **Note:** For Bluetooth&reg;-based OTA on CYW955913EVK-01, the required Bluetooth&reg; libraries are available in ROM and do not need to be pulled explicitly.
+- **MQTT transport** - `mqtt.mtb`:
+  ```
+  https://github.com/Infineon/mqtt#latest-v4.X#$$ASSET_REPO$$/mqtt/latest-v4.X
+  ```
+- **HTTP transport** - `http-client.mtb`:
+  ```
+  https://github.com/Infineon/http-client#latest-v1.X#$$ASSET_REPO$$/http-client/latest-v1.X
+  ```
+
+After adding the `.mtb` files, run:
+```
+make getlibs
+```
+
+## Configure Makefile
+
+Create the OTA application Makefile as described in [OTA Makefile settings for a user application](./OTA_MAKEFILE_INFO_README.md). At minimum, enable OTA and select the transports and application version:
+```
+OTA_SUPPORT=1
+OTA_HTTP_SUPPORT=1
+OTA_MQTT_SUPPORT=1
+OTA_BT_SUPPORT=1
+APP_VERSION_MAJOR=1
+APP_VERSION_MINOR=0
+APP_VERSION_BUILD=0
+```
+For MCUboot support, update the Makefile as described in the `ota-bootloader-abstraction` [MCUBootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_MCUBOOT/MCUBOOT_OTA_MAKEFILE_INFO_README.md). For the built-in bootloader on CYW955913EVK-01, see the [CYW955913SDCM2WLIPA Bootloader Support Makefile Readme](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/source/COMPONENT_CYW955913SDCM2WLIPA/CYW955913SDCM2WLIPA_OTA_MAKEFILE_INFO_README.md).
+
+To enable debug logging, add `ENABLE_OTA_LOGS` to the Makefile DEFINES and call `cy_log_init()` (provided by the `cy-log` module of the `connectivity-utilities` library):
+```
+DEFINES+=ENABLE_OTA_LOGS
+```
+See the [Connectivity Utilities Reference Manual](https://infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html) for `cy-log` details.
+
+## Add Headers
+
+Include the OTA API header in your application:
+```c
+#include "cy_ota_api.h"
+```
+Copy the configuration file `configs/cy_ota_config.h` from the library to your application's top-level directory and adjust it as needed:
+```
+cp <ota-update-library>/configs/cy_ota_config.h <application dir>
+```
+For more details on the storage callback APIs, see `include/cy_ota_api.h` and the [OTA Update Reference Manual](https://infineon.github.io/ota-update/api_reference_manual/html/index.html).
+
+# Quick Start
+
+This quick start outlines the steps to add OTA to an application. It assumes you have chosen and programmed a bootloader for your platform.
+
+**Step 1:** Add the `ota-update` library and the libraries required for your bootloader, transport, and platform (see [Add Required Libraries](#add-required-libraries)), then run `make getlibs`.
+
+**Step 2:** Create the OTA application Makefile (see [Configure Makefile](#configure-makefile)) and add the required bootloader support.
+
+**Step 3:** Copy `configs/cy_ota_config.h` into your application directory and adjust the timing and connection parameters as needed.
+
+**Step 4:** Implement the storage callbacks defined in `cy_ota_storage_interface_t` (or use the implementations from `ota-bootloader-abstraction`), then register them and start the OTA agent (see [Sample Code](#sample-code)).
+
+**Expected Outcome:** The OTA agent runs in a background thread, contacts the server or Broker at the configured interval, downloads any available update, and (if `reset_after_complete` is set) resets the device so the bootloader can apply the update.
+
+## Sample Code
+
+The application registers a set of storage callbacks when starting the OTA agent. These callbacks handle the downloaded upgrade image based on the chosen bootloader:
+
+```c
+typedef struct cy_ota_storage_interface_s
+{
+    cy_ota_file_open           ota_file_open;             /**< Creates and open new receive file for the data chunks as they come in. */
+    cy_ota_file_read           ota_file_read;             /**< Reads the flash data starting from the given offset.                   */
+    cy_ota_file_write          ota_file_write;            /**< Write a data to the flash at the given offset.                         */
+    cy_ota_file_close          ota_file_close;            /**< Close the underlying receive file in the specified OTA context.        */
+    cy_ota_file_verify         ota_file_verify;           /**< Authenticate received OTA update file specified in the OTA context.    */
+    cy_ota_file_set_pending    ota_file_set_boot_pending; /**< To Mark the image in the inactive slot as pending.                     */
+    cy_ota_file_validate       ota_file_validate;         /**< The application has validated the new OTA image.                       */
+    cy_ota_file_get_app_info   ota_file_get_app_info;     /**< Get Application info like Application version and Application ID.      */
+} cy_ota_storage_interface_t;
+```
+
+Pass the MQTT Broker/HTTP server parameters, credentials, and the storage-callback interface (`cy_ota_storage_interface_t`) into `cy_ota_agent_start()`. The OTA agent then runs in its own background thread and, for Bluetooth&reg; operation, starts the Bluetooth&reg; module and begins advertising. The agent provides a callback mechanism that reports connection stages, download percentage, and errors; the application can override the default behavior for each step or stop the current download. For the full API and callback signatures, see `include/cy_ota_api.h` and the [OTA Update Reference Manual](https://infineon.github.io/ota-update/api_reference_manual/html/index.html).
+
+## Expected Outcome
+
+When the OTA agent is running and an update is available, you should observe:
+
+Visual/Hardware Behavior:
+- The device connects to the configured MQTT Broker/HTTP server (or advertises over Bluetooth&reg;), downloads the upgrade image, and stores it in the upgrade slot using the registered storage callbacks.
+- If `reset_after_complete` is set, the device resets after the download completes, and the bootloader boots the new application on the next reset.
+
+Terminal Output (with `ENABLE_OTA_LOGS` defined):
+```
+Starting OTA agent...
+Connecting to server...
+OTA download progress: 10%
+OTA download progress: 50%
+OTA download progress: 100%
+OTA download complete. Resetting device...
+```
+
+Performance Metrics:
+- Download time depends on the transport, image size, and network conditions. For HTTP updates, Smart HTTP response buffering (v4.5.1 and later) reduces the overall upgrade time; for large MQTT updates, set `CY_OTA_MAX_PACKETS` (v4.5.2 and later) appropriately.
+
+# Troubleshooting
+
+- **Missed MQTT update (no Job document):** If you are not using a Job document with MQTT and the device is not subscribed to the topic when the Publisher sends the update, it will miss the update. Use a Job document, which contains the location of the OTA image.
+- **Unreliable network:** Ensure a reliable network connection before starting an OTA update; poor connectivity can cause lost packets or a lost connection and a failed update.
+- **Low battery:** Ensure the device is adequately powered before starting an update; a low battery can cause OTA to fail.
+- **Arm compiler link error on CYW20829/Bluetooth&reg; platforms:** Ensure `MBEDTLS_ENTROPY_HARDWARE_ALT` is not defined in `mbedtls_user_config.h`. When it is defined, you may encounter an unresolved-symbol error during the link phase with the Arm compiler.
+- **CYW20829B0 / CYW89829B0 silicon:** The default BSP (3.X) targets the B1 silicon. For B0 silicon, use BSP Assistant to configure MPN `CYW20829B0LKML` (CYW920829M2EVK-02) or `CYW89829B01MKSBG` (CYW989820M2EVB-01), run `make getlibs`, replace `fw-cyw20829b1`/`fw-cyw89829b1` with `fw-cyw20829b0`/`fw-cyw89829b0` in `libs/mtb.mk`, then clean-build and program.
+- **Windows 10 Python setup:** Install the pip requirements into the ModusToolbox&trade; Python: `<ModusToolbox>/tools_3.*/python/python -m pip install -r <ota-update-library>scripts/requirements.txt`.
+- **No log output:** The library disables all debug logs by default. Add `DEFINES+=ENABLE_OTA_LOGS` to the Makefile and call `cy_log_init()`.
+- **KitProg3:** If programming fails with "unable to find CMSIS-DAP device", upgrade the board to KitProg3 using the [Firmware Loader](https://github.com/Infineon/Firmware-loader).
+
+# Related Code Examples
+
+- [ModusToolbox&trade; OTA code examples](https://github.com/Infineon?q=mtb-example-ota&type=all) - Infineon `mtb-example-ota-*` reference applications for MQTT, HTTP, and Bluetooth&reg; OTA updates
+
+# Configuration Reference
+
+OTA behavior is configured through the application Makefile and the `cy_ota_config.h` file:
+- **Makefile DEFINES** - Enable OTA and select transports and options: `OTA_SUPPORT`, `OTA_HTTP_SUPPORT`, `OTA_MQTT_SUPPORT`, `OTA_BT_SUPPORT`, `APP_VERSION_MAJOR`/`APP_VERSION_MINOR`/`APP_VERSION_BUILD`, and debug switches. For the complete list, see [OTA Makefile settings for a user application](./OTA_MAKEFILE_INFO_README.md).
+- **`cy_ota_config.h`** - Adjust timing values (how often to check for updates), buffer sizes, and MQTT Broker/HTTP server connection parameters (for example, `CY_OTA_MAX_PACKETS`). Copy this file from `configs/cy_ota_config.h` into your application and edit as needed. For the parameter descriptions, see the [OTA Update Reference Manual](https://infineon.github.io/ota-update/api_reference_manual/html/index.html).
+
+## Update Flows
+
+For pull-model (MQTT/HTTP) updates, choose one of two flows:
+
+- **Direct flow:** The device downloads a known file from the server/Broker. Over HTTP, the device issues HTTP `GET` requests for sequential ranges of data. Over MQTT, the device publishes a "Request Download" message with a unique topic name, and the Publisher splits the image into chunks and publishes them on that topic. Select Direct flow by setting the `use_get_job_flow` field in `cy_ota_network_params_t` to `CY_OTA_DIRECT_FLOW` when calling `cy_ota_agent_start()`.
+- **Job flow:** The device first downloads a JSON job document (default name `ota_update.json`) describing where the update is, its version, and other details. It then determines whether the update is appropriate (for example, a newer version for the same board) and downloads the image from the specified server/Broker. Over HTTP, the device uses an HTTP `GET` request to obtain the Job document; over MQTT, it subscribes to a known topic and publishes a request, and the Publisher responds with the Job document on the unique topic.
+
+## Job Document
+
+The Job document is a JSON-formatted file that contains fields used to communicate between the Publisher script and the OTA agent running on the device:
 
 ```
 Manufacturer:   Manufacturer Name.
@@ -284,10 +270,10 @@ SerialNumber:   The Devices unique Serial Number
 Version:        Application version Major.Minor.Build (ex: "12.15.0")
 Board:          Name of board used for the product. (ex: "CY8CPROTO_062_4343W")
 Connection:     The type of Connection to access the OTA Image. ("MQTT", "HTTP", "HTTPS")
-Port:           Port number for accessing the OTA Image. (ex: `MQTT:1883`, HTTP:80`)
+Port:           Port number for accessing the OTA Image. (ex: MQTT:1883, HTTP:80)
 ```
 
-<b>Additional fields for HTTP Transport Type:</b>
+Additional fields for the HTTP transport type:
 
 ```
 Server:         Server URL (ex: "http://ota_images.my_server.com")
@@ -296,7 +282,7 @@ Offset:         Offset in bytes for the start of data to transfer.
 Size:           The size of the chunk of data to send, in bytes.
 ```
 
-The following is an example Job document for an OTA update image that is available on an HTTP server:
+Example Job document for an OTA update image available on an HTTP server:
 
 ```
 {
@@ -313,14 +299,14 @@ The following is an example Job document for an OTA update image that is availab
 }
 ```
 
-<b>Additional fields for MQTT Transport Type:</b>
+Additional fields for the MQTT transport type:
 
 ```
-Broker:          MQTT Broker to access the OTA update image (for example: `mqtt.my_broker.com`)
+Broker:          MQTT Broker to access the OTA update image (for example: mqtt.my_broker.com)
 UniqueTopicName: The "replace" value is just a placeholder. It is replaced with the Unique Topic Name for the OTA data transfer.
 ```
 
-The following is an example Job document for an OTA update image that is available on an MQTT Broker:
+Example Job document for an OTA update image available on an MQTT Broker:
 
 ```
 {
@@ -337,7 +323,7 @@ The following is an example Job document for an OTA update image that is availab
 }
 ```
 
-## 10. Setting Up the Supplied Publisher Python Script for MQTT Updates
+## MQTT Publisher Script
 
 The *ota-update/WiFi_Ethernet/scripts/publisher.py* script contains several configurable values. Ensure that the parameters in the script match the application values. In addition, check the example application you are using for any special needs.
 
@@ -410,7 +396,7 @@ Usage:
 
   This must also be mirrored in the application for the topic name. This allows for multiple devices being tested to simultaneously connect to different instances of the  Publisher running on different systems so that they do not interfere with each other.
 
-## 11. Using the Subscriber Python Script for testing MQTT Updates
+## MQTT Subscriber Script
 
 The *subscriber.py* script is provided as a verification script that acts the same as a device. It can be used to verify that the Publisher is working as expected. Ensure that the `BROKER_ADDRESS` matches the Broker used in *publisher.py*.
 
@@ -478,131 +464,50 @@ Usage:
 
   This must also be mirrored in the application for the topic name. This allows for multiple devices being tested to simultaneously connect to different instances of the Publisher running on different systems so that they do not interfere with each other.
 
-## 12. Creating BLE based OTA Application on CYW20829B0 and CYW89829B0
+## Bootloader Support
 
-For the CYW920829M2EVK-02 and CYW989820M2EVB-01 kits, the default BSP version being utilized is 3.X, which is compatible with the 20829B1 and 89829B1 silicon versions. Users with the CYW920829M2EVK-02 and CYW989820M2EVB-01 kits that contain the 20829B0 and 89829B0 silicon versions should follow these steps to create a workspace for OTA applications:
+Starting with v4.0, the `ota-update` library is fully separated from MCUboot: it can work with any bootloader as long as the required storage callbacks are implemented and registered with the OTA agent.
 
-- Create a workspace for OTA applications using the BSPs for CYW920829M2EVK-02 and CYW989820M2EVB-01.
+**MCUboot support** - MCUboot is a secure bootloader for 32-bit microcontrollers; build it outside the OTA application and program it to the device before flashing the OTA application. It is not updated for the life of the device. You can implement your own storage callbacks or use the `ota-bootloader-abstraction` library, which provides:
+- Template flashmaps for PSOC&trade; 6, CYW20829, CYW89829, XMC7200, and PSE84 platforms.
+- Template linker files for the GCC_ARM, ARM, and IAR toolchains.
+- Storage operation callback APIs to handle MCUboot-based upgrade images.
+- Prebuild and postbuild scripts for generating and signing MCUboot-based BOOT and UPGRADE images.
 
-- Open the BSP Assistant from the left terminal within the ModusToolbox Quick Panel.
+See the `ota-bootloader-abstraction` [README](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling MCUboot support.
 
-- Select the "Devices" option and configure the MPN CYW20829B0LKML for the CYW920829B0 and the MPN CYW89829B01MKSBG for the CYW989829B0 in the MCU/SOC/SIP column.
+**CYW955913EVK-01 built-in bootloader** - The CYW955913EVK-01 has a bootloader programmed in ROM. You can implement your own storage callbacks or use the storage callback APIs from `ota-bootloader-abstraction`. See the `ota-bootloader-abstraction` [README](https://github.com/Infineon/ota-bootloader-abstraction/blob/master/README.md) for enabling built-in bootloader support.
 
-- Save the configured options.
+**Other bootloaders** - Implement the storage API callbacks defined in `cy_ota_storage_interface_t` (see `include/cy_ota_api.h`) and register them with the OTA agent. The agent downloads the upgrade image and invokes the registered callbacks to handle it. Sample scripts for hosting the UPGRADE image are available in the library `scripts/` folder. Once bootloader support is added, choose the Push or Pull model to deliver the image to the device.
 
-- Update the libraries by executing the make getlibs command or by using the Library Manager option within the ModusToolbox Quick Panel.
+## Bluetooth&reg; Push Updates
 
-- Ensure that the library fw-cyw20829b1 is removed from the workspace (libs/mtb.mk) and the library fw-cyw20829b0 is added for the CYW920829M2EVK-02. Similarly, the library fw-cyw89829b1 should be removed and fw-cyw89829b0 should be added for the CYW989820M2EVB-01.
+For Bluetooth&reg; (push model), the host downloads the upgrade image and uses a peer application to push it to the advertising device:
 
-- Perform a clean build and then program the connected CYW920829M2EVK-02 (CYW920829B0) and CYW989820M2EVB-01 (CYW989829B0).
-
-## 13. Note on Using Windows 10
-
-When using ModusToolbox, you will need to install the pip requirements to Python in the ModusToolbox installation.
-
-```
-\<ModusToolbox\>/tools_3.*/python/python -m pip install -r \<ota-update-library\>scripts/requirements.txt
-```
-
-## 14. Supported Toolchains
-
-- GCC
-- IAR
-- ARM C
-
-For the toolchain version information, please refer to [OTA Release.md](./RELEASE.md).
-
-## 15. Supported OS
-
-- FreeRTOS
-- ThreadX
-
-
-## 16. Supported Kits
-
-- [PSoC™ 6 Wi-Fi BT Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062-4343w/) (CY8CPROTO-062-4343W)
-- [PSoC™ 62S2 Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/) (CY8CKIT-062S2-43012)
-- [PSoC™ 62S3 Wi-Fi BT Prototyping Kit ](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-062s3-4343w/)(CY8CPROTO-062S3-4343W)
-- [PSoC™ 64 Secure Boot Wi-Fi BT Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-064b0s2-4343w/) (CY8CKIT-064B0S2-4343W)
-- [CY8CEVAL-062S2 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ceval-062s2/)(CY8CEVAL-062S2-LAI-4373M2, CY8CEVAL-062S2-MUR-43439M2 and CY8CEVAL-062S2-CYW955513SDM2WLIPA)
-- [PSoC™ 6-BLE Pioneer Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062-ble/) (CY8CKIT-062-BLE)
-- [PSoC™ 6 BLE Prototyping Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8cproto-063-ble/) (CY8CPROTO-063-BLE)
-- [EZ-BLE Arduino Evaluation Board](https://www.infineon.com/cms/en/product/evaluation-boards/cyble-416045-eval/) (CYBLE-416045-EVAL)
-- [AIROC™ CYW20829 Bluetooth® LE SoC](https://www.infineon.com/cms/en/product/promopages/airoc20829/) (CYW920829M2EVK-02)
-- [XMC7200 Evaluation Kit](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK)
-- [XMC7200 Evaluation Kit with 43439M2](https://www.infineon.com/cms/en/product/evaluation-boards/kit_xmc72_evk/) (KIT_XMC72_EVK_MUR_43439M2)
-- [AIROC™ CYW989820M2EVB-01 Evaluation kit](https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/airoc-bluetooth-le/cyw20829/)(CYW989820M2EVB-01)
-- [CYW955913EVK-01 Wi-Fi Bluetooth&reg; Prototyping Kit (CYW955913EVK-01)](https://www.infineon.com/CYW955913EVK-01)
-- PSOC&trade; Edge E84 Evaluation Kit
-
-## 17. Hardware Setup
-
-This example uses the board's default configuration. See the kit user guide to ensure the board is configured correctly.
-
-**Note:** Before using this code example, make sure that the board is upgraded to KitProg3. The tool and instructions are available in the [Firmware Loader](https://github.com/Infineon/Firmware-loader) GitHub repository. If you do not upgrade, you will see an error like "unable to find CMSIS-DAP device" or "KitProg firmware is out of date".
-
-
-## 18. Software Setup
-
-1. Install a terminal emulator if you don't have one. Instructions in this document use [Tera Term](https://ttssh2.osdn.jp/index.html.en).
-
-2. Python Interpreter. The supplied *publisher.py* script is tested with [Python 3.8.1](https://www.python.org/downloads/release/python-381/).
-
-
-## 19. Enabling Debug Output
-
-The 'ota-update' library disables all debug log messages by default. Do the following to enable log messages:
-
-1. Add the `ENABLE_OTA_LOGS` macro to the *DEFINES* in the code example's Makefile. The Makefile entry should look like as follows:
-    ```
-    DEFINES+=ENABLE_OTA_LOGS
-    ```
-
-2. Call the `cy_log_init()` function provided by the *cy-log* module. cy-log is part of the *connectivity-utilities* library. See [connectivity-utilities library API documentation](https://infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html) for cy-log details.
-
-
-## 20. Prepare for Building Your OTA Application
-
-Copy [OTA's cy_ota_config.h](./configs/cy_ota_config.h) to your application's top-level directory, and adjust for your application needs.
-
+1. The host (laptop, phone, etc.) downloads the upgrade OTA image from the server over LAN/WLAN/Bluetooth&reg;.
+2. On reset, the Bluetooth&reg; LE device running the OTA application advertises that it can handle OTA updates.
+3. Use the peer app in the library `scripts/Bluetooth/` folder, or download it from the [OTA Peer Application page](https://github.com/Infineon/btsdk-peer-apps-ota) (Windows/iOS/Android):
    ```
-   cp \<ota-update-library\>/configs/cy_ota_config.h <application dir>
+   ./WsOtaUpgrade.exe /file <OTA App Upgrade.bin>
    ```
+4. Select the appropriate Bluetooth&reg; LE OTA-supported device from the scanned list and start the transfer.
+5. The host pushes the update to the device sequentially; the device stores the received chunks in its upgrade slot using the registered storage callbacks.
+6. After the transfer completes, the bootloader boots the upgrade image on the next reboot.
 
-Also, a reminder to look at configuration files for other libraries.
+# Release Notes and Changelog
 
+- [RELEASE.md](./RELEASE.md) - Detailed release notes and changelog for all versions
+- [version.xml](./version.xml) - Current library version
 
-## 21. Limitations
+For device-support details and additional design guidance, see [How to Design with PSOC&trade; 6 MCU - KBA223067](https://community.infineon.com/t5/Knowledge-Base-Articles/How-to-Design-with-PSoC-6-MCU-KBA223067/ta-p/248857) in the Infineon community.
 
-1. If not using a Job document with MQTT, and the device is not subscribed to the topic on the MQTT Broker when the Publisher sends the update, it will miss the update.
+# License
 
-  As the workaround, use a Job document, which has information about where the OTA update image is located.
+This library is provided under Infineon (Cypress) software license terms. It depends on the `http-client`, `mqtt`, and `ota-bootloader-abstraction` libraries (pulled by default from the application's `deps` folder), and, depending on the selected transport and platform, on the `wifi-core-freertos-lwip-mbedtls`, `wifi-core-threadx-cat5`, `ethernet-core-freertos-lwip-mbedtls`, `ethernet-phy-driver`, or `btstack-integration` libraries. Each of these dependencies is governed by its own license terms. You are responsible for reviewing and accepting all applicable third-party license terms.
 
-2. Ensure that you have a reliable network connection before starting an OTA update. If your network connection is poor, OTA update may fail due to lost packets or a lost connection.
+- [LICENSE](./LICENSE.txt)
 
-3. Ensure that you have a fully charged device before starting an OTA update. If your device's battery is low, OTA may fail.
+# Copyright
 
-4. When using the ARM compiler with the CYW20829 or BLE platforms, ensure that MBEDTLS_ENTROPY_HARDWARE_ALT is not defined in mbedtls_user_config.h. When MBEDTLS_ENTROPY_HARDWARE_ALT is defined it is possible to encounter an unresolved symbol error during the link phase when using the ARM compiler.
-
-
-## 22. Additional Information
-
-- [ota-update RELEASE.md](./RELEASE.md)
-
-- [ota-update version](./version.xml)
-
-- [OTA Makefile Information](./OTA_MAKEFILE_INFO_README.md)
-
-- [OTA API reference guide](https://infineon.github.io/ota-update/api_reference_manual/html/index.html)
-
-- [Connectivity utilities API documentation - for cy-log details](https://Infineon.github.io/connectivity-utilities/api_reference_manual/html/group__logging__utils.html)
-
-- [OTA bootloader Abstraction Library documentation](https://infineon.github.io/ota-bootloader-abstraction/api_reference_manual/html/index.html)
-
-- [ModusToolbox Software Environment, Quick Start Guide, Documentation, and Videos](https://www.infineon.com/modustoolbox)
-
-- [ModusToolbox&trade; code examples](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software)
-
-Infineon also provides a wealth of data at www.infineon.com to help you select the right device, and quickly and effectively integrate it into your design.
-
-For PSoC™ 6 MCU devices, see [How to Design with PSoC 6 MCU - KBA223067](https://community.infineon.com/t5/Knowledge-Base-Articles/How-to-Design-with-PSoC-6-MCU-KBA223067/ta-p/248857) in the Infineon community.
+(c) 2026, Infineon Technologies AG, or an affiliate of Infineon
+Technologies AG.  All rights reserved.

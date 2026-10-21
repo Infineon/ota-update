@@ -5,7 +5,7 @@ var searchData=
   ['ota_20macros',['OTA Macros',['../group__group__ota__macros.html',1,'']]],
   ['ota_20structures',['OTA Structures',['../group__group__ota__structures.html',1,'']]],
   ['ota_20typedefs',['OTA Typedefs',['../group__group__ota__typedefs.html',1,'']]],
-  ['over_20the_20air_28ota_29_20library_20overview',['Over The Air(OTA) Library Overview',['../index.html',1,'']]],
+  ['ota_20makefile_20settings_20for_20a_20user_20application',['OTA Makefile Settings for a User Application',['../md__builds_repo_ota-update__o_t_a__m_a_k_e_f_i_l_e__i_n_f_o__r_e_a_d_m_e.html',1,'']]],
   ['offset',['offset',['../structcy__ota__storage__write__info__t.html#a0405b3806c0de934f5f5f55ac693c184',1,'cy_ota_storage_write_info_t']]],
   ['ota_5fagt_5fstate',['ota_agt_state',['../structcy__ota__cb__struct__t.html#afdc59f29135abdca499c3da7183df1b7',1,'cy_ota_cb_struct_t']]],
   ['ota_5ffile_5fclose',['ota_file_close',['../structcy__ota__storage__interface__t.html#a9124edbf47744ce84391554385b98fdd',1,'cy_ota_storage_interface_t']]],

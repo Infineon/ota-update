@@ -860,6 +860,10 @@ table.doxtable th {
 	padding-top: 5px;
 }
 
+th.markdownTableHeadLeft, td.markdownTableBodyLeft { text-align: left; }
+th.markdownTableHeadRight, td.markdownTableBodyRight { text-align: right; }
+th.markdownTableHeadCenter, td.markdownTableBodyCenter { text-align: center; }
+
 table.fieldtable {
         /*width: 100%;*/
         margin-bottom: 10px;

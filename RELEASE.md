@@ -6,6 +6,10 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 
 ## Changelog
 
+### v4.6.0
+
+- Documentation updates to make documentation AI-friendly, minor fixes for the assets to make them Hobsification-compatible and minor code update.
+
 ### v4.5.2
 
 - Added 'CY_OTA_MAX_PACKETS' user config to enable OTA download of bigger sized files over MQTT-based updates.
@@ -109,16 +113,3 @@ See the [README.md](./README.md) for a complete description of the OTA library.
 - New support
     - CY8CPROTO-062S3-4343W now supports WiFi updates using XIP
 - XIP builds are only supported with GCC and ARM Toolchains
-
-## Supported Software and Tools
-This version of the library was validated for compatibility with the following software and tools:
-
-| Software and Tools                                        | Version |
-| :---                                                      | :----:  |
-| ModusToolbox&trade; Software Environment                  | 3.6     |
-| - ModusToolbox&trade; Device Configurator                 | 5.50    |
-| - ModusToolbox&trade; Bluetooth Configurator              | 3.40    |
-| - ModusToolbox&trade; CapSense Configurator / Tuner tools | 8.10.0  |
-| GCC Compiler                                              | 14.2.1  |
-| IAR Compiler                                              | 9.50.2  |
-| Arm Compiler 6                                            | 6.22    |
